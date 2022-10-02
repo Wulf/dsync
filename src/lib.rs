@@ -21,7 +21,8 @@ pub struct TableOptions<'a> {
 #[derive(Debug, Clone)]
 pub struct GenerationConfig<'a> {
     pub table_options: HashMap<&'a str, TableOptions<'a>>,
-    pub default_table_options: TableOptions<'a>
+    pub default_table_options: TableOptions<'a>,
+    pub connection_type: String
 }
 
 impl<'a> GenerationConfig<'_> {

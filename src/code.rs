@@ -13,7 +13,7 @@ enum StructType {
 impl StructType {
     pub fn prefix(&self) -> &'static str {
         match self {
-            StructType::Create => "New",
+            StructType::Create => "Create",
             StructType::Read => "",
             StructType::Update => "Update"
         }
@@ -65,7 +65,7 @@ fn build_table_struct(ty: StructType, table: &ParsedTableMacro, config: &Generat
             field_type = format!("Option<{}>", col.ty.to_string());
         }
 
-        struct_columns.push(format!(r#"    {field_name}: {field_type},"#));
+        struct_columns.push(format!(r#"    pub {field_name}: {field_type},"#));
     }
 
     struct_code.replace("$COLUMNS$", &struct_columns.join("\n"))
@@ -100,7 +100,7 @@ fn build_table_fns(table: &ParsedTableMacro, config: &GenerationConfig) -> Strin
 
     format!(
         indoc!{"
-            pub fn create(db: &mut Connection, item: &New{struct_name}) -> QueryResult<{struct_name}> {{
+            pub fn create(db: &mut Connection, item: &Create{struct_name}) -> QueryResult<{struct_name}> {{
                 use crate::schema::{table_name}::dsl::*;
 
                 insert_into({table_name}).values(item).get_result::<{struct_name}>(db)
@@ -138,14 +138,16 @@ fn build_table_fns(table: &ParsedTableMacro, config: &GenerationConfig) -> Strin
 }
 
 fn build_imports(config: &GenerationConfig) -> String {
-    (indoc!{"
+    format!(indoc!{"
         use crate::diesel::*;
         use crate::schema::*;
-
-        use create_rust_app::Connection;
         use diesel::QueryResult;
-        use serde::{Deserialize, Serialize};
-    "}).to_string()
+        use serde::{{Deserialize, Serialize}};
+
+        type Connection = {connection_type};
+    "},
+        connection_type=config.connection_type
+    )
 }
 
 pub fn generate_table(table: ParsedTableMacro, config: &GenerationConfig) -> String {

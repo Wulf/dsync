@@ -2,37 +2,36 @@
 
 use crate::diesel::*;
 use crate::schema::*;
-
-use create_rust_app::Connection;
 use diesel::QueryResult;
 use serde::{Deserialize, Serialize};
+
+type Connection = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Identifiable)]
 #[diesel(table_name=todos, primary_key(id))]
 pub struct Todo {
-    id: i32,
-    text: String,
-    created_at: chrono::DateTime<chrono::Utc>,
-    updated_at: chrono::DateTime<chrono::Utc>,
+    pub id: i32,
+    pub text: String,
+    pub completed: bool,
+    pub created_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
 #[diesel(table_name=todos)]
 pub struct UpdateTodo {
-    text: String,
-    created_at: chrono::DateTime<chrono::Utc>,
-    updated_at: chrono::DateTime<chrono::Utc>,
+    pub text: String,
+    pub completed: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
 #[diesel(table_name=todos)]
-pub struct NewTodo {
-    text: String,
-    created_at: chrono::DateTime<chrono::Utc>,
-    updated_at: chrono::DateTime<chrono::Utc>,
+pub struct CreateTodo {
+    pub text: String,
+    pub completed: bool,
 }
 
-pub fn create(db: &mut Connection, item: &NewTodo) -> QueryResult<Todo> {
+pub fn create(db: &mut Connection, item: &CreateTodo) -> QueryResult<Todo> {
     use crate::schema::todos::dsl::*;
 
     insert_into(todos).values(item).get_result::<Todo>(db)
