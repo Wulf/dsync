@@ -23,13 +23,13 @@ diesel::table! {
 
 We run:
 
-```
+```sh
 cargo dsync -i schema.rs -o models
 ```
 
 Now we have everything we need!
 
-```
+```rust
 use models::todos;
 
 async fn demo(db: Connection) {
