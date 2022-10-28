@@ -52,7 +52,7 @@ pub fn parse_and_generate_code(schema_file_contents: String, config: &Generation
 
                         // make sure the table isn't ignored
                         let table_options = config.table(parsed_table.name.to_string().as_str());
-                        if !table_options.ignore {
+                        if !table_options.get_ignore() {
                             tables.push(parsed_table);
                         }
                     },
