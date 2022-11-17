@@ -44,7 +44,7 @@ fn build_table_struct(ty: StructType, table: &ParsedTableMacro, config: &Generat
     let table_options = config.table(table.name.to_string().as_str());
 
     let primary_keys: Vec<String> = table.primary_key_columns.iter().map(|i| i.to_string()).collect();
-    let belongs_to = table.foreign_keys.iter().map(|fk| format!("belongs_to({foreign_table_name}, foreign_key={join_column})", foreign_table_name = fk.0.to_string().to_pascal_case(), join_column = fk.1.to_string())).collect::<Vec<String>>().join(", ");
+    let belongs_to = table.foreign_keys.iter().map(|fk| format!(",belongs_to({foreign_table_name}, foreign_key={join_column})", foreign_table_name = fk.0.to_string().to_pascal_case().to_singular(), join_column = fk.1.to_string())).collect::<Vec<String>>().join(" ");
 
     let struct_code = format!(
         indoc! {r#"
@@ -58,9 +58,9 @@ fn build_table_struct(ty: StructType, table: &ParsedTableMacro, config: &Generat
         table_name = table.name.to_string(),
         struct_name = ty.format(table.struct_name.as_str()),
         primary_key = if ty != StructType::Read { "".to_string() } else { format!(", primary_key({})", primary_keys.join(",")) },
-        derive_associations = if belongs_to.len() > 0 { ", Associations" } else { "" },
+        derive_associations = if ty == StructType::Read && belongs_to.len() > 0 { ", Associations" } else { "" },
         derive_identifiable = if ty == StructType::Read { ", Identifiable" } else { "" },
-        belongs_to = belongs_to
+        belongs_to = if ty != StructType::Read { "".to_string() } else{ belongs_to }
     );
 
     let mut struct_columns: Vec<String> = vec![];
@@ -182,23 +182,34 @@ fn build_table_fns(table: &ParsedTableMacro, config: &GenerationConfig) -> Strin
     )
 }
 
-fn build_imports(config: &GenerationConfig) -> String {
+fn build_imports(table: &ParsedTableMacro,config: &GenerationConfig) -> String {
+    let belongs_imports = table
+        .foreign_keys
+        .iter()
+        .map(|fk|
+            format!("use crate::models::{foreign_table_name_model}::{singular_struct_name};",
+            foreign_table_name_model = fk.0.to_string().to_snake_case().to_lowercase(),
+            singular_struct_name = fk.0.to_string().to_pascal_case().to_singular()
+        )).collect::<Vec<String>>().join("\n");
+
     format!(indoc! {"
         use crate::diesel::*;
         use crate::schema::*;
         use diesel::QueryResult;
         use serde::{{Deserialize, Serialize}};
+        {belongs_imports}
 
         type Connection = {connection_type};
     "},
-            connection_type = config.connection_type
+            connection_type = config.connection_type,
+            belongs_imports = belongs_imports,
     )
 }
 
 pub fn generate_table(table: ParsedTableMacro, config: &GenerationConfig) -> String {
     let table_structs = build_table_structs(&table, config);
     let table_fns = build_table_fns(&table, config);
-    let imports = build_imports(config);
+    let imports = build_imports(&table, config);
 
     format!("{FILE_SIGNATURE}\n\n{imports}\n{table_structs}\n{table_fns}")
 }
