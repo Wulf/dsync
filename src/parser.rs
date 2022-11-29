@@ -93,18 +93,8 @@ pub fn parse_and_generate_code(
         }
     }
 
-    let mut tables_hm = std::collections::HashMap::new();
-
     for table in tables.iter_mut() {
-        // table.generated_code = code::generate_table(table.clone(), config);
-        tables_hm.insert(table.name.clone(), table);
-    }
-
-    for table in tables_hm.iter_mut() {
-        // **table.1 = code::generate_table(table.clone(), config, &tables_hm);
-
-        // (table.1).generated_code = String::new();
-        table.1.generated_code = String::new();
+        table.generated_code = code::generate_table(table.clone(), config);
     }
 
     Ok(tables)
