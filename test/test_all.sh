@@ -4,4 +4,8 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 cd $SCRIPT_DIR
 
-./simple_schema/test.sh
+for D in *; do 
+    if [ -d "${D}" ]; then
+        ${D}/test.sh
+    fi
+done
