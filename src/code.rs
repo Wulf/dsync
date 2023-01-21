@@ -59,7 +59,7 @@ fn build_table_struct(
             format!(
                 ",belongs_to({foreign_table_name}, foreign_key={join_column})",
                 foreign_table_name = fk.0.to_string().to_pascal_case().to_singular(),
-                join_column = fk.1.to_string()
+                join_column = fk.1
             )
         })
         .collect::<Vec<String>>()
@@ -78,14 +78,14 @@ fn build_table_struct(
         } else {
             ""
         },
-        table_name = table.name.to_string(),
+        table_name = table.name,
         struct_name = ty.format(table.struct_name.as_str()),
         primary_key = if ty != StructType::Read {
             "".to_string()
         } else {
             format!(", primary_key({})", primary_keys.join(","))
         },
-        derive_associations = if ty == StructType::Read && belongs_to.len() > 0 {
+        derive_associations = if ty == StructType::Read && !belongs_to.is_empty() {
             ", Associations"
         } else {
             ""
@@ -120,15 +120,14 @@ fn build_table_struct(
         let is_pk = table
             .primary_key_columns
             .iter()
-            .find(|pk| pk.to_string().eq(field_name.as_str()))
-            .is_some();
+            .any(|pk| pk.to_string().eq(field_name.as_str()));
         if is_pk && ty != StructType::Read {
             continue;
         }
 
         // check if it's nullable (optional)
         if col.is_nullable {
-            field_type = format!("Option<{}>", col.ty.to_string());
+            field_type = format!("Option<{}>", col.ty);
         }
 
         struct_columns.push(format!(r#"    pub {field_name}: {field_type},"#));

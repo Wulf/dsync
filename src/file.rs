@@ -10,10 +10,12 @@ impl MarkedFile {
         MarkedFile {
             path: path.clone(),
             file_contents: if !path.exists() {
-                std::fs::write(&path, "").expect(&format!("Could not write to '{:#?}'", path));
+                std::fs::write(&path, "")
+                    .unwrap_or_else(|_| panic!("Could not write to '{:#?}'", path));
                 "".to_string()
             } else {
-                std::fs::read_to_string(&path).expect(&format!("Could not read '{:#?}'", path))
+                std::fs::read_to_string(&path)
+                    .unwrap_or_else(|_| panic!("Could not read '{:#?}'", path))
             },
         }
     }
@@ -28,7 +30,7 @@ impl MarkedFile {
 
     pub fn add_use_stmt(&mut self, use_name: &str) {
         self.file_contents = self.file_contents.trim().to_string();
-        if self.file_contents.len() > 0 {
+        if !self.file_contents.is_empty() {
             self.file_contents.push('\n');
         }
         self.file_contents
@@ -37,7 +39,7 @@ impl MarkedFile {
 
     pub fn add_mod_stmt(&mut self, mod_name: &str) {
         self.file_contents = self.file_contents.trim().to_string();
-        if self.file_contents.len() > 0 {
+        if !self.file_contents.is_empty() {
             self.file_contents.push('\n');
         }
         self.file_contents
@@ -83,7 +85,7 @@ impl MarkedFile {
         // the whole purpose of file signatures is to prevent writing to files which aren't generated
         // and if a file's length is 0, then it's safe to write to this file!
         // :)
-        self.file_contents.len() == 0
+        self.file_contents.is_empty()
             || self
                 .file_contents
                 .starts_with(crate::parser::FILE_SIGNATURE)
@@ -97,13 +99,11 @@ impl MarkedFile {
 
     pub fn write(&self) {
         std::fs::write(&self.path, &self.file_contents)
-            .expect(&format!("Could not write to file '{:#?}'", self.path));
+            .unwrap_or_else(|_| panic!("Could not write to file '{:#?}'", self.path));
     }
 
     pub fn delete(self) {
-        std::fs::remove_file(&self.path).expect(&format!(
-            "Could not delete redundant file '{:#?}'",
-            self.path
-        ));
+        std::fs::remove_file(&self.path)
+            .unwrap_or_else(|_| panic!("Could not delete redundant file '{:#?}'", self.path));
     }
 }

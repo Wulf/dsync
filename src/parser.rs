@@ -4,7 +4,7 @@ use syn::Item::Macro;
 
 use crate::{code, GenerationConfig};
 
-pub const FILE_SIGNATURE: &'static str = "/* This file is generated and managed by dsync */";
+pub const FILE_SIGNATURE: &str = "/* This file is generated and managed by dsync */";
 
 // TODO: handle postgres array types
 // TODO: handle postgres tuple/record types
@@ -48,48 +48,45 @@ pub fn parse_and_generate_code(
     let mut tables: Vec<ParsedTableMacro> = vec![];
 
     for item in schema_file.items {
-        match item {
-            Macro(macro_item) => {
-                let macro_identifier = macro_item
-                    .mac
-                    .path
-                    .segments
-                    .last()
-                    .expect("could not read identifier for macro")
-                    .ident
-                    .to_string();
+        if let Macro(macro_item) = item {
+            let macro_identifier = macro_item
+                .mac
+                .path
+                .segments
+                .last()
+                .expect("could not read identifier for macro")
+                .ident
+                .to_string();
 
-                match macro_identifier.as_str() {
-                    "table" => {
-                        let parsed_table = handle_table_macro(macro_item, config);
+            match macro_identifier.as_str() {
+                "table" => {
+                    let parsed_table = handle_table_macro(macro_item, config);
 
-                        // make sure the table isn't ignored
-                        let table_options = config.table(parsed_table.name.to_string().as_str());
-                        if !table_options.get_ignore() {
-                            tables.push(parsed_table);
+                    // make sure the table isn't ignored
+                    let table_options = config.table(parsed_table.name.to_string().as_str());
+                    if !table_options.get_ignore() {
+                        tables.push(parsed_table);
+                    }
+                }
+                "joinable" => {
+                    let parsed_join = handle_joinable_macro(macro_item);
+
+                    for table in tables.iter_mut() {
+                        if parsed_join
+                            .table1
+                            .to_string()
+                            .eq(table.name.to_string().as_str())
+                        {
+                            table.foreign_keys.push((
+                                parsed_join.table2.clone(),
+                                parsed_join.table1_columns.clone(),
+                            ));
+                            break;
                         }
                     }
-                    "joinable" => {
-                        let parsed_join = handle_joinable_macro(macro_item);
-
-                        for table in tables.iter_mut() {
-                            if parsed_join
-                                .table1
-                                .to_string()
-                                .eq(table.name.to_string().as_str())
-                            {
-                                table.foreign_keys.push((
-                                    parsed_join.table2.clone(),
-                                    parsed_join.table1_columns.clone(),
-                                ));
-                                break;
-                            }
-                        }
-                    }
-                    _ => {}
-                };
-            }
-            _ => {}
+                }
+                _ => {}
+            };
         }
     }
 
@@ -137,7 +134,7 @@ fn handle_joinable_macro(macro_item: syn::ItemMacro) -> ParsedJoinMacro {
     }
 }
 
-fn handle_table_macro(macro_item: syn::ItemMacro, config: &GenerationConfig) -> ParsedTableMacro {
+fn handle_table_macro(macro_item: syn::ItemMacro, _config: &GenerationConfig) -> ParsedTableMacro {
     let mut table_name_ident: Option<Ident> = None;
     let mut table_primary_key_idents: Vec<Ident> = vec![];
     let mut table_columns: Vec<ParsedColumnMacro> = vec![];
@@ -152,11 +149,8 @@ fn handle_table_macro(macro_item: syn::ItemMacro, config: &GenerationConfig) -> 
                     // primary keys group
                     // println!("GROUP-keys {:#?}", group);
                     for key_token in group.stream().into_iter() {
-                        match key_token {
-                            proc_macro2::TokenTree::Ident(ident) => {
-                                table_primary_key_idents.push(ident)
-                            }
-                            _ => { /* ignore other tokens */ }
+                        if let proc_macro2::TokenTree::Ident(ident) = key_token {
+                            table_primary_key_idents.push(ident)
                         }
                     }
                 } else if group.delimiter() == proc_macro2::Delimiter::Brace {
