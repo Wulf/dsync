@@ -22,7 +22,10 @@ pub struct ParsedTableMacro {
     pub struct_name: String,
     pub columns: Vec<ParsedColumnMacro>,
     pub primary_key_columns: Vec<Ident>,
-    pub foreign_keys: Vec<(ForeignTableName, JoinColumn /* this is the column from this table which maps to the foreign table's primary key*/)>,
+    pub foreign_keys: Vec<(
+        ForeignTableName,
+        JoinColumn, /* this is the column from this table which maps to the foreign table's primary key*/
+    )>,
     pub generated_code: String,
 }
 
@@ -36,7 +39,10 @@ pub struct ParsedJoinMacro {
     pub table1_columns: String,
 }
 
-pub fn parse_and_generate_code(schema_file_contents: String, config: &GenerationConfig) -> anyhow::Result<Vec<ParsedTableMacro>> {
+pub fn parse_and_generate_code(
+    schema_file_contents: String,
+    config: &GenerationConfig,
+) -> anyhow::Result<Vec<ParsedTableMacro>> {
     let schema_file = syn::parse_file(&schema_file_contents).unwrap();
 
     let mut tables: Vec<ParsedTableMacro> = vec![];
@@ -44,7 +50,14 @@ pub fn parse_and_generate_code(schema_file_contents: String, config: &Generation
     for item in schema_file.items {
         match item {
             Macro(macro_item) => {
-                let macro_identifier = macro_item.mac.path.segments.last().expect("could not read identifier for macro").ident.to_string();
+                let macro_identifier = macro_item
+                    .mac
+                    .path
+                    .segments
+                    .last()
+                    .expect("could not read identifier for macro")
+                    .ident
+                    .to_string();
 
                 match macro_identifier.as_str() {
                     "table" => {
@@ -55,13 +68,20 @@ pub fn parse_and_generate_code(schema_file_contents: String, config: &Generation
                         if !table_options.get_ignore() {
                             tables.push(parsed_table);
                         }
-                    },
+                    }
                     "joinable" => {
                         let parsed_join = handle_joinable_macro(macro_item);
 
                         for table in tables.iter_mut() {
-                            if parsed_join.table1.to_string().eq(table.name.to_string().as_str()) {
-                                table.foreign_keys.push((parsed_join.table2.clone(), parsed_join.table1_columns.clone()));
+                            if parsed_join
+                                .table1
+                                .to_string()
+                                .eq(table.name.to_string().as_str())
+                            {
+                                table.foreign_keys.push((
+                                    parsed_join.table2.clone(),
+                                    parsed_join.table1_columns.clone(),
+                                ));
                                 break;
                             }
                         }
@@ -108,9 +128,12 @@ fn handle_joinable_macro(macro_item: syn::ItemMacro) -> ParsedJoinMacro {
     }
 
     ParsedJoinMacro {
-        table1: table1_name.expect("Unsupported schema format! (could not determine first join table name)"),
-        table2: table2_name.expect("Unsupported schema format! (could not determine second join table name)"),
-        table1_columns: table2_join_column.expect("Unsupported schema format! (could not determine join column name)"),
+        table1: table1_name
+            .expect("Unsupported schema format! (could not determine first join table name)"),
+        table2: table2_name
+            .expect("Unsupported schema format! (could not determine second join table name)"),
+        table1_columns: table2_join_column
+            .expect("Unsupported schema format! (could not determine join column name)"),
     }
 }
 
@@ -182,7 +205,9 @@ fn handle_table_macro(macro_item: syn::ItemMacro, config: &GenerationConfig) -> 
 
                     if column_name.is_some() || column_type.is_some() || column_nullable {
                         // looks like a column was in the middle of being parsed, let's panic!
-                        panic!("Unsupported schema format! (It seems a column was partially defined)");
+                        panic!(
+                            "Unsupported schema format! (It seems a column was partially defined)"
+                        );
                     }
                 } else {
                     panic!("Unsupported schema format! (Invalid delimiter in diesel table macro group)")
@@ -195,12 +220,20 @@ fn handle_table_macro(macro_item: syn::ItemMacro, config: &GenerationConfig) -> 
     }
 
     ParsedTableMacro {
-        name: table_name_ident.clone().expect("Unsupported schema format! (Could not extract table name from schema file)"),
-        struct_name: table_name_ident.unwrap().to_string().to_pascal_case().to_singular(),
+        name: table_name_ident
+            .clone()
+            .expect("Unsupported schema format! (Could not extract table name from schema file)"),
+        struct_name: table_name_ident
+            .unwrap()
+            .to_string()
+            .to_pascal_case()
+            .to_singular(),
         columns: table_columns,
         primary_key_columns: table_primary_key_idents,
         foreign_keys: vec![],
-        generated_code: format!("{FILE_SIGNATURE}\n\nFATAL ERROR: nothing was generated; this shouldn't be possible."),
+        generated_code: format!(
+            "{FILE_SIGNATURE}\n\nFATAL ERROR: nothing was generated; this shouldn't be possible."
+        ),
     }
 }
 
