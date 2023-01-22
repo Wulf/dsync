@@ -92,6 +92,14 @@ jobs:
           command: clippy
           args: -- -D warnings
 
+  test-script:
+    name: test-scripts
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - run: ./test/test-all.sh
+      - run: git diff --exit-code --quiet || exit 1
+      
   # things that use the cargo-test cache
   test:
     name: Test Suite and Initialize profile.test Cache
