@@ -28,7 +28,6 @@ impl<'a> Default for TableOptions<'a> {
 }
 
 impl<'a> TableOptions<'a> {
-
     pub fn get_ignore(&self) -> bool {
         self.ignore.unwrap_or_default()
     }
