@@ -94,7 +94,6 @@ jobs:
 
   test-script:
     name: test-scripts
-    needs: [build]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3.3.0
@@ -103,8 +102,7 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      - run: ls -a
-      - run: bash test/test-all.sh
+      - run: bash test/test_all.sh
       - run: git diff --exit-code --quiet || exit 1
       
   # things that use the cargo-test cache
