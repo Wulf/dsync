@@ -111,7 +111,7 @@ jobs:
             ./target
             ~/.cargo
           key: ${{ runner.os }}-cargo-dev-${{ hashFiles('**/Cargo.lock') }}
-      - run: ./test/test-all.sh
+      - run: bash test/test-all.sh
       - run: git diff --exit-code --quiet || exit 1
       
   # things that use the cargo-test cache
