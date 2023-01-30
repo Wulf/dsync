@@ -287,11 +287,7 @@ fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String 
     )
 }
 
-pub fn generate_table(
-    table: ParsedTableMacro,
-    config: &GenerationConfig,
-    hm: &std::collections::HashMap<proc_macro2::Ident, &ParsedTableMacro>,
-) -> String {
+pub fn generate_table(table: ParsedTableMacro, config: &GenerationConfig) -> String {
     let table_structs = build_table_structs(&table, config);
     let table_fns = build_table_fns(&table, config);
     let imports = build_imports(&table, config);
