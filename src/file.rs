@@ -11,11 +11,11 @@ impl MarkedFile {
             path: path.clone(),
             file_contents: if !path.exists() {
                 std::fs::write(&path, "")
-                    .unwrap_or_else(|_| panic!("Could not write to '{:#?}'", path));
+                    .unwrap_or_else(|_| panic!("Could not write to '{path:#?}'"));
                 "".to_string()
             } else {
                 std::fs::read_to_string(&path)
-                    .unwrap_or_else(|_| panic!("Could not read '{:#?}'", path))
+                    .unwrap_or_else(|_| panic!("Could not read '{path:#?}'"))
             },
         }
     }

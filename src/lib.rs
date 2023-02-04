@@ -103,7 +103,7 @@ pub fn generate_files(
 
     if !output_dir.exists() {
         std::fs::create_dir(&output_dir)
-            .unwrap_or_else(|_| panic!("Could not create directory '{:#?}'", output_dir));
+            .unwrap_or_else(|_| panic!("Could not create directory '{output_dir:#?}'"));
     } else if !output_dir.is_dir() {
         panic!("Expected output argument to be a directory or non-existent.")
     }
@@ -117,11 +117,11 @@ pub fn generate_files(
 
         if !table_dir.exists() {
             std::fs::create_dir(&table_dir)
-                .unwrap_or_else(|_| panic!("Could not create directory '{:#?}'", table_dir));
+                .unwrap_or_else(|_| panic!("Could not create directory '{table_dir:#?}'"));
         }
 
         if !table_dir.is_dir() {
-            panic!("Expected a directory at '{:#?}'", table_dir)
+            panic!("Expected a directory at '{table_dir:#?}'")
         }
 
         let mut table_generated_rs = MarkedFile::new(table_dir.join("generated.rs"));
@@ -140,9 +140,9 @@ pub fn generate_files(
 
     // pass 2: delete code for removed tables
     for item in std::fs::read_dir(&output_dir)
-        .unwrap_or_else(|_| panic!("Could not read directory '{:#?}'", output_dir))
+        .unwrap_or_else(|_| panic!("Could not read directory '{output_dir:#?}'"))
     {
-        let item = item.unwrap_or_else(|_| panic!("Could not read item in '{:#?}'", output_dir));
+        let item = item.unwrap_or_else(|_| panic!("Could not read item in '{output_dir:#?}'"));
 
         // check if item is a directory
         let file_type = item
@@ -177,7 +177,7 @@ pub fn generate_files(
 
         // this table was deleted, let's delete the generated code
         std::fs::remove_file(&generated_rs_path).unwrap_or_else(|_| {
-            panic!("Could not delete redundant file '{:#?}'", generated_rs_path)
+            panic!("Could not delete redundant file '{generated_rs_path:#?}'")
         });
 
         // remove the mod.rs file if there isn't anything left in there except the use stmt

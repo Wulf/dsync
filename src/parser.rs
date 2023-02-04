@@ -312,6 +312,6 @@ fn schema_type_to_rust_type(schema_type: String) -> String {
         // "cidr" => "either ipnetwork::IpNetwork or ipnet::IpNet (TODO)",
 
         // panic if no type is found (this means generation is broken for this particular schema)
-        _ => panic!("Unknown type found '{}', please report this!", schema_type)
+        _ => panic!("Unknown type found '{schema_type}', please report this!")
     }.to_string()
 }
