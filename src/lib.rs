@@ -161,7 +161,7 @@ pub fn generate_files(
             continue;
         }
 
-        // okay, it's generated, but we need to check if it is a deleted table
+        // okay, it's generated, but we need to check if it's for a deleted table
         let file_name = item.file_name();
         let associated_table_name = file_name
             .to_str()
@@ -176,24 +176,22 @@ pub fn generate_files(
         }
 
         // this table was deleted, let's delete the generated code
-        std::fs::remove_file(&generated_rs_path).unwrap_or_else(|_| {
-            panic!("Could not delete redundant file '{generated_rs_path:#?}'")
-        });
+        std::fs::remove_file(&generated_rs_path)
+            .unwrap_or_else(|_| panic!("Could not delete redundant file '{generated_rs_path:#?}'"));
 
         // remove the mod.rs file if there isn't anything left in there except the use stmt
         let table_mod_rs_path = item.path().join("mod.rs");
         if table_mod_rs_path.exists() {
             let mut table_mod_rs = MarkedFile::new(table_mod_rs_path);
-            if table_mod_rs
-                .file_contents
-                .trim()
-                .eq(&"pub use generated::*;".to_string())
-            {
-                table_mod_rs.delete();
+
+            table_mod_rs.remove_mod_stmt("generated");
+            table_mod_rs.remove_use_stmt("generated::*");
+            table_mod_rs.write();
+
+            if table_mod_rs.file_contents.trim().is_empty() {
+                table_mod_rs.delete()
             } else {
-                table_mod_rs.remove_mod_stmt("generated");
-                table_mod_rs.remove_use_stmt("generated::*");
-                table_mod_rs.write();
+                table_mod_rs.write() // write the changes we made above
             }
         }
 
