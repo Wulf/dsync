@@ -176,9 +176,8 @@ pub fn generate_files(
         }
 
         // this table was deleted, let's delete the generated code
-        std::fs::remove_file(&generated_rs_path).unwrap_or_else(|_| {
-            panic!("Could not delete redundant file '{generated_rs_path:#?}'")
-        });
+        std::fs::remove_file(&generated_rs_path)
+            .unwrap_or_else(|_| panic!("Could not delete redundant file '{generated_rs_path:#?}'"));
 
         // remove the mod.rs file if there isn't anything left in there except the use stmt
         let table_mod_rs_path = item.path().join("mod.rs");
