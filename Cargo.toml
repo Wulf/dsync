@@ -10,6 +10,10 @@ categories = ["command-line-utilities", "development-tools", "development-tools:
 authors = ["Haris <4259838+Wulf@users.noreply.github.com>"]
 edition = "2021"
 
+[features]
+default = ["tsync"]
+tsync = []
+
 [dependencies]
 structopt = "0.3"
 syn = { version = "1", features = ["extra-traits", "full"] }

@@ -12,27 +12,14 @@ type Connection = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager
 #[diesel(table_name=todos, primary_key(id))]
 pub struct Todo {
     pub id: i32,
-    pub text: String,
-    pub completed: bool,
-    pub created_at: chrono::DateTime<chrono::Utc>,
-    pub updated_at: chrono::DateTime<chrono::Utc>,
+    pub created_at: chrono::NaiveDateTime,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
-#[diesel(table_name=todos)]
-pub struct CreateTodo {
-    pub id: i32,
-    pub text: String,
-    pub completed: bool,
-}
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
 #[diesel(table_name=todos)]
 pub struct UpdateTodo {
-    pub text: Option<String>,
-    pub completed: Option<bool>,
-    pub created_at: Option<chrono::DateTime<chrono::Utc>>,
-    pub updated_at: Option<chrono::DateTime<chrono::Utc>>,
+    pub created_at: Option<chrono::NaiveDateTime>,
 }
 
 
@@ -48,10 +35,10 @@ pub struct PaginationResult<T> {
 
 impl Todo {
 
-    pub fn create(db: &mut Connection, item: &CreateTodo) -> QueryResult<Self> {
+    pub fn create(db: &mut Connection) -> QueryResult<Self> {
         use crate::schema::todos::dsl::*;
 
-        insert_into(todos).values(item).get_result::<Self>(db)
+        insert_into(todos).default_values().get_result::<Self>(db)
     }
 
     pub fn read(db: &mut Connection, param_id: i32) -> QueryResult<Self> {

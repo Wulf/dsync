@@ -47,7 +47,7 @@ async fn demo(db: Connection) {
 }
 ```
 
-For a complete example, see [`test/simple_schema/schema.rs`](test/simple_schema/schema.rs) which generates all the code in [`test/simple_schema/models`](test/simple_schema/models).
+For a complete example, see [`test/simple_table/schema.rs`](test/simple_table/schema.rs) which generates all the code in [`test/simple_schema/models`](test/simple_table/models).
 
 # Usage
 

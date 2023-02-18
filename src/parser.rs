@@ -2,7 +2,7 @@ use inflector::Inflector;
 use syn::Ident;
 use syn::Item::Macro;
 
-use crate::{code, GenerationConfig};
+use crate::{code, GenerationConfig, TableOptions};
 
 pub const FILE_SIGNATURE: &str = "/* This file is generated and managed by dsync */";
 
@@ -27,6 +27,15 @@ pub struct ParsedTableMacro {
         JoinColumn, /* this is the column from this table which maps to the foreign table's primary key*/
     )>,
     pub generated_code: String,
+}
+
+impl ParsedTableMacro {
+    pub fn primary_key_column_names(&self) -> Vec<String> {
+        self.primary_key_columns
+            .iter()
+            .map(|i| i.to_string())
+            .collect()
+    }
 }
 
 type ForeignTableName = Ident;
@@ -91,7 +100,7 @@ pub fn parse_and_generate_code(
     }
 
     for table in tables.iter_mut() {
-        table.generated_code = code::generate_table(table.clone(), config);
+        table.generated_code = code::generate_for_table(table.clone(), config);
     }
 
     Ok(tables)

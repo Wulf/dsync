@@ -8,32 +8,18 @@ use serde::{Deserialize, Serialize};
 
 type Connection = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
 
-#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
+#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable)]
 #[diesel(table_name=todos, primary_key(id))]
 pub struct Todo {
     pub id: i32,
-    pub text: String,
-    pub completed: bool,
-    pub created_at: chrono::DateTime<chrono::Utc>,
-    pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
+#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable)]
 #[diesel(table_name=todos)]
 pub struct CreateTodo {
     pub id: i32,
-    pub text: String,
-    pub completed: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
-#[diesel(table_name=todos)]
-pub struct UpdateTodo {
-    pub text: Option<String>,
-    pub completed: Option<bool>,
-    pub created_at: Option<chrono::DateTime<chrono::Utc>>,
-    pub updated_at: Option<chrono::DateTime<chrono::Utc>>,
-}
 
 
 #[derive(Serialize)]
@@ -76,12 +62,6 @@ impl Todo {
             /* ceiling division of integers */
             num_pages: total_items / page_size + i64::from(total_items % page_size != 0)
         })
-    }
-
-    pub fn update(db: &mut Connection, param_id: i32, item: &UpdateTodo) -> QueryResult<Self> {
-        use crate::schema::todos::dsl::*;
-
-        diesel::update(todos.filter(id.eq(param_id))).set(item).get_result(db)
     }
 
     pub fn delete(db: &mut Connection, param_id: i32) -> QueryResult<usize> {

@@ -21,7 +21,6 @@ pub struct Todo {
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
 #[diesel(table_name=todos)]
 pub struct CreateTodo {
-    pub id: i32,
     pub text: String,
     pub completed: bool,
 }
