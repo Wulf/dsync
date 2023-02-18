@@ -27,7 +27,7 @@ struct Args {
     )]
     output: PathBuf,
 
-    #[cfg(feature="tsync")]
+    #[cfg(feature = "tsync")]
     #[structopt(
         long = "tsync",
         help = "Optional: adds the #[tsync] attribute to all structs; see https://github.com/Wulf/tsync"
