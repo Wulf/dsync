@@ -100,7 +100,11 @@ impl<'a> Struct<'a> {
     }
 
     fn attr_derive(&self) -> String {
-        format!("#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable{derive_aschangeset}{derive_identifiable}{derive_associations})]",
+        format!("#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable{derive_aschangeset}{derive_identifiable}{derive_associations}{derive_selectable})]",
+                derive_selectable = match self.ty {
+                    StructType::Read => { ", Selectable" }
+                    _ => { "" }
+                },
                 derive_associations = match self.ty {
                     StructType::Read => {
                         if self.table.foreign_keys.len() > 0 { ", Associations" } else { "" }
