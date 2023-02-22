@@ -22,7 +22,7 @@ pub struct CreateTodo {
 
 
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize)]
 pub struct PaginationResult<T> {
     pub items: Vec<T>,
     pub total_items: i64,
