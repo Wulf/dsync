@@ -14,6 +14,7 @@ pub struct ParsedColumnMacro {
     pub ty: String,
     pub name: Ident,
     pub is_nullable: bool,
+    pub is_unsigned: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -169,14 +170,17 @@ fn handle_table_macro(macro_item: syn::ItemMacro, _config: &GenerationConfig) ->
                     let mut column_name: Option<Ident> = None;
                     let mut column_type: Option<Ident> = None;
                     let mut column_nullable: bool = false;
+                    let mut column_unsigned: bool = false;
 
                     for column_tokens in group.stream().into_iter() {
                         match column_tokens {
                             proc_macro2::TokenTree::Ident(ident) => {
                                 if column_name.is_none() {
                                     column_name = Some(ident.clone());
-                                } else if ident.to_string().eq("Nullable") {
+                                } else if ident.to_string().eq_ignore_ascii_case("Nullable") {
                                     column_nullable = true;
+                                } else if ident.to_string().eq_ignore_ascii_case("Unsigned") {
+                                    column_unsigned = true;
                                 } else {
                                     column_type = Some(ident.clone());
                                 }
@@ -194,11 +198,13 @@ fn handle_table_macro(macro_item: syn::ItemMacro, _config: &GenerationConfig) ->
                                         name: column_name.expect("Unsupported schema format! (Invalid column name syntax)"),
                                         ty: schema_type_to_rust_type(column_type.expect("Unsupported schema format! (Invalid column type syntax)").to_string()),
                                         is_nullable: column_nullable,
+                                        is_unsigned: column_unsigned,
                                     });
 
                                     // reset the properties
                                     column_name = None;
                                     column_type = None;
+                                    column_unsigned = false;
                                     column_nullable = false;
                                 }
                             }
@@ -206,7 +212,7 @@ fn handle_table_macro(macro_item: syn::ItemMacro, _config: &GenerationConfig) ->
                         }
                     }
 
-                    if column_name.is_some() || column_type.is_some() || column_nullable {
+                    if column_name.is_some() || column_type.is_some() || column_nullable || column_unsigned {
                         // looks like a column was in the middle of being parsed, let's panic!
                         panic!(
                             "Unsupported schema format! (It seems a column was partially defined)"
@@ -247,7 +253,7 @@ fn handle_table_macro(macro_item: syn::ItemMacro, _config: &GenerationConfig) ->
 //
 // The docs page for sql_types is comprehensive but it hides some alias types like Int4, Float8, etc.:
 // https://docs.rs/diesel/latest/diesel/sql_types/index.html
-fn schema_type_to_rust_type(schema_type: String) -> String {
+fn schema_type_to_rust_type(schema_type: String) -> String {  
     match schema_type.to_lowercase().as_str() {
         "unsigned" => panic!("Unsigned types are not yet supported, please open an issue if you need this feature!"), // TODO: deal with this later
         "inet" => panic!("Unsigned types are not yet supported, please open an issue if you need this feature!"), // TODO: deal with this later

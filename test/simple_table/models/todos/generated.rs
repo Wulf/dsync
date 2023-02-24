@@ -12,6 +12,7 @@ type Connection = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager
 #[diesel(table_name=todos, primary_key(id))]
 pub struct Todo {
     pub id: i32,
+    pub unsigned: u32,
     pub text: String,
     pub completed: bool,
     pub created_at: chrono::DateTime<chrono::Utc>,
@@ -21,6 +22,7 @@ pub struct Todo {
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
 #[diesel(table_name=todos)]
 pub struct CreateTodo {
+    pub unsigned: u32,
     pub text: String,
     pub completed: bool,
 }
@@ -28,6 +30,7 @@ pub struct CreateTodo {
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
 #[diesel(table_name=todos)]
 pub struct UpdateTodo {
+    pub unsigned: Option<u32>,
     pub text: Option<String>,
     pub completed: Option<bool>,
     pub created_at: Option<chrono::DateTime<chrono::Utc>>,
