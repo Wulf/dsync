@@ -13,6 +13,7 @@ edition = "2021"
 [features]
 default = ["tsync"]
 tsync = []
+async = []
 
 [dependencies]
 structopt = "0.3"

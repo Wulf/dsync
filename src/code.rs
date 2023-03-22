@@ -309,6 +309,14 @@ fn build_table_fns(
     };
     #[cfg(not(feature = "tsync"))]
     let tsync = "";
+    #[cfg(feature = "async")]
+    let async_keyword = if table_options.get_async() { " async" } else { "" };
+    #[cfg(not(feature = "async"))]
+    let async_keyword = "";
+    #[cfg(feature = "async")]
+    let await_keyword = if table_options.get_async() { ".await" } else { "" };
+    #[cfg(not(feature = "async"))]
+    let await_keyword = "";
     let struct_name = &table.struct_name;
     let create_struct_identifier = &create_struct.identifier;
     let update_struct_identifier = &update_struct.identifier;
@@ -340,20 +348,20 @@ impl {struct_name} {{
     if create_struct.has_fields() {
         buffer.push_str(&format!(
             r##"
-    pub fn create(db: &mut Connection, item: &{create_struct_identifier}) -> QueryResult<Self> {{
+    pub{async_keyword} fn create(db: &mut Connection, item: &{create_struct_identifier}) -> QueryResult<Self> {{
         use crate::schema::{table_name}::dsl::*;
 
-        insert_into({table_name}).values(item).get_result::<Self>(db)
+        insert_into({table_name}).values(item).get_result::<Self>(db){await_keyword}
     }}
 "##
         ));
     } else {
         buffer.push_str(&format!(
             r##"
-    pub fn create(db: &mut Connection) -> QueryResult<Self> {{
+    pub{async_keyword} fn create(db: &mut Connection) -> QueryResult<Self> {{
         use crate::schema::{table_name}::dsl::*;
 
-        insert_into({table_name}).default_values().get_result::<Self>(db)
+        insert_into({table_name}).default_values().get_result::<Self>(db){await_keyword}
     }}
 "##
         ));
@@ -361,22 +369,22 @@ impl {struct_name} {{
 
     buffer.push_str(&format!(
         r##"
-    pub fn read(db: &mut Connection, {item_id_params}) -> QueryResult<Self> {{
+    pub{async_keyword} fn read(db: &mut Connection, {item_id_params}) -> QueryResult<Self> {{
         use crate::schema::{table_name}::dsl::*;
 
-        {table_name}.{item_id_filters}.first::<Self>(db)
+        {table_name}.{item_id_filters}.first::<Self>(db){await_keyword}
     }}
 "##
     ));
 
     buffer.push_str(&format!(r##"
     /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
-    pub fn paginate(db: &mut Connection, page: i64, page_size: i64) -> QueryResult<PaginationResult<Self>> {{
+    pub{async_keyword} fn paginate(db: &mut Connection, page: i64, page_size: i64) -> QueryResult<PaginationResult<Self>> {{
         use crate::schema::{table_name}::dsl::*;
 
         let page_size = if page_size < 1 {{ 1 }} else {{ page_size }};
-        let total_items = {table_name}.count().get_result(db)?;
-        let items = {table_name}.limit(page_size).offset(page * page_size).load::<Self>(db)?;
+        let total_items = {table_name}.count().get_result(db){await_keyword}?;
+        let items = {table_name}.limit(page_size).offset(page * page_size).load::<Self>(db){await_keyword}?;
 
         Ok(PaginationResult {{
             items,
@@ -399,20 +407,20 @@ impl {struct_name} {{
         // we should generate an update() method.
 
         buffer.push_str(&format!(r##"
-    pub fn update(db: &mut Connection, {item_id_params}, item: &{update_struct_identifier}) -> QueryResult<Self> {{
+    pub{async_keyword} fn update(db: &mut Connection, {item_id_params}, item: &{update_struct_identifier}) -> QueryResult<Self> {{
         use crate::schema::{table_name}::dsl::*;
 
-        diesel::update({table_name}.{item_id_filters}).set(item).get_result(db)
+        diesel::update({table_name}.{item_id_filters}).set(item).get_result(db){await_keyword}
     }}
 "##));
     }
 
     buffer.push_str(&format!(
         r##"
-    pub fn delete(db: &mut Connection, {item_id_params}) -> QueryResult<usize> {{
+    pub{async_keyword} fn delete(db: &mut Connection, {item_id_params}) -> QueryResult<usize> {{
         use crate::schema::{table_name}::dsl::*;
 
-        diesel::delete({table_name}.{item_id_filters}).execute(db)
+        diesel::delete({table_name}.{item_id_filters}).execute(db){await_keyword}
     }}
 "##
     ));
@@ -426,6 +434,7 @@ impl {struct_name} {{
 }
 
 fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String {
+    let table_options = config.table(&table.name.to_string());
     let belongs_imports = table
         .foreign_keys
         .iter()
@@ -438,19 +447,23 @@ fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String 
         })
         .collect::<Vec<String>>()
         .join("\n");
-
+    #[cfg(feature = "async")]
+    let async_imports = if table_options.get_async() { "\nuse diesel_async::RunQueryDsl;" } else { "" };
+    #[cfg(not(feature = "async"))]
+    let async_imports = "";
     format!(
         indoc! {"
         use crate::diesel::*;
         use crate::schema::*;
         use diesel::QueryResult;
-        use serde::{{Deserialize, Serialize}};
+        use serde::{{Deserialize, Serialize}};{async_imports}
         {belongs_imports}
 
         type Connection = {connection_type};
     "},
         connection_type = config.connection_type,
         belongs_imports = belongs_imports,
+        async_imports = async_imports,
     )
 }
 
