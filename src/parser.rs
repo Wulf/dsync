@@ -149,9 +149,26 @@ fn handle_table_macro(macro_item: syn::ItemMacro, _config: &GenerationConfig) ->
     let mut table_primary_key_idents: Vec<Ident> = vec![];
     let mut table_columns: Vec<ParsedColumnMacro> = vec![];
 
+    let mut skip_until_semicolon = false;
+    
     for item in macro_item.mac.tokens.into_iter() {
+        if skip_until_semicolon {
+            if let proc_macro2::TokenTree::Punct(punct) = item {
+                if punct.as_char() == ';' {
+                    skip_until_semicolon = false;
+                }
+            }
+            continue;
+        }
+        
         match &item {
             proc_macro2::TokenTree::Ident(ident) => {
+                // skip any "use" statements
+                if ident.to_string().eq("use") {
+                    skip_until_semicolon = true;
+                    continue;
+                }
+                
                 table_name_ident = Some(ident.clone());
             }
             proc_macro2::TokenTree::Group(group) => {
@@ -326,7 +343,14 @@ fn schema_type_to_rust_type(schema_type: String) -> String {
         // "inet" => "either ipnetwork::IpNetwork or ipnet::IpNet (TODO)",
         // "cidr" => "either ipnetwork::IpNetwork or ipnet::IpNet (TODO)",
 
-        // panic if no type is found (this means generation is broken for this particular schema)
-        _ => panic!("Unknown type found '{schema_type}', please report this!")
+        /*
+            // panic if no type is found (this means generation is broken for this particular schema)
+            _ => panic!("Unknown type found '{schema_type}', please report this!")
+         */
+        _ => {
+            // return the schema type if no type is found (this means generation is broken for this particular schema)
+            let _type = format!("crate::schema::sql_types::{schema_type}");
+            return _type;
+        }
     }.to_string()
 }
