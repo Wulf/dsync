@@ -27,7 +27,7 @@ pub struct CreateTodo {
     pub completed: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
+#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Default)]
 #[diesel(table_name=todos)]
 pub struct UpdateTodo {
     pub unsigned: Option<u32>,

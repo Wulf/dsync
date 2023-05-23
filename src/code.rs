@@ -100,7 +100,7 @@ impl<'a> Struct<'a> {
     }
 
     fn attr_derive(&self) -> String {
-        format!("#[derive(Debug, {derive_serde}Clone, Queryable, Insertable{derive_aschangeset}{derive_identifiable}{derive_associations}{derive_selectable})]",
+        format!("#[derive(Debug, {derive_serde}Clone, Queryable, Insertable{derive_aschangeset}{derive_identifiable}{derive_associations}{derive_selectable}{derive_default})]",
                 derive_selectable = match self.ty {
                     StructType::Read => { ", Selectable" }
                     _ => { "" }
@@ -118,6 +118,10 @@ impl<'a> Struct<'a> {
                     _ => { "" }
                 },
                 derive_aschangeset = if self.fields().iter().all(|f| self.table.primary_key_column_names().contains(&f.name)) {""} else { ", AsChangeset" },
+                derive_default = match self.ty {
+                    StructType::Update => { ", Default" }
+                    _ => { "" }
+                },
                 derive_serde = if self.config.table(&self.table.name.to_string()).get_serde() {
                     "Serialize, Deserialize, "
                 } else { "" }

@@ -38,7 +38,7 @@ pub struct CreateFangTask {
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
+#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Default)]
 #[diesel(table_name=fang_tasks)]
 pub struct UpdateFangTask {
     pub metadata: Option<serde_json::Value>,

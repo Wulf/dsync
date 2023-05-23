@@ -22,7 +22,7 @@ pub struct CreateTableB {
     pub link: i32,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
+#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Default)]
 #[diesel(table_name=tableB)]
 pub struct UpdateTableB {
     pub link: Option<i32>,
