@@ -150,7 +150,7 @@ fn handle_table_macro(macro_item: syn::ItemMacro, _config: &GenerationConfig) ->
     let mut table_columns: Vec<ParsedColumnMacro> = vec![];
 
     let mut skip_until_semicolon = false;
-    
+
     for item in macro_item.mac.tokens.into_iter() {
         if skip_until_semicolon {
             if let proc_macro2::TokenTree::Punct(punct) = item {
@@ -160,7 +160,7 @@ fn handle_table_macro(macro_item: syn::ItemMacro, _config: &GenerationConfig) ->
             }
             continue;
         }
-        
+
         match &item {
             proc_macro2::TokenTree::Ident(ident) => {
                 // skip any "use" statements
@@ -168,7 +168,7 @@ fn handle_table_macro(macro_item: syn::ItemMacro, _config: &GenerationConfig) ->
                     skip_until_semicolon = true;
                     continue;
                 }
-                
+
                 table_name_ident = Some(ident.clone());
             }
             proc_macro2::TokenTree::Group(group) => {
@@ -229,7 +229,11 @@ fn handle_table_macro(macro_item: syn::ItemMacro, _config: &GenerationConfig) ->
                         }
                     }
 
-                    if column_name.is_some() || column_type.is_some() || column_nullable || column_unsigned {
+                    if column_name.is_some()
+                        || column_type.is_some()
+                        || column_nullable
+                        || column_unsigned
+                    {
                         // looks like a column was in the middle of being parsed, let's panic!
                         panic!(
                             "Unsupported schema format! (It seems a column was partially defined)"
@@ -270,7 +274,7 @@ fn handle_table_macro(macro_item: syn::ItemMacro, _config: &GenerationConfig) ->
 //
 // The docs page for sql_types is comprehensive but it hides some alias types like Int4, Float8, etc.:
 // https://docs.rs/diesel/latest/diesel/sql_types/index.html
-fn schema_type_to_rust_type(schema_type: String) -> String {  
+fn schema_type_to_rust_type(schema_type: String) -> String {
     match schema_type.to_lowercase().as_str() {
         "unsigned" => panic!("Unsigned types are not yet supported, please open an issue if you need this feature!"), // TODO: deal with this later
         "inet" => panic!("Unsigned types are not yet supported, please open an issue if you need this feature!"), // TODO: deal with this later
