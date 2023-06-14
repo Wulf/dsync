@@ -150,6 +150,7 @@ fn handle_table_macro(macro_item: syn::ItemMacro, _config: &GenerationConfig) ->
     let mut table_columns: Vec<ParsedColumnMacro> = vec![];
 
     let mut skip_until_semicolon = false;
+    let mut skip_square_brackets = false;
     
     for item in macro_item.mac.tokens.into_iter() {
         if skip_until_semicolon {
@@ -160,8 +161,18 @@ fn handle_table_macro(macro_item: syn::ItemMacro, _config: &GenerationConfig) ->
             }
             continue;
         }
-        
+
         match &item {
+            proc_macro2::TokenTree::Punct(punct) => {
+                // skip any "#[]"
+                match punct.to_string().as_str() {
+                    "#" => {
+                        skip_square_brackets = true;
+                        continue;
+                    },
+                    _ => {}
+               }
+            }
             proc_macro2::TokenTree::Ident(ident) => {
                 // skip any "use" statements
                 if ident.to_string().eq("use") {
@@ -172,6 +183,13 @@ fn handle_table_macro(macro_item: syn::ItemMacro, _config: &GenerationConfig) ->
                 table_name_ident = Some(ident.clone());
             }
             proc_macro2::TokenTree::Group(group) => {
+                if skip_square_brackets {
+                    if group.delimiter() == proc_macro2::Delimiter::Bracket {
+                        skip_square_brackets = false;
+                    }
+                    continue;
+                }
+
                 if group.delimiter() == proc_macro2::Delimiter::Parenthesis {
                     // primary keys group
                     // println!("GROUP-keys {:#?}", group);
@@ -191,6 +209,9 @@ fn handle_table_macro(macro_item: syn::ItemMacro, _config: &GenerationConfig) ->
 
                     for column_tokens in group.stream().into_iter() {
                         match column_tokens {
+                            proc_macro2::TokenTree::Group(_) => {
+                                continue;
+                            }
                             proc_macro2::TokenTree::Ident(ident) => {
                                 if column_name.is_none() {
                                     column_name = Some(ident.clone());
@@ -204,7 +225,11 @@ fn handle_table_macro(macro_item: syn::ItemMacro, _config: &GenerationConfig) ->
                             }
                             proc_macro2::TokenTree::Punct(punct) => {
                                 let char = punct.as_char();
-                                if char == '-' || char == '>' {
+
+                                if char == '#' {
+                                    // Skip any additional #[]
+                                    continue;
+                                } else if char == '-' || char == '>' {
                                     // nothing for arrow
                                     continue;
                                 } else if char == ',' && column_name.is_some() && column_type.is_some() {

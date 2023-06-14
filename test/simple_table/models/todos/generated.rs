@@ -15,6 +15,7 @@ pub struct Todo {
     pub unsigned: u32,
     pub text: String,
     pub completed: bool,
+    pub type_: String,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
@@ -25,6 +26,7 @@ pub struct CreateTodo {
     pub unsigned: u32,
     pub text: String,
     pub completed: bool,
+    pub type_: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
@@ -33,6 +35,7 @@ pub struct UpdateTodo {
     pub unsigned: Option<u32>,
     pub text: Option<String>,
     pub completed: Option<bool>,
+    pub type_: Option<String>,
     pub created_at: Option<chrono::DateTime<chrono::Utc>>,
     pub updated_at: Option<chrono::DateTime<chrono::Utc>>,
 }
