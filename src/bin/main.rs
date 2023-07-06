@@ -54,6 +54,12 @@ struct Args {
         help = "Required: rust type which describes a connection, for example: `diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>`"
     )]
     connection_type: String,
+
+    #[structopt(
+        long = "no-serde",
+        help = "Optional; Disable generating serde implementations"
+    )]
+    no_serde: bool,
 }
 
 fn main() {
@@ -70,6 +76,10 @@ fn main() {
     #[cfg(feature = "async")]
     if args.use_async {
         default_table_options = default_table_options.use_async();
+    }
+
+    if args.no_serde {
+        default_table_options = default_table_options.disable_serde();
     }
 
     dsync::generate_files(

@@ -100,7 +100,7 @@ impl<'a> Struct<'a> {
     }
 
     fn attr_derive(&self) -> String {
-        format!("#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable{derive_aschangeset}{derive_identifiable}{derive_associations}{derive_selectable})]",
+        format!("#[derive(Debug, {derive_serde}Clone, Queryable, Insertable{derive_aschangeset}{derive_identifiable}{derive_associations}{derive_selectable})]",
                 derive_selectable = match self.ty {
                     StructType::Read => { ", Selectable" }
                     _ => { "" }
@@ -117,7 +117,10 @@ impl<'a> Struct<'a> {
                     }
                     _ => { "" }
                 },
-                derive_aschangeset = if self.fields().iter().all(|f| self.table.primary_key_column_names().contains(&f.name)) {""} else { ", AsChangeset" }
+                derive_aschangeset = if self.fields().iter().all(|f| self.table.primary_key_column_names().contains(&f.name)) {""} else { ", AsChangeset" },
+                derive_serde = if self.config.default_table_options.get_serde() {
+                    "Serialize, Deserialize, "
+                } else { "" }
         )
     }
 
@@ -333,7 +336,7 @@ fn build_table_fns(
 
     buffer.push_str(&format!(
         r##"{tsync}
-#[derive(Debug, Serialize)]
+#[derive(Debug, {serde_derive})]
 pub struct PaginationResult<T> {{
     pub items: Vec<T>,
     pub total_items: i64,
@@ -342,7 +345,12 @@ pub struct PaginationResult<T> {{
     pub page_size: i64,
     pub num_pages: i64,
 }}
-"##
+"##,
+        serde_derive = if config.default_table_options.get_serde() {
+            "Serialize"
+        } else {
+            ""
+        }
     ));
 
     buffer.push_str(&format!(
@@ -431,8 +439,10 @@ impl {struct_name} {{
 "##
     ));
 
-    buffer.push_str(r##"
-}"##);
+    buffer.push_str(
+        r##"
+}"##,
+    );
 
     buffer
 }
@@ -460,12 +470,18 @@ fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String 
     };
     #[cfg(not(feature = "async"))]
     let async_imports = "";
+    let serde_imports = if config.default_table_options.get_serde() {
+        "use serde::{Deserialize, Serialize};"
+    } else {
+        ""
+    };
+
     format!(
         indoc! {"
         use crate::diesel::*;
         use crate::schema::*;
         use diesel::QueryResult;
-        use serde::{{Deserialize, Serialize}};{async_imports}
+        {serde_imports}{async_imports}
         {belongs_imports}
 
         type Connection = {connection_type};
@@ -473,6 +489,7 @@ fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String 
         connection_type = config.connection_type,
         belongs_imports = belongs_imports,
         async_imports = async_imports,
+        serde_imports = serde_imports
     )
 }
 
