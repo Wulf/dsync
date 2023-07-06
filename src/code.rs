@@ -448,9 +448,10 @@ fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String 
         .iter()
         .map(|fk| {
             format!(
-                "use crate::models::{foreign_table_name_model}::{singular_struct_name};",
+                "use {model_path}{foreign_table_name_model}::{singular_struct_name};",
                 foreign_table_name_model = fk.0.to_string().to_snake_case().to_lowercase(),
-                singular_struct_name = fk.0.to_string().to_pascal_case().to_singular()
+                singular_struct_name = fk.0.to_string().to_pascal_case().to_singular(),
+                model_path = config.model_path
             )
         })
         .collect::<Vec<String>>()

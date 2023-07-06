@@ -94,6 +94,7 @@ pub struct GenerationConfig<'a> {
     pub default_table_options: TableOptions<'a>,
     pub connection_type: String,
     pub schema_path: String,
+    pub model_path: String,
 }
 
 impl GenerationConfig<'_> {

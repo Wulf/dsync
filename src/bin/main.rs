@@ -60,6 +60,12 @@ struct Args {
         help = "Optional; Set custom schema use path, Default \"crate::schema::\""
     )]
     schema_path: Option<String>,
+
+    #[structopt(
+        long = "model-path",
+        help = "Optional; Set custom model use path, Default \"crate::models::\""
+    )]
+    model_path: Option<String>,
 }
 
 fn main() {
@@ -86,6 +92,7 @@ fn main() {
             table_options: HashMap::from([]),
             connection_type: args.connection_type,
             schema_path: args.schema_path.unwrap_or("crate::schema::".to_owned()),
+            model_path: args.model_path.unwrap_or("crate::models::".to_owned()),
         },
     );
 }
