@@ -107,19 +107,17 @@ impl<'a> Struct<'a> {
                 },
                 derive_associations = match self.ty {
                     StructType::Read => {
-                        if self.table.foreign_keys.len() > 0 { ", Associations" } else { "" }
+                        if !self.table.foreign_keys.is_empty() { ", Associations" } else { "" }
                     }
                     _ => { "" }
                 },
                 derive_identifiable = match self.ty {
                     StructType::Read => {
-                        if self.table.foreign_keys.len() > 0 { ", Identifiable" } else { "" }
+                        if !self.table.foreign_keys.is_empty() { ", Identifiable" } else { "" }
                     }
                     _ => { "" }
                 },
-                derive_aschangeset = match self.ty {
-                    _ => if self.fields().iter().all(|f| self.table.primary_key_column_names().contains(&f.name)) {""} else { ", AsChangeset" }
-                }
+                derive_aschangeset = if self.fields().iter().all(|f| self.table.primary_key_column_names().contains(&f.name)) {""} else { ", AsChangeset" }
         )
     }
 
@@ -192,7 +190,7 @@ impl<'a> Struct<'a> {
     fn render(&mut self) {
         let ty = self.ty;
         let table = &self.table;
-        let opts = self.config.table(table.name.to_string().as_str());
+        let _opts = self.config.table(table.name.to_string().as_str());
 
         let primary_keys: Vec<String> = table.primary_key_column_names();
 
@@ -433,15 +431,14 @@ impl {struct_name} {{
 "##
     ));
 
-    buffer.push_str(&format!(
-        r##"
-}}"##
-    ));
+    buffer.push_str(r##"
+}"##);
 
     buffer
 }
 
 fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String {
+    #[cfg(feature = "async")]
     let table_options = config.table(&table.name.to_string());
     let belongs_imports = table
         .foreign_keys
@@ -486,11 +483,11 @@ pub fn generate_for_table(table: ParsedTableMacro, config: &GenerationConfig) ->
     let create_struct = Struct::new(StructType::Create, &table, config);
 
     let mut structs = String::new();
-    structs.push_str(&read_struct.code());
+    structs.push_str(read_struct.code());
     structs.push('\n');
-    structs.push_str(&create_struct.code());
+    structs.push_str(create_struct.code());
     structs.push('\n');
-    structs.push_str(&update_struct.code());
+    structs.push_str(update_struct.code());
 
     let functions = build_table_fns(&table, config, create_struct, update_struct);
     let imports = build_imports(&table, config);
