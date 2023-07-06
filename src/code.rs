@@ -310,11 +310,19 @@ fn build_table_fns(
     #[cfg(not(feature = "tsync"))]
     let tsync = "";
     #[cfg(feature = "async")]
-    let async_keyword = if table_options.get_async() { " async" } else { "" };
+    let async_keyword = if table_options.get_async() {
+        " async"
+    } else {
+        ""
+    };
     #[cfg(not(feature = "async"))]
     let async_keyword = "";
     #[cfg(feature = "async")]
-    let await_keyword = if table_options.get_async() { ".await" } else { "" };
+    let await_keyword = if table_options.get_async() {
+        ".await"
+    } else {
+        ""
+    };
     #[cfg(not(feature = "async"))]
     let await_keyword = "";
     let struct_name = &table.struct_name;
@@ -448,7 +456,11 @@ fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String 
         .collect::<Vec<String>>()
         .join("\n");
     #[cfg(feature = "async")]
-    let async_imports = if table_options.get_async() { "\nuse diesel_async::RunQueryDsl;" } else { "" };
+    let async_imports = if table_options.get_async() {
+        "\nuse diesel_async::RunQueryDsl;"
+    } else {
+        ""
+    };
     #[cfg(not(feature = "async"))]
     let async_imports = "";
     format!(
