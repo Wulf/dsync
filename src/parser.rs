@@ -2,7 +2,7 @@ use inflector::Inflector;
 use syn::Ident;
 use syn::Item::Macro;
 
-use crate::{code, GenerationConfig, TableOptions};
+use crate::{code, GenerationConfig};
 
 pub const FILE_SIGNATURE: &str = "/* This file is generated and managed by dsync */";
 
