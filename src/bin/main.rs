@@ -54,6 +54,12 @@ struct Args {
         help = "Required: rust type which describes a connection, for example: `diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>`"
     )]
     connection_type: String,
+
+    #[structopt(
+        long = "schema-path",
+        help = "Optional; Set custom schema use path, Default \"crate::schema::\""
+    )]
+    schema_path: Option<String>,
 }
 
 fn main() {
@@ -79,6 +85,7 @@ fn main() {
             default_table_options,
             table_options: HashMap::from([]),
             connection_type: args.connection_type,
+            schema_path: args.schema_path.unwrap_or("crate::schema::".to_owned()),
         },
     );
 }
