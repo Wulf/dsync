@@ -118,7 +118,7 @@ impl<'a> Struct<'a> {
                     _ => { "" }
                 },
                 derive_aschangeset = if self.fields().iter().all(|f| self.table.primary_key_column_names().contains(&f.name)) {""} else { ", AsChangeset" },
-                derive_serde = if self.config.default_table_options.get_serde() {
+                derive_serde = if self.config.table(&self.table.name.to_string()).get_serde() {
                     "Serialize, Deserialize, "
                 } else { "" }
         )
@@ -346,7 +346,7 @@ pub struct PaginationResult<T> {{
     pub num_pages: i64,
 }}
 "##,
-        serde_derive = if config.default_table_options.get_serde() {
+        serde_derive = if table_options.get_serde() {
             "Serialize"
         } else {
             ""
@@ -448,7 +448,6 @@ impl {struct_name} {{
 }
 
 fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String {
-    #[cfg(feature = "async")]
     let table_options = config.table(&table.name.to_string());
     let belongs_imports = table
         .foreign_keys
@@ -470,7 +469,7 @@ fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String 
     };
     #[cfg(not(feature = "async"))]
     let async_imports = "";
-    let serde_imports = if config.default_table_options.get_serde() {
+    let serde_imports = if table_options.get_serde() {
         "use serde::{Deserialize, Serialize};"
     } else {
         ""
