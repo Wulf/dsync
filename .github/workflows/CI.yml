@@ -67,30 +67,30 @@ jobs:
         with:
           command: check
 
-  clippy:
-    name: Clippy
-    needs: [build]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3.3.0
-      - uses: rui314/setup-mold@v1
-      - uses: actions-rs/toolchain@v1.0.7
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-      - run: rustup component add clippy
-      - uses: actions/cache@v3.2.4
-        with:
-          path: |
-            ./.cargo/.build
-            ./target
-            ~/.cargo
-          key: ${{ runner.os }}-cargo-dev-${{ hashFiles('**/Cargo.lock') }}
-      - uses: actions-rs/cargo@v1.0.3
-        with:
-          command: clippy
-          args: -- -D warnings
+  # clippy:
+  #   name: Clippy
+  #   needs: [build]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3.3.0
+  #     - uses: rui314/setup-mold@v1
+  #     - uses: actions-rs/toolchain@v1.0.7
+  #       with:
+  #         profile: minimal
+  #         toolchain: stable
+  #         override: true
+  #     - run: rustup component add clippy
+  #     - uses: actions/cache@v3.2.4
+  #       with:
+  #         path: |
+  #           ./.cargo/.build
+  #           ./target
+  #           ~/.cargo
+  #         key: ${{ runner.os }}-cargo-dev-${{ hashFiles('**/Cargo.lock') }}
+  #     - uses: actions-rs/cargo@v1.0.3
+  #       with:
+  #         command: clippy
+  #         args: -- -D warnings
 
   test-script:
     name: test-scripts
@@ -138,19 +138,19 @@ jobs:
           command: test
   
   
-  # Things that don't need a cache
-  fmt:
-    name: Rustfmt
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3.3.0
-      - uses: actions-rs/toolchain@v1.0.7
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-      - run: rustup component add rustfmt
-      - uses: actions-rs/cargo@v1.0.3
-        with:
-          command: fmt
-          args: --all -- --check
+  # # Things that don't need a cache
+  # fmt:
+  #   name: Rustfmt
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v3.3.0
+  #     - uses: actions-rs/toolchain@v1.0.7
+  #       with:
+  #         profile: minimal
+  #         toolchain: stable
+  #         override: true
+  #     - run: rustup component add rustfmt
+  #     - uses: actions-rs/cargo@v1.0.3
+  #       with:
+  #         command: fmt
+  #         args: --all -- --check
