@@ -66,6 +66,10 @@ struct Args {
         help = "Optional; Set custom model use path, Default \"crate::models::\""
     )]
     model_path: Option<String>,
+        long = "no-serde",
+        help = "Optional; Disable generating serde implementations"
+    )]
+    no_serde: bool,
 }
 
 fn main() {
@@ -82,6 +86,10 @@ fn main() {
     #[cfg(feature = "async")]
     if args.use_async {
         default_table_options = default_table_options.use_async();
+    }
+
+    if args.no_serde {
+        default_table_options = default_table_options.disable_serde();
     }
 
     dsync::generate_files(

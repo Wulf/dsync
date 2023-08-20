@@ -114,6 +114,7 @@ cargo install dsync
 * `--tsync`: (optional) adds #[tsync] attribute to generated structs (see https://github.com/Wulf/tsync)
 * `--model-path`: (optional) set a custom model import path, default `crate::models::`
 * `--schema-path`: (optional) set a custom schema import path, default `crate::schema::`
+* `--no-serde`: (optional) if set, does not output any serde related code
 * note: the CLI has fail-safes to prevent accidental file overwriting
 
 ```sh
