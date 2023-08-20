@@ -449,7 +449,6 @@ impl {struct_name} {{
 }
 
 fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String {
-    #[cfg(feature = "async")]
     let table_options = config.table(&table.name.to_string());
     let belongs_imports = table
         .foreign_keys

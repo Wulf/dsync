@@ -70,7 +70,7 @@ dependencies = [
 
 [[package]]
 name = "dsync"
-version = "0.0.15"
+version = "0.0.16"
 dependencies = [
  "Inflector",
  "anyhow",

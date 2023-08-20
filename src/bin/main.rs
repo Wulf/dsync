@@ -66,6 +66,8 @@ struct Args {
         help = "Optional; Set custom model use path, Default \"crate::models::\""
     )]
     model_path: Option<String>,
+
+    #[structopt(
         long = "no-serde",
         help = "Optional; Disable generating serde implementations"
     )]
