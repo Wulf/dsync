@@ -92,14 +92,14 @@ jobs:
       - run: cargo test
   
   
-  # # Things that don't need a cache
-  # fmt:
-  #   name: rustfmt
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - uses: dtolnay/rust-toolchain@stable
-  #       with:
-  #         toolchain: nightly
-  #     - run: rustup component add rustfmt
-  #     - run: cargo fmt --all -- --check
+  # Things that don't need a cache
+  fmt:
+    name: rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: nightly
+      - run: rustup component add rustfmt
+      - run: cargo fmt --all -- --check
