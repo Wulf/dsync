@@ -3,6 +3,7 @@ mod file;
 mod parser;
 pub mod error;
 
+use error::IOErrorToError;
 pub use error::{Error, Result};
 use file::MarkedFile;
 use parser::ParsedTableMacro;
@@ -143,7 +144,7 @@ impl GenerationConfig<'_> {
 pub fn generate_code(
     diesel_schema_file_contents: String,
     config: GenerationConfig,
-) -> anyhow::Result<Vec<ParsedTableMacro>> {
+) -> Result<Vec<ParsedTableMacro>> {
     parser::parse_and_generate_code(diesel_schema_file_contents, &config)
 }
 
@@ -151,63 +152,62 @@ pub fn generate_files(
     input_diesel_schema_file: PathBuf,
     output_models_dir: PathBuf,
     config: GenerationConfig,
-) {
+) -> Result<()> {
     let input = input_diesel_schema_file;
     let output_dir = output_models_dir;
 
     let generated = generate_code(
-        std::fs::read_to_string(input).expect("Could not read schema file."),
+        std::fs::read_to_string(&input).attach_path_err(&input)?,
         config,
-    )
-    .expect("An error occurred.");
+    )?;
 
     if !output_dir.exists() {
-        std::fs::create_dir(&output_dir)
-            .unwrap_or_else(|_| panic!("Could not create directory '{output_dir:#?}'"));
+        std::fs::create_dir(&output_dir).attach_path_err(&output_dir)?;
     } else if !output_dir.is_dir() {
-        panic!("Expected output argument to be a directory or non-existent.")
+        return Err(Error::not_a_directory(
+            "Expected output argument to be a directory or non-existent.",
+            output_dir,
+        ));
     }
 
     // check that the mod.rs file exists
-    let mut mod_rs = MarkedFile::new(output_dir.join("mod.rs"));
+    let mut mod_rs = MarkedFile::new(output_dir.join("mod.rs"))?;
 
     // pass 1: add code for new tables
     for table in generated.iter() {
         let table_dir = output_dir.join(table.name.to_string());
 
         if !table_dir.exists() {
-            std::fs::create_dir(&table_dir)
-                .unwrap_or_else(|_| panic!("Could not create directory '{table_dir:#?}'"));
+            std::fs::create_dir(&table_dir).attach_path_err(&table_dir)?;
         }
 
         if !table_dir.is_dir() {
-            panic!("Expected a directory at '{table_dir:#?}'")
+            return Err(Error::not_a_directory("Expected a directory", table_dir));
         }
 
-        let mut table_generated_rs = MarkedFile::new(table_dir.join("generated.rs"));
-        let mut table_mod_rs = MarkedFile::new(table_dir.join("mod.rs"));
+        let mut table_generated_rs = MarkedFile::new(table_dir.join("generated.rs"))?;
+        let mut table_mod_rs = MarkedFile::new(table_dir.join("mod.rs"))?;
 
-        table_generated_rs.ensure_file_signature();
+        table_generated_rs.ensure_file_signature()?;
         table_generated_rs.file_contents = table.generated_code.clone();
-        table_generated_rs.write();
+        table_generated_rs.write()?;
 
         table_mod_rs.ensure_mod_stmt("generated");
         table_mod_rs.ensure_use_stmt("generated::*");
-        table_mod_rs.write();
+        table_mod_rs.write()?;
 
         mod_rs.ensure_mod_stmt(table.name.to_string().as_str());
     }
 
     // pass 2: delete code for removed tables
-    for item in std::fs::read_dir(&output_dir)
-        .unwrap_or_else(|_| panic!("Could not read directory '{output_dir:#?}'"))
+    for item in std::fs::read_dir(&output_dir).attach_path_err(&output_dir)?
     {
-        let item = item.unwrap_or_else(|_| panic!("Could not read item in '{output_dir:#?}'"));
+        let item = item.attach_path_err(&output_dir)?;
 
         // check if item is a directory
         let file_type = item
             .file_type()
-            .unwrap_or_else(|_| panic!("Could not determine type of file '{:#?}'", item.path()));
+            .attach_path_msg(item.path(), "Could not determine type of file")?;
         if !file_type.is_dir() {
             continue;
         }
@@ -216,16 +216,17 @@ pub fn generate_files(
         let generated_rs_path = item.path().join("generated.rs");
         if !generated_rs_path.exists()
             || !generated_rs_path.is_file()
-            || !MarkedFile::new(generated_rs_path.clone()).has_file_signature()
+            || !MarkedFile::new(generated_rs_path.clone())?.has_file_signature()
         {
             continue;
         }
 
         // okay, it's generated, but we need to check if it's for a deleted table
         let file_name = item.file_name();
-        let associated_table_name = file_name
-            .to_str()
-            .unwrap_or_else(|| panic!("Could not determine name of file '{:#?}'", item.path()));
+        let associated_table_name = file_name.to_str().ok_or(Error::other(format!(
+            "Could not determine name of file '{:#?}'",
+            item.path()
+        )))?;
         let found = generated.iter().find(|g| {
             g.name
                 .to_string()
@@ -236,22 +237,21 @@ pub fn generate_files(
         }
 
         // this table was deleted, let's delete the generated code
-        std::fs::remove_file(&generated_rs_path)
-            .unwrap_or_else(|_| panic!("Could not delete redundant file '{generated_rs_path:#?}'"));
+        std::fs::remove_file(&generated_rs_path).attach_path_err(&generated_rs_path)?;
 
         // remove the mod.rs file if there isn't anything left in there except the use stmt
         let table_mod_rs_path = item.path().join("mod.rs");
         if table_mod_rs_path.exists() {
-            let mut table_mod_rs = MarkedFile::new(table_mod_rs_path);
+            let mut table_mod_rs = MarkedFile::new(table_mod_rs_path)?;
 
             table_mod_rs.remove_mod_stmt("generated");
             table_mod_rs.remove_use_stmt("generated::*");
-            table_mod_rs.write();
+            table_mod_rs.write()?;
 
             if table_mod_rs.file_contents.trim().is_empty() {
-                table_mod_rs.delete()
+                table_mod_rs.delete()?;
             } else {
-                table_mod_rs.write() // write the changes we made above
+                table_mod_rs.write()?; // write the changes we made above
             }
         }
 
@@ -259,17 +259,18 @@ pub fn generate_files(
         let is_empty = item
             .path()
             .read_dir()
-            .unwrap_or_else(|_| panic!("Could not read directory {:#?}", item.path()))
+            .attach_path_err(item.path())?
             .next()
             .is_none();
         if is_empty {
-            std::fs::remove_dir(item.path())
-                .unwrap_or_else(|_| panic!("Could not delete directory '{:#?}'", item.path()));
+            std::fs::remove_dir(item.path()).attach_path_err(item.path())?;
         }
 
         // remove the module from the main mod_rs file
         mod_rs.remove_mod_stmt(associated_table_name);
     }
 
-    mod_rs.write();
+    mod_rs.write()?;
+
+    return Ok(());
 }
