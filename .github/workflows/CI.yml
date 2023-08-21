@@ -2,12 +2,14 @@ name: Continuous Integration
 on:
   workflow_dispatch:
   push:
-    paths: 
+    paths:
+      - ".github/workflows/CI.yml"
       - "**.rs"
       - "Cargo.lock"
       - "Cargo.toml"
   pull_request:
-    paths: 
+    paths:
+      - ".github/workflows/CI.yml"
       - "**.rs"
       - "Cargo.lock"
       - "Cargo.toml"
