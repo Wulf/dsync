@@ -38,23 +38,6 @@ jobs:
           key: ${{ runner.os }}-cargo-dev-${{ hashFiles('**/Cargo.lock') }}
       - run: cargo build --all-targets
 
-  check:
-    name: cargo check
-    needs: [build]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: rui314/setup-mold@v1
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: actions/cache@v3
-        with:
-          path: |
-            ./.cargo/.build
-            ./target
-            ~/.cargo
-          key: ${{ runner.os }}-cargo-dev-${{ hashFiles('**/Cargo.lock') }}
-      - run: cargo check --all
-
   # clippy:
   #   name: cargo clippy
   #   needs: [build]
