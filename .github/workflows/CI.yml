@@ -1,4 +1,4 @@
-name: Rust Continuous Integration
+name: Continuous Integration
 on:
   workflow_dispatch:
   push:
@@ -21,7 +21,7 @@ concurrency:
 
 jobs:
   build:
-    name: Build and Initialize profile.dev Cache
+    name: cargo build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3.3.0
@@ -43,7 +43,7 @@ jobs:
           command: build
 
   check:
-    name: Check
+    name: cargo check
     needs: [build]
     runs-on: ubuntu-latest
     steps:
@@ -66,7 +66,7 @@ jobs:
           command: check
 
   # clippy:
-  #   name: Clippy
+  #   name: cargo clippy
   #   needs: [build]
   #   runs-on: ubuntu-latest
   #   steps:
@@ -88,7 +88,7 @@ jobs:
   #     - uses: actions-rs/cargo@v1.0.3
   #       with:
   #         command: clippy
-  #         args: -- -D warnings
+  #         args: --all
 
   test-script:
     name: test-scripts
@@ -114,7 +114,7 @@ jobs:
       
   # things that use the cargo-test cache
   test:
-    name: Test Suite and Initialize profile.test Cache
+    name: cargo test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3.3.0
@@ -138,7 +138,7 @@ jobs:
   
   # # Things that don't need a cache
   # fmt:
-  #   name: Rustfmt
+  #   name: rustfmt
   #   runs-on: ubuntu-latest
   #   steps:
   #     - uses: actions/checkout@v3.3.0
