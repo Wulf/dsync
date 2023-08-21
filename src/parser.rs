@@ -234,11 +234,8 @@ fn handle_table_macro(
                             proc_macro2::TokenTree::Punct(punct) => {
                                 let char = punct.as_char();
 
-                                if char == '#' {
-                                    // Skip any additional #[]
-                                    continue;
-                                } else if char == '-' || char == '>' {
-                                    // nothing for arrow
+                                if char == '#' || char == '-' || char == '>' {
+                                    // nothing for arrow or any additional #[]
                                     continue;
                                 } else if char == ','
                                     && column_name.is_some()

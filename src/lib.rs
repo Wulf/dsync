@@ -284,5 +284,5 @@ pub fn generate_files(
 
     mod_rs.write()?;
 
-    return Ok(());
+    Ok(())
 }
