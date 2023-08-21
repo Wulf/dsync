@@ -36,9 +36,7 @@ jobs:
             ./target
             ~/.cargo
           key: ${{ runner.os }}-cargo-dev-${{ hashFiles('**/Cargo.lock') }}
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build
+      - run: cargo build --all-targets
 
   check:
     name: cargo check
@@ -55,9 +53,7 @@ jobs:
             ./target
             ~/.cargo
           key: ${{ runner.os }}-cargo-dev-${{ hashFiles('**/Cargo.lock') }}
-      - uses: actions-rs/cargo@v1
-        with:
-          command: check
+      - run: cargo check --all
 
   # clippy:
   #   name: cargo clippy
@@ -75,10 +71,7 @@ jobs:
   #           ./target
   #           ~/.cargo
   #         key: ${{ runner.os }}-cargo-dev-${{ hashFiles('**/Cargo.lock') }}
-  #     - uses: actions-rs/cargo@v1
-  #       with:
-  #         command: clippy
-  #         args: --all
+  #     - run: cargo clippy --all
 
   test-script:
     name: test-scripts
@@ -113,9 +106,7 @@ jobs:
             ./target
             ~/.cargo
           key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.lock') }}
-      - uses: actions-rs/cargo@v1
-        with:
-          command: test
+      - run: cargo test
   
   
   # # Things that don't need a cache
@@ -128,7 +119,4 @@ jobs:
   #       with:
   #         toolchain: nightly
   #     - run: rustup component add rustfmt
-  #     - uses: actions-rs/cargo@v1
-  #       with:
-  #         command: fmt
-  #         args: --all -- --check
+  #     - run: cargo fmt --all -- --check
