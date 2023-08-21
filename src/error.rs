@@ -2,9 +2,9 @@
 // error_generic_member_access https://github.com/rust-lang/rust/issues/99301
 // provide_any https://github.com/rust-lang/rust/issues/96024
 
-use std::{io::Error as ioError, path::Path};
 #[cfg(feature = "backtrace")]
 use std::backtrace::Backtrace;
+use std::{io::Error as ioError, path::Path};
 
 pub type Result<T> = std::result::Result<T, Error>;
 

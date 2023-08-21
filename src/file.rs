@@ -1,5 +1,5 @@
+use crate::{Error, IOErrorToError, Result};
 use std::path::PathBuf;
-use crate::{Result, IOErrorToError, Error};
 
 pub struct MarkedFile {
     pub file_contents: String,
