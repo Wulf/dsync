@@ -1,7 +1,9 @@
 mod code;
 mod file;
 mod parser;
+pub mod error;
 
+pub use error::{Error, Result};
 use file::MarkedFile;
 use parser::ParsedTableMacro;
 pub use parser::FILE_SIGNATURE;
