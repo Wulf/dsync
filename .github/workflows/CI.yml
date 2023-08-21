@@ -24,21 +24,21 @@ jobs:
     name: cargo build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v3
       - uses: rui314/setup-mold@v1
-      - uses: actions-rs/toolchain@v1.0.7
+      - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
           override: true
-      - uses: actions/cache@v3.2.4
+      - uses: actions/cache@v3
         with:
           path: |
             ./.cargo/.build
             ./target
             ~/.cargo
           key: ${{ runner.os }}-cargo-dev-${{ hashFiles('**/Cargo.lock') }}
-      - uses: actions-rs/cargo@v1.0.3
+      - uses: actions-rs/cargo@v1
         with:
           command: build
 
@@ -47,21 +47,21 @@ jobs:
     needs: [build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v3
       - uses: rui314/setup-mold@v1
-      - uses: actions-rs/toolchain@v1.0.7
+      - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
           override: true
-      - uses: actions/cache@v3.2.4
+      - uses: actions/cache@v3
         with:
           path: |
             ./.cargo/.build
             ./target
             ~/.cargo
           key: ${{ runner.os }}-cargo-dev-${{ hashFiles('**/Cargo.lock') }}
-      - uses: actions-rs/cargo@v1.0.3
+      - uses: actions-rs/cargo@v1
         with:
           command: check
 
@@ -70,22 +70,22 @@ jobs:
   #   needs: [build]
   #   runs-on: ubuntu-latest
   #   steps:
-  #     - uses: actions/checkout@v3.3.0
+  #     - uses: actions/checkout@v3
   #     - uses: rui314/setup-mold@v1
-  #     - uses: actions-rs/toolchain@v1.0.7
+  #     - uses: actions-rs/toolchain@v1
   #       with:
   #         profile: minimal
   #         toolchain: stable
   #         override: true
   #     - run: rustup component add clippy
-  #     - uses: actions/cache@v3.2.4
+  #     - uses: actions/cache@v3
   #       with:
   #         path: |
   #           ./.cargo/.build
   #           ./target
   #           ~/.cargo
   #         key: ${{ runner.os }}-cargo-dev-${{ hashFiles('**/Cargo.lock') }}
-  #     - uses: actions-rs/cargo@v1.0.3
+  #     - uses: actions-rs/cargo@v1
   #       with:
   #         command: clippy
   #         args: --all
@@ -95,14 +95,14 @@ jobs:
     needs: [build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v3
       - uses: rui314/setup-mold@v1
-      - uses: actions-rs/toolchain@v1.0.7
+      - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
           override: true
-      - uses: actions/cache@v3.2.4
+      - uses: actions/cache@v3
         with:
           path: |
             ./.cargo/.build
@@ -117,21 +117,21 @@ jobs:
     name: cargo test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3.3.0
+      - uses: actions/checkout@v3
       - uses: rui314/setup-mold@v1
-      - uses: actions-rs/toolchain@v1.0.7
+      - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
           toolchain: stable
           override: true
-      - uses: actions/cache@v3.2.4
+      - uses: actions/cache@v3
         with:
           path: |
             ./.cargo/.build
             ./target
             ~/.cargo
           key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.lock') }}
-      - uses: actions-rs/cargo@v1.0.3
+      - uses: actions-rs/cargo@v1
         with:
           command: test
   
@@ -141,14 +141,14 @@ jobs:
   #   name: rustfmt
   #   runs-on: ubuntu-latest
   #   steps:
-  #     - uses: actions/checkout@v3.3.0
-  #     - uses: actions-rs/toolchain@v1.0.7
+  #     - uses: actions/checkout@v3
+  #     - uses: actions-rs/toolchain@v1
   #       with:
   #         profile: minimal
   #         toolchain: stable
   #         override: true
   #     - run: rustup component add rustfmt
-  #     - uses: actions-rs/cargo@v1.0.3
+  #     - uses: actions-rs/cargo@v1
   #       with:
   #         command: fmt
   #         args: --all -- --check
