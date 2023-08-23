@@ -11,9 +11,10 @@ authors = ["Haris <4259838+Wulf@users.noreply.github.com>"]
 edition = "2021"
 
 [features]
-default = ["tsync"]
+default = ["tsync", "backtrace"]
 tsync = []
 async = []
+backtrace = []
 
 [dependencies]
 structopt = "0.3"
