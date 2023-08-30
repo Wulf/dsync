@@ -22,7 +22,7 @@ clap_complete = "4.3"
 syn = { version = "1", features = ["extra-traits", "full"] }
 proc-macro2 = "1"
 indoc = "2.0.0"
-Inflector = { version = "0.11.4" }
+heck = "0.4" # same case converter diesel uses
 thiserror = "1.0"
 
 [lib]

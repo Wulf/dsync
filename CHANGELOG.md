@@ -5,6 +5,8 @@
 - replace `structopt` with `clap`
 - add subcommand to generate shell completions
 - function `generate_files` now takes in `&Path`s instead of `PathBuf`s
+- remove `to_singular` name generations
+- replace dependency `Inflector` with `heck`
 
 ## 0.0.16
 

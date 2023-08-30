@@ -11,7 +11,7 @@ type ConnectionType = diesel_async::pooled_connection::deadpool::Object<diesel_a
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Selectable)]
 #[diesel(table_name=todos, primary_key(id))]
-pub struct Todo {
+pub struct Todos {
     pub id: i32,
     pub unsigned: u32,
     pub text: String,
@@ -22,7 +22,7 @@ pub struct Todo {
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
 #[diesel(table_name=todos)]
-pub struct CreateTodo {
+pub struct CreateTodos {
     pub unsigned: u32,
     pub text: String,
     pub completed: bool,
@@ -30,7 +30,7 @@ pub struct CreateTodo {
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Default)]
 #[diesel(table_name=todos)]
-pub struct UpdateTodo {
+pub struct UpdateTodos {
     pub unsigned: Option<u32>,
     pub text: Option<String>,
     pub completed: Option<bool>,
@@ -49,9 +49,9 @@ pub struct PaginationResult<T> {
     pub num_pages: i64,
 }
 
-impl Todo {
+impl Todos {
 
-    pub async fn create(db: &mut ConnectionType, item: &CreateTodo) -> QueryResult<Self> {
+    pub async fn create(db: &mut ConnectionType, item: &CreateTodos) -> QueryResult<Self> {
         use crate::schema::todos::dsl::*;
 
         insert_into(todos).values(item).get_result::<Self>(db).await
@@ -81,7 +81,7 @@ impl Todo {
         })
     }
 
-    pub async fn update(db: &mut ConnectionType, param_id: i32, item: &UpdateTodo) -> QueryResult<Self> {
+    pub async fn update(db: &mut ConnectionType, param_id: i32, item: &UpdateTodos) -> QueryResult<Self> {
         use crate::schema::todos::dsl::*;
 
         diesel::update(todos.filter(id.eq(param_id))).set(item).get_result(db).await

@@ -1,5 +1,5 @@
+use heck::{ToPascalCase, ToSnakeCase};
 use indoc::indoc;
-use inflector::Inflector;
 
 use crate::parser::{ParsedTableMacro, FILE_SIGNATURE};
 use crate::{GenerationConfig, TableOptions};
@@ -232,7 +232,7 @@ impl<'a> Struct<'a> {
             .map(|fk| {
                 format!(
                     ", belongs_to({foreign_table_name}, foreign_key={join_column})",
-                    foreign_table_name = fk.0.to_string().to_pascal_case().to_singular(),
+                    foreign_table_name = fk.0.to_string().to_pascal_case(),
                     join_column = fk.1
                 )
             })
@@ -488,7 +488,7 @@ fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String 
             format!(
                 "use {model_path}{foreign_table_name_model}::{singular_struct_name};",
                 foreign_table_name_model = fk.0.to_string().to_snake_case().to_lowercase(),
-                singular_struct_name = fk.0.to_string().to_pascal_case().to_singular(),
+                singular_struct_name = fk.0.to_string().to_pascal_case(),
                 model_path = config.model_path
             )
         })

@@ -10,7 +10,7 @@ type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionMan
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Selectable)]
 #[diesel(table_name=fang_tasks, primary_key(id))]
-pub struct FangTask {
+pub struct FangTasks {
     pub id: uuid::Uuid,
     pub metadata: serde_json::Value,
     pub error_message: Option<String>,
@@ -25,7 +25,7 @@ pub struct FangTask {
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
 #[diesel(table_name=fang_tasks)]
-pub struct CreateFangTask {
+pub struct CreateFangTasks {
     pub id: uuid::Uuid,
     pub metadata: serde_json::Value,
     pub error_message: Option<String>,
@@ -40,7 +40,7 @@ pub struct CreateFangTask {
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Default)]
 #[diesel(table_name=fang_tasks)]
-pub struct UpdateFangTask {
+pub struct UpdateFangTasks {
     pub metadata: Option<serde_json::Value>,
     pub error_message: Option<Option<String>>,
     pub state: Option<crate::schema::sql_types::FangTaskState>,
@@ -63,9 +63,9 @@ pub struct PaginationResult<T> {
     pub num_pages: i64,
 }
 
-impl FangTask {
+impl FangTasks {
 
-    pub fn create(db: &mut ConnectionType, item: &CreateFangTask) -> QueryResult<Self> {
+    pub fn create(db: &mut ConnectionType, item: &CreateFangTasks) -> QueryResult<Self> {
         use crate::schema::fang_tasks::dsl::*;
 
         insert_into(fang_tasks).values(item).get_result::<Self>(db)
@@ -95,7 +95,7 @@ impl FangTask {
         })
     }
 
-    pub fn update(db: &mut ConnectionType, param_id: uuid::Uuid, item: &UpdateFangTask) -> QueryResult<Self> {
+    pub fn update(db: &mut ConnectionType, param_id: uuid::Uuid, item: &UpdateFangTasks) -> QueryResult<Self> {
         use crate::schema::fang_tasks::dsl::*;
 
         diesel::update(fang_tasks.filter(id.eq(param_id))).set(item).get_result(db)

@@ -10,13 +10,13 @@ type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionMan
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, Selectable)]
 #[diesel(table_name=todos, primary_key(id))]
-pub struct Todo {
+pub struct Todos {
     pub id: i32,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable)]
 #[diesel(table_name=todos)]
-pub struct CreateTodo {
+pub struct CreateTodos {
     pub id: i32,
 }
 
@@ -32,9 +32,9 @@ pub struct PaginationResult<T> {
     pub num_pages: i64,
 }
 
-impl Todo {
+impl Todos {
 
-    pub fn create(db: &mut ConnectionType, item: &CreateTodo) -> QueryResult<Self> {
+    pub fn create(db: &mut ConnectionType, item: &CreateTodos) -> QueryResult<Self> {
         use crate::schema::todos::dsl::*;
 
         insert_into(todos).values(item).get_result::<Self>(db)

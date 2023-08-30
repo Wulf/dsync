@@ -1,4 +1,4 @@
-use inflector::Inflector;
+use heck::ToPascalCase;
 use syn::Ident;
 use syn::Item::Macro;
 
@@ -319,11 +319,7 @@ fn handle_table_macro(
             .ok_or(Error::unsupported_schema_format(
                 "Could not extract table name from schema file",
             ))?,
-        struct_name: table_name_ident
-            .unwrap()
-            .to_string()
-            .to_pascal_case()
-            .to_singular(),
+        struct_name: table_name_ident.unwrap().to_string().to_pascal_case(),
         columns: table_columns,
         primary_key_columns: table_primary_key_idents,
         foreign_keys: vec![],

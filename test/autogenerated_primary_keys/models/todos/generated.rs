@@ -10,20 +10,20 @@ type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionMan
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Selectable)]
 #[diesel(table_name=todos, primary_key(id))]
-pub struct Todo {
+pub struct Todos {
     pub id: i32,
     pub text: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
 #[diesel(table_name=todos)]
-pub struct CreateTodo {
+pub struct CreateTodos {
     pub text: String,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Default)]
 #[diesel(table_name=todos)]
-pub struct UpdateTodo {
+pub struct UpdateTodos {
     pub text: Option<String>,
 }
 
@@ -38,9 +38,9 @@ pub struct PaginationResult<T> {
     pub num_pages: i64,
 }
 
-impl Todo {
+impl Todos {
 
-    pub fn create(db: &mut ConnectionType, item: &CreateTodo) -> QueryResult<Self> {
+    pub fn create(db: &mut ConnectionType, item: &CreateTodos) -> QueryResult<Self> {
         use crate::schema::todos::dsl::*;
 
         insert_into(todos).values(item).get_result::<Self>(db)
@@ -70,7 +70,7 @@ impl Todo {
         })
     }
 
-    pub fn update(db: &mut ConnectionType, param_id: i32, item: &UpdateTodo) -> QueryResult<Self> {
+    pub fn update(db: &mut ConnectionType, param_id: i32, item: &UpdateTodos) -> QueryResult<Self> {
         use crate::schema::todos::dsl::*;
 
         diesel::update(todos.filter(id.eq(param_id))).set(item).get_result(db)

@@ -10,7 +10,7 @@ type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionMan
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Selectable)]
 #[diesel(table_name=users, primary_key(name,address))]
-pub struct User {
+pub struct Users {
     pub name: String,
     pub address: String,
     pub secret: String,
@@ -18,7 +18,7 @@ pub struct User {
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
 #[diesel(table_name=users)]
-pub struct CreateUser {
+pub struct CreateUsers {
     pub name: String,
     pub address: String,
     pub secret: String,
@@ -26,7 +26,7 @@ pub struct CreateUser {
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Default)]
 #[diesel(table_name=users)]
-pub struct UpdateUser {
+pub struct UpdateUsers {
     pub secret: Option<String>,
 }
 
@@ -41,9 +41,9 @@ pub struct PaginationResult<T> {
     pub num_pages: i64,
 }
 
-impl User {
+impl Users {
 
-    pub fn create(db: &mut ConnectionType, item: &CreateUser) -> QueryResult<Self> {
+    pub fn create(db: &mut ConnectionType, item: &CreateUsers) -> QueryResult<Self> {
         use crate::schema::users::dsl::*;
 
         insert_into(users).values(item).get_result::<Self>(db)
@@ -73,7 +73,7 @@ impl User {
         })
     }
 
-    pub fn update(db: &mut ConnectionType, param_name: String, param_address: String, item: &UpdateUser) -> QueryResult<Self> {
+    pub fn update(db: &mut ConnectionType, param_name: String, param_address: String, item: &UpdateUsers) -> QueryResult<Self> {
         use crate::schema::users::dsl::*;
 
         diesel::update(users.filter(name.eq(param_name)).filter(address.eq(param_address))).set(item).get_result(db)
