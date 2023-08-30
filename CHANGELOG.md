@@ -1,5 +1,10 @@
 # Changelog
 
+## next
+
+- replace `structopt` with `clap`
+- add subcommand to generate shell completions
+
 ## 0.0.16
 
 - add option `schema-path` and `model-path` to specify custom paths for diesel schemas input and model output
