@@ -3,16 +3,27 @@
 ## next
 
 - replace `structopt` with `clap`
+- replace dependency `Inflector` with `heck`
+- add dependency `thiserror`
+- remove dependency `anyhow`
 - add subcommand to generate shell completions
 - function `generate_files` now takes in `&Path`s instead of `PathBuf`s
 - remove `to_singular` name generations
-- replace dependency `Inflector` with `heck`
-- add option `create-str` to set `Create*` structs string type
-- add option `update-str` to set `Update*` structs string type
+- add option `--create-str` to set `Create*` structs string type
+- add option `--update-str` to set `Update*` structs string type
 - add option `--single-model-file` to only generate a single file instead of a directory with `mod.rs` and `generated.rs`
 - add option `--readonly-prefix` and `--readonly-suffix` to treat a matching name as a readonly struct
+- add option `--no-crud` to not generate any `impl` blocks
 - derive generation has been refactored and now only necessary derives are added to a given struct
 - reduce amount of empty-newlines
+- add `dsync::Error`(and `dsync::error` module)
+- replace most `panic!`, `.expect` and some `.unwrap` with `Result`s
+- fix nullable unsigned integers not resulting in `Option<u*>`
+- derive `Default` for all `Update*` structs
+- use `@generated` file signature to exclude the files from formatting
+- rename `type Connection =` to `type ConnectionType =` to lessen naming conflicts
+- add many doc-comments to fields and functions
+- list changes to files (unchanged, modified, deleted)
 
 ## 0.0.16
 
