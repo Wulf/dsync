@@ -149,12 +149,15 @@ impl<'a> Struct<'a> {
             })
             .map(|c| {
                 let name = c.name.to_string();
-                let base_type = if c.is_nullable {
-                    format!("Option<{}>", c.ty)
-                } else if c.is_unsigned {
+                let base_type = if c.is_unsigned {
                     c.ty.replace('i', "u")
                 } else {
                     c.ty.clone()
+                };
+                let base_type = if c.is_nullable {
+                    format!("Option<{}>", base_type)
+                } else {
+                    base_type
                 };
                 let mut is_optional = false;
 
