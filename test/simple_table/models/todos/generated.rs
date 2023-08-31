@@ -13,6 +13,7 @@ type Connection = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager
 pub struct Todo {
     pub id: i32,
     pub unsigned: u32,
+    pub unsigned_nullable: Option<u32>,
     pub text: String,
     pub completed: bool,
     pub type_: String,
@@ -24,6 +25,7 @@ pub struct Todo {
 #[diesel(table_name=todos)]
 pub struct CreateTodo {
     pub unsigned: u32,
+    pub unsigned_nullable: Option<u32>,
     pub text: String,
     pub completed: bool,
     pub type_: String,
@@ -33,6 +35,7 @@ pub struct CreateTodo {
 #[diesel(table_name=todos)]
 pub struct UpdateTodo {
     pub unsigned: Option<u32>,
+    pub unsigned_nullable: Option<Option<u32>>,
     pub text: Option<String>,
     pub completed: Option<bool>,
     pub type_: Option<String>,
