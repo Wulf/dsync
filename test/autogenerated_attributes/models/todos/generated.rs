@@ -21,7 +21,7 @@ pub struct CreateTodo {
     pub id: i32,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
+#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Default)]
 #[diesel(table_name=todos)]
 pub struct UpdateTodo {
     pub created_at: Option<chrono::NaiveDateTime>,

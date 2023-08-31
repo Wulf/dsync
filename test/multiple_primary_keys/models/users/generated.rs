@@ -24,7 +24,7 @@ pub struct CreateUser {
     pub secret: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
+#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Default)]
 #[diesel(table_name=users)]
 pub struct UpdateUser {
     pub secret: Option<String>,
