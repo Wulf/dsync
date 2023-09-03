@@ -2,9 +2,9 @@ use inflector::Inflector;
 use syn::Ident;
 use syn::Item::Macro;
 
-use crate::{code, GenerationConfig, Result, Error};
+use crate::{code, Error, GenerationConfig, Result};
 
-pub const FILE_SIGNATURE: &str = "/* This file is generated and managed by dsync */";
+pub const FILE_SIGNATURE: &str = "/* @generated and managed by dsync */";
 
 // TODO: handle postgres array types
 // TODO: handle postgres tuple/record types
@@ -149,14 +149,17 @@ fn handle_joinable_macro(macro_item: syn::ItemMacro) -> Result<ParsedJoinMacro> 
     })
 }
 
-fn handle_table_macro(macro_item: syn::ItemMacro, config: &GenerationConfig) -> Result<ParsedTableMacro> {
+fn handle_table_macro(
+    macro_item: syn::ItemMacro,
+    config: &GenerationConfig,
+) -> Result<ParsedTableMacro> {
     let mut table_name_ident: Option<Ident> = None;
     let mut table_primary_key_idents: Vec<Ident> = vec![];
     let mut table_columns: Vec<ParsedColumnMacro> = vec![];
 
     let mut skip_until_semicolon = false;
     let mut skip_square_brackets = false;
-    
+
     for item in macro_item.mac.tokens.into_iter() {
         if skip_until_semicolon {
             if let proc_macro2::TokenTree::Punct(punct) = item {
@@ -174,9 +177,9 @@ fn handle_table_macro(macro_item: syn::ItemMacro, config: &GenerationConfig) -> 
                     "#" => {
                         skip_square_brackets = true;
                         continue;
-                    },
+                    }
                     _ => {}
-               }
+                }
             }
             proc_macro2::TokenTree::Ident(ident) => {
                 // skip any "use" statements
@@ -237,7 +240,10 @@ fn handle_table_macro(macro_item: syn::ItemMacro, config: &GenerationConfig) -> 
                                 } else if char == '-' || char == '>' {
                                     // nothing for arrow
                                     continue;
-                                } else if char == ',' && column_name.is_some() && column_type.is_some() {
+                                } else if char == ','
+                                    && column_name.is_some()
+                                    && column_type.is_some()
+                                {
                                     // end of column def!
 
                                     // add the column
