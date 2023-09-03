@@ -72,6 +72,11 @@ struct Args {
         help = "Optional; Disable generating serde implementations"
     )]
     no_serde: bool,
+    #[structopt(
+        long = "no-crud",
+        help = "Optional; Do not generate the CRUD functions for generated models"
+    )]
+    no_crud: bool,
 }
 
 fn main() {
@@ -89,7 +94,7 @@ fn main() {
                 );
             } else {
                 eprintln!("{}", backtrace);
-            }    
+            }
         }
         #[cfg(not(feature = "backtrace"))]
         {
@@ -118,6 +123,10 @@ fn actual_main() -> dsync::Result<()> {
 
     if args.no_serde {
         default_table_options = default_table_options.disable_serde();
+    }
+
+    if args.no_crud {
+        default_table_options = default_table_options.disable_fns();
     }
 
     dsync::generate_files(

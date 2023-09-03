@@ -488,25 +488,42 @@ fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String 
         ""
     };
 
+    let fns_imports = if table_options.get_fns() {
+        "\nuse diesel::QueryResult;"
+    } else {
+        ""
+    };
+
+    let connection_type_alias = if table_options.get_fns() {
+        format!(
+            "\ntype Connection = {connection_type};",
+            connection_type = config.connection_type,
+        )
+    } else {
+        "".to_string()
+    };
+
     format!(
         indoc! {"
         use crate::diesel::*;
-        use {schema_path};
-        use diesel::QueryResult;
+        use {schema_path};{fns_imports}
         {serde_imports}{async_imports}
         {belongs_imports}
-
-        type Connection = {connection_type};
+        {connection_type_alias}
     "},
-        connection_type = config.connection_type,
         belongs_imports = belongs_imports,
         async_imports = async_imports,
         schema_path = schema_path,
-        serde_imports = serde_imports
+        serde_imports = serde_imports,
+        fns_imports = fns_imports,
+        connection_type_alias = connection_type_alias,
     )
+    .trim_end()
+    .to_string()
 }
 
 pub fn generate_for_table(table: ParsedTableMacro, config: &GenerationConfig) -> String {
+    let table_options = config.table(&table.name.to_string());
     // first, we generate struct code
     let read_struct = Struct::new(StructType::Read, &table, config);
     let update_struct = Struct::new(StructType::Update, &table, config);
@@ -519,8 +536,12 @@ pub fn generate_for_table(table: ParsedTableMacro, config: &GenerationConfig) ->
     structs.push('\n');
     structs.push_str(update_struct.code());
 
-    let functions = build_table_fns(&table, config, create_struct, update_struct);
+    let functions = if table_options.get_fns() {
+        build_table_fns(&table, config, create_struct, update_struct)
+    } else {
+        "".to_string()
+    };
     let imports = build_imports(&table, config);
 
-    format!("{FILE_SIGNATURE}\n\n{imports}\n{structs}\n{functions}")
+    format!("{FILE_SIGNATURE}\n\n{imports}\n\n{structs}\n{functions}")
 }
