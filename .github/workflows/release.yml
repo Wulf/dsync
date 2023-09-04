@@ -1,0 +1,346 @@
+---
+name: Release
+
+on:
+  workflow_run:
+    workflows: ["Run Tests"]
+    branches: [main]
+    types: 
+      - completed
+  push:
+    branches:
+      - master
+
+# Only allow one release workflow to execute at a time, since each release
+# workflow uses shared resources (git tags, package registries)
+concurrency:
+  group: ${{ github.workflow }}
+
+env:
+  RUST_BACKTRACE: 1
+
+jobs:
+  get-next-version:
+    uses: semantic-release-action/next-release-version/.github/workflows/next-release-version.yml@v4
+
+  test:
+    name: Cargo test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        id: rust-toolchain
+        with:
+          toolchain: stable
+
+      - name: Cache cargo
+        uses: actions/cache@v3
+        id: cache-cargo
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ steps.rust-toolchain.outputs.cachekey }}-${{ hashFiles('**/Cargo.lock') }}
+
+      # One test is ignored because it requires network access, which
+      # complicates building with the Nix flake.
+      - name: Cargo test
+        run: cargo test -- --include-ignored
+
+  # Compile native CLI binary
+  build-cli:
+    name: Build CLI ${{ matrix.build.target }}
+    if: needs.get-next-version.outputs.new-release-published == 'true'
+    runs-on: ${{ matrix.build.os }}
+    needs:
+      - get-next-version
+    env:
+      CARGO: cargo
+
+    strategy:
+      matrix:
+        build:
+          # alphabatized by target
+          - os: macOS-latest
+            target: aarch64-apple-darwin
+            cross: true
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            cross: true
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-musl
+            cross: true
+          - os: ubuntu-latest
+            target: i686-unknown-linux-gnu
+            cross: true
+          - os: ubuntu-latest
+            target: i686-unknown-linux-musl
+            cross: true
+          - os: macOS-latest
+            target: x86_64-apple-darwin
+            cross: false
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            cross: false
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            cross: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install build inputs
+        if: runner.os == 'Linux' && !matrix.build.cross
+        run: sudo apt install musl-tools
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        id: rust-toolchain
+        with:
+          toolchain: stable
+          target: ${{ matrix.build.target }}
+
+      - name: Cache cargo
+        uses: actions/cache@v3
+        id: cache-cargo
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ steps.rust-toolchain.outputs.cachekey }}-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install semantic-release-cargo
+        uses: taiki-e/install-action@v2
+        with:
+          tool: semantic-release-cargo@2
+
+      - name: Prepare semantic-release for Rust
+        run: semantic-release-cargo prepare ${{ needs.get-next-version.outputs.new-release-version }}
+
+      - name: Install cross
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cross
+
+      - name: Configure cross
+        if: matrix.build.cross
+        run: echo "CARGO=cross" >> "$GITHUB_ENV"
+
+      - name: Compile release binary
+        run: ${{ env.CARGO }} build --bin semantic-release-cargo --release --target ${{ matrix.build.target }} --verbose
+
+      - name: Create release archive
+        run: |
+          mkdir dist
+          cp target/${{ matrix.build.target }}/release/semantic-release-cargo dist/semantic-release-cargo-${{ matrix.build.target }}
+
+      - name: Create binary checksum
+        run: shasum --algorithm 256 --binary semantic-release-cargo-${{ matrix.build.target }} | tee semantic-release-cargo-${{ matrix.build.target }}-SHA256SUM.txt
+        working-directory: ./dist
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.build.target }}
+          path: |
+            dist/semantic-release-cargo-${{ matrix.build.target }}
+            dist/semantic-release-cargo-${{ matrix.build.target }}-SHA256SUM.txt
+          if-no-files-found: error
+          retention-days: 1
+
+  # Compile napi-rs native Node.js modules
+  build-node-api:
+    name: Build Node-API ${{ matrix.build.target }}
+    if: needs.get-next-version.outputs.new-release-published == 'true'
+    runs-on: ${{ matrix.build.host }}
+    needs:
+      - get-next-version
+
+    strategy:
+      fail-fast: false
+      matrix:
+        build:
+          - host: macos-latest
+            target: aarch64-apple-darwin
+            script: |
+              sudo rm -Rf /Library/Developer/CommandLineTools/SDKs/*
+              export CC=$(xcrun -f clang)
+              export CXX=$(xcrun -f clang++)
+              SYSROOT=$(xcrun --sdk macosx --show-sdk-path)
+              export CFLAGS="-isysroot $SYSROOT -isystem $SYSROOT"
+              ./node_modules/.bin/napi build --platform --release --strip --js false --features napi-rs --cargo-flags=--lib --target aarch64-apple-darwin
+              strip -x *.node
+          - host: macos-latest
+            target: x86_64-apple-darwin
+            script: |
+              ./node_modules/.bin/napi build --platform --release --strip --js false --features napi-rs --cargo-flags=--lib --target x86_64-apple-darwin
+              strip -x *.node
+          # Use the oldest Ubuntu runner to bring in the oldest glibc version.
+          # This ensures the Node.js native module is compatible with as many
+          # runtime targets as possible.
+          - host: ubuntu-20.04
+            target: x86_64-unknown-linux-gnu
+            script: |-
+              set -e
+              ./node_modules/.bin/napi build --platform --release --strip --js false --features napi-rs --cargo-flags=--lib --target x86_64-unknown-linux-gnu
+              strip *.node
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        id: rust-toolchain
+        with:
+          toolchain: stable
+          target: ${{ matrix.build.target }}
+
+      - name: Cache cargo
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            .cargo-cache
+            target/
+          key: ${{ runner.os }}-cargo-${{ steps.rust-toolchain.outputs.cachekey }}-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+          check-latest: true
+          cache: npm
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v3
+        id: cache-node-modules
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: npm ci --ignore-scripts
+
+      - name: Build
+        run: ${{ matrix.build.script }}
+        shell: bash
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: bindings-${{ matrix.build.target }}
+          path: ${{ env.APP_NAME }}.*.node
+          if-no-files-found: error
+          retention-days: 1
+
+  release:
+    runs-on: ubuntu-latest
+    name: Release
+    if: needs.get-next-version.outputs.new-release-published == 'true'
+    needs:
+      - build-cli
+      - build-node-api
+      - get-next-version
+      - test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          # Fetch all history and tags for calculating next semantic version
+          fetch-depth: 0
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        id: rust-toolchain
+        with:
+          toolchain: stable
+
+      - name: Cache cargo
+        uses: actions/cache@v3
+        id: cache-cargo
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ steps.rust-toolchain.outputs.cachekey }}-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: lts/*
+          check-latest: true
+          cache: npm
+
+      - name: Cache npm dependencies
+        uses: actions/cache@v3
+        id: cache-node-modules
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+
+      - name: Install dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: npm ci --ignore-scripts --loglevel error
+
+      - name: Download release artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+
+      - name: ls artifacts
+        run: ls -R ./artifacts
+
+      - name: Prepare native artifacts
+        run: |
+          mkdir napi/
+          mv artifacts/bindings-aarch64-apple-darwin/semantic-release-cargo.darwin-arm64.node napi/
+          mv artifacts/bindings-x86_64-apple-darwin/semantic-release-cargo.darwin-x64.node napi/
+          mv artifacts/bindings-x86_64-unknown-linux-gnu/semantic-release-cargo.linux-x64-gnu.node napi/
+
+      - name: ls napi
+        run: ls -R ./napi
+
+      - name: Prepare GitHub Release artifacts
+        run: |
+          mkdir dist/
+          mv artifacts/aarch64-apple-darwin dist/
+          mv artifacts/aarch64-unknown-linux-gnu dist/
+          mv artifacts/aarch64-unknown-linux-musl dist/
+          mv artifacts/i686-unknown-linux-gnu dist/
+          mv artifacts/i686-unknown-linux-musl dist/
+          mv artifacts/x86_64-apple-darwin dist/
+          mv artifacts/x86_64-unknown-linux-gnu dist/
+          mv artifacts/x86_64-unknown-linux-musl dist/
+
+      - name: Combine checksums
+        run: cat dist/**/semantic-release-cargo-*-SHA256SUM.txt | tee dist/SHA256SUMS.txt
+
+      - name: Prepare semantic-release-cargo for local use
+        run: |
+          cp dist/x86_64-unknown-linux-musl/semantic-release-cargo-x86_64-unknown-linux-musl ./semantic-release-cargo
+          chmod +x ./semantic-release-cargo
+
+      - name: Invoke semantic-release
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npx semantic-release
