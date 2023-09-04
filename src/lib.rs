@@ -171,7 +171,7 @@ impl GenerationConfig<'_> {
 ///
 /// Model is returned and not saved to disk yet
 pub fn generate_code(
-    diesel_schema_file_contents: String,
+    diesel_schema_file_contents: &str,
     config: GenerationConfig,
 ) -> Result<Vec<ParsedTableMacro>> {
     parser::parse_and_generate_code(diesel_schema_file_contents, &config)
@@ -189,7 +189,7 @@ pub fn generate_files(
     let output_dir = output_models_dir;
 
     let generated = generate_code(
-        std::fs::read_to_string(&input).attach_path_err(&input)?,
+        &std::fs::read_to_string(&input).attach_path_err(&input)?,
         config,
     )?;
 

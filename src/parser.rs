@@ -64,10 +64,10 @@ pub struct ParsedJoinMacro {
 
 /// Try to parse a diesel schema file contents
 pub fn parse_and_generate_code(
-    schema_file_contents: String,
+    schema_file_contents: &str,
     config: &GenerationConfig,
 ) -> Result<Vec<ParsedTableMacro>> {
-    let schema_file = syn::parse_file(&schema_file_contents).unwrap();
+    let schema_file = syn::parse_file(schema_file_contents).unwrap();
 
     let mut tables: Vec<ParsedTableMacro> = vec![];
 
