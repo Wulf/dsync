@@ -1,21 +1,8 @@
 name: Continuous Integration
-on:
-  workflow_dispatch:
-  push:
-    paths:
-      - ".github/workflows/CI.yml"
-      - "**.rs"
-      - "Cargo.lock"
-      - "Cargo.toml"
-  pull_request:
-    paths:
-      - ".github/workflows/CI.yml"
-      - "**.rs"
-      - "Cargo.lock"
-      - "Cargo.toml"
+on: push
+
 env:
   CARGO_TERM_COLOR: always
-  CARGO_INCREMENTAL: true
   
 concurrency:
   group:  CI-${{ github.ref }}
@@ -103,3 +90,15 @@ jobs:
           toolchain: nightly
       - run: rustup component add rustfmt
       - run: cargo fmt --all -- --check
+    
+  release:
+    runs-on: ubuntu-latest
+    name: release
+    needs: [build, clippy, test, test-script, fmt]
+    if: github.ref == 'refs/heads/release'
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo publish
+        env: 
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
