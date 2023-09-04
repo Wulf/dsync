@@ -370,7 +370,7 @@ impl {struct_name} {{
     if create_struct.has_fields() {
         buffer.push_str(&format!(
             r##"
-    pub{async_keyword} fn create(db: &mut Connection, item: &{create_struct_identifier}) -> QueryResult<Self> {{
+    pub{async_keyword} fn create(db: &mut ConnectionType, item: &{create_struct_identifier}) -> QueryResult<Self> {{
         use {schema_path}{table_name}::dsl::*;
 
         insert_into({table_name}).values(item).get_result::<Self>(db){await_keyword}
@@ -380,7 +380,7 @@ impl {struct_name} {{
     } else {
         buffer.push_str(&format!(
             r##"
-    pub{async_keyword} fn create(db: &mut Connection) -> QueryResult<Self> {{
+    pub{async_keyword} fn create(db: &mut ConnectionType) -> QueryResult<Self> {{
         use {schema_path}{table_name}::dsl::*;
 
         insert_into({table_name}).default_values().get_result::<Self>(db){await_keyword}
@@ -391,7 +391,7 @@ impl {struct_name} {{
 
     buffer.push_str(&format!(
         r##"
-    pub{async_keyword} fn read(db: &mut Connection, {item_id_params}) -> QueryResult<Self> {{
+    pub{async_keyword} fn read(db: &mut ConnectionType, {item_id_params}) -> QueryResult<Self> {{
         use {schema_path}{table_name}::dsl::*;
 
         {table_name}.{item_id_filters}.first::<Self>(db){await_keyword}
@@ -401,7 +401,7 @@ impl {struct_name} {{
 
     buffer.push_str(&format!(r##"
     /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
-    pub{async_keyword} fn paginate(db: &mut Connection, page: i64, page_size: i64) -> QueryResult<PaginationResult<Self>> {{
+    pub{async_keyword} fn paginate(db: &mut ConnectionType, page: i64, page_size: i64) -> QueryResult<PaginationResult<Self>> {{
         use {schema_path}{table_name}::dsl::*;
 
         let page_size = if page_size < 1 {{ 1 }} else {{ page_size }};
@@ -429,7 +429,7 @@ impl {struct_name} {{
         // we should generate an update() method.
 
         buffer.push_str(&format!(r##"
-    pub{async_keyword} fn update(db: &mut Connection, {item_id_params}, item: &{update_struct_identifier}) -> QueryResult<Self> {{
+    pub{async_keyword} fn update(db: &mut ConnectionType, {item_id_params}, item: &{update_struct_identifier}) -> QueryResult<Self> {{
         use {schema_path}{table_name}::dsl::*;
 
         diesel::update({table_name}.{item_id_filters}).set(item).get_result(db){await_keyword}
@@ -439,7 +439,7 @@ impl {struct_name} {{
 
     buffer.push_str(&format!(
         r##"
-    pub{async_keyword} fn delete(db: &mut Connection, {item_id_params}) -> QueryResult<usize> {{
+    pub{async_keyword} fn delete(db: &mut ConnectionType, {item_id_params}) -> QueryResult<usize> {{
         use {schema_path}{table_name}::dsl::*;
 
         diesel::delete({table_name}.{item_id_filters}).execute(db){await_keyword}
@@ -496,7 +496,7 @@ fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String 
 
     let connection_type_alias = if table_options.get_fns() {
         format!(
-            "\ntype Connection = {connection_type};",
+            "\ntype ConnectionType = {connection_type};",
             connection_type = config.connection_type,
         )
     } else {

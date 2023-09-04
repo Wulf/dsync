@@ -6,7 +6,7 @@ use diesel::QueryResult;
 use serde::{Deserialize, Serialize};
 use crate::data::models::table_a::TableA;
 
-type Connection = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
+type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Identifiable, Associations, Selectable)]
 #[diesel(table_name=tableB, primary_key(_id), belongs_to(TableA, foreign_key=link))]
@@ -41,20 +41,20 @@ pub struct PaginationResult<T> {
 
 impl TableB {
 
-    pub fn create(db: &mut Connection, item: &CreateTableB) -> QueryResult<Self> {
+    pub fn create(db: &mut ConnectionType, item: &CreateTableB) -> QueryResult<Self> {
         use crate::data::schema::tableB::dsl::*;
 
         insert_into(tableB).values(item).get_result::<Self>(db)
     }
 
-    pub fn read(db: &mut Connection, param__id: i32) -> QueryResult<Self> {
+    pub fn read(db: &mut ConnectionType, param__id: i32) -> QueryResult<Self> {
         use crate::data::schema::tableB::dsl::*;
 
         tableB.filter(_id.eq(param__id)).first::<Self>(db)
     }
 
     /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
-    pub fn paginate(db: &mut Connection, page: i64, page_size: i64) -> QueryResult<PaginationResult<Self>> {
+    pub fn paginate(db: &mut ConnectionType, page: i64, page_size: i64) -> QueryResult<PaginationResult<Self>> {
         use crate::data::schema::tableB::dsl::*;
 
         let page_size = if page_size < 1 { 1 } else { page_size };
@@ -71,13 +71,13 @@ impl TableB {
         })
     }
 
-    pub fn update(db: &mut Connection, param__id: i32, item: &UpdateTableB) -> QueryResult<Self> {
+    pub fn update(db: &mut ConnectionType, param__id: i32, item: &UpdateTableB) -> QueryResult<Self> {
         use crate::data::schema::tableB::dsl::*;
 
         diesel::update(tableB.filter(_id.eq(param__id))).set(item).get_result(db)
     }
 
-    pub fn delete(db: &mut Connection, param__id: i32) -> QueryResult<usize> {
+    pub fn delete(db: &mut ConnectionType, param__id: i32) -> QueryResult<usize> {
         use crate::data::schema::tableB::dsl::*;
 
         diesel::delete(tableB.filter(_id.eq(param__id))).execute(db)
