@@ -40,7 +40,7 @@ impl StructType {
     /// Format a struct with all prefix- and suffixes
     ///
     /// Example: `UpdateTodos`
-    pub fn format(&self, name: &'_ str) -> String {
+    pub fn format(&self, name: &str) -> String {
         format!(
             "{struct_prefix}{struct_name}{struct_suffix}",
             struct_prefix = self.prefix(),
@@ -222,7 +222,7 @@ impl<'a> Struct<'a> {
     fn render(&mut self) {
         let ty = self.ty;
         let table = &self.table;
-        let _opts = self.config.table(table.name.to_string().as_str());
+        let _opts = self.config.table(&table.name.to_string());
 
         let primary_keys: Vec<String> = table.primary_key_column_names();
 
@@ -250,7 +250,7 @@ impl<'a> Struct<'a> {
             tsync_attr = self.attr_tsync(),
             derive_attr = self.attr_derive(),
             table_name = table.name,
-            struct_name = ty.format(table.struct_name.as_str()),
+            struct_name = ty.format(&table.struct_name),
             primary_key = if ty != StructType::Read {
                 "".to_string()
             } else {
