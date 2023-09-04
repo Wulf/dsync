@@ -547,12 +547,12 @@ fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String 
 }
 
 /// Generate a full file for a given diesel table
-pub fn generate_for_table(table: ParsedTableMacro, config: &GenerationConfig) -> String {
+pub fn generate_for_table(table: &ParsedTableMacro, config: &GenerationConfig) -> String {
     let table_options = config.table(&table.name.to_string());
     // first, we generate struct code
-    let read_struct = Struct::new(StructType::Read, &table, config);
-    let update_struct = Struct::new(StructType::Update, &table, config);
-    let create_struct = Struct::new(StructType::Create, &table, config);
+    let read_struct = Struct::new(StructType::Read, table, config);
+    let update_struct = Struct::new(StructType::Update, table, config);
+    let create_struct = Struct::new(StructType::Create, table, config);
 
     let mut structs = String::new();
     structs.push_str(read_struct.code());
@@ -562,11 +562,11 @@ pub fn generate_for_table(table: ParsedTableMacro, config: &GenerationConfig) ->
     structs.push_str(update_struct.code());
 
     let functions = if table_options.get_fns() {
-        build_table_fns(&table, config, create_struct, update_struct)
+        build_table_fns(table, config, create_struct, update_struct)
     } else {
         "".to_string()
     };
-    let imports = build_imports(&table, config);
+    let imports = build_imports(table, config);
 
     format!("{FILE_SIGNATURE}\n\n{imports}\n\n{structs}\n{functions}")
 }

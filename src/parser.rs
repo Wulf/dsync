@@ -115,7 +115,7 @@ pub fn parse_and_generate_code(
     }
 
     for table in tables.iter_mut() {
-        table.generated_code = code::generate_for_table(table.clone(), config);
+        table.generated_code = code::generate_for_table(table, config);
     }
 
     Ok(tables)
