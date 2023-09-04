@@ -226,7 +226,7 @@ pub fn generate_files(
         table_mod_rs.ensure_use_stmt("generated::*");
         table_mod_rs.write()?;
 
-        mod_rs.ensure_mod_stmt(table.name.to_string().as_str());
+        mod_rs.ensure_mod_stmt(&table.name.to_string());
     }
 
     // pass 2: delete code for removed tables
