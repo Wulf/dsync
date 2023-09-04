@@ -185,29 +185,27 @@ pub fn generate_files(
     output_models_dir: &Path,
     config: GenerationConfig,
 ) -> Result<()> {
-    let input = input_diesel_schema_file;
-    let output_dir = output_models_dir;
-
     let generated = generate_code(
-        &std::fs::read_to_string(input).attach_path_err(input)?,
+        &std::fs::read_to_string(input_diesel_schema_file)
+            .attach_path_err(input_diesel_schema_file)?,
         config,
     )?;
 
-    if !output_dir.exists() {
-        std::fs::create_dir(output_dir).attach_path_err(output_dir)?;
-    } else if !output_dir.is_dir() {
+    if !output_models_dir.exists() {
+        std::fs::create_dir(output_models_dir).attach_path_err(output_models_dir)?;
+    } else if !output_models_dir.is_dir() {
         return Err(Error::not_a_directory(
             "Expected output argument to be a directory or non-existent.",
-            output_dir,
+            output_models_dir,
         ));
     }
 
     // check that the mod.rs file exists
-    let mut mod_rs = MarkedFile::new(output_dir.join("mod.rs"))?;
+    let mut mod_rs = MarkedFile::new(output_models_dir.join("mod.rs"))?;
 
     // pass 1: add code for new tables
     for table in generated.iter() {
-        let table_dir = output_dir.join(table.name.to_string());
+        let table_dir = output_models_dir.join(table.name.to_string());
 
         if !table_dir.exists() {
             std::fs::create_dir(&table_dir).attach_path_err(&table_dir)?;
@@ -232,8 +230,8 @@ pub fn generate_files(
     }
 
     // pass 2: delete code for removed tables
-    for item in std::fs::read_dir(output_dir).attach_path_err(output_dir)? {
-        let item = item.attach_path_err(output_dir)?;
+    for item in std::fs::read_dir(output_models_dir).attach_path_err(output_models_dir)? {
+        let item = item.attach_path_err(output_models_dir)?;
 
         // check if item is a directory
         let file_type = item
