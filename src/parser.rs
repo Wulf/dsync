@@ -129,12 +129,12 @@ fn handle_joinable_macro(macro_item: syn::ItemMacro) -> Result<ParsedJoinMacro> 
     let mut table2_join_column: Option<String> = None;
 
     for item in macro_item.mac.tokens.into_iter() {
-        match &item {
+        match item {
             proc_macro2::TokenTree::Ident(ident) => {
                 if table1_name.is_none() {
-                    table1_name = Some(ident.clone());
+                    table1_name = Some(ident);
                 } else if table2_name.is_none() {
-                    table2_name = Some(ident.clone());
+                    table2_name = Some(ident);
                 }
             }
             proc_macro2::TokenTree::Group(group) => {
@@ -185,7 +185,7 @@ fn handle_table_macro(
             continue;
         }
 
-        match &item {
+        match item {
             proc_macro2::TokenTree::Punct(punct) => {
                 // skip any "#[]"
                 if punct.to_string().as_str() == "#" {
@@ -200,7 +200,7 @@ fn handle_table_macro(
                     continue;
                 }
 
-                table_name_ident = Some(ident.clone());
+                table_name_ident = Some(ident);
             }
             proc_macro2::TokenTree::Group(group) => {
                 if skip_square_brackets {
@@ -234,13 +234,13 @@ fn handle_table_macro(
                             }
                             proc_macro2::TokenTree::Ident(ident) => {
                                 if column_name.is_none() {
-                                    column_name = Some(ident.clone());
+                                    column_name = Some(ident);
                                 } else if ident.to_string().eq_ignore_ascii_case("Nullable") {
                                     column_nullable = true;
                                 } else if ident.to_string().eq_ignore_ascii_case("Unsigned") {
                                     column_unsigned = true;
                                 } else {
-                                    column_type = Some(ident.clone());
+                                    column_type = Some(ident);
                                 }
                             }
                             proc_macro2::TokenTree::Punct(punct) => {
