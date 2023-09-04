@@ -9,7 +9,7 @@ use file::MarkedFile;
 use parser::ParsedTableMacro;
 pub use parser::FILE_SIGNATURE;
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::Path;
 
 /// Options for a individual table
 #[derive(Debug, Clone)]
@@ -181,20 +181,20 @@ pub fn generate_code(
 ///
 /// Models are saved to disk
 pub fn generate_files(
-    input_diesel_schema_file: PathBuf,
-    output_models_dir: PathBuf,
+    input_diesel_schema_file: &Path,
+    output_models_dir: &Path,
     config: GenerationConfig,
 ) -> Result<()> {
     let input = input_diesel_schema_file;
     let output_dir = output_models_dir;
 
     let generated = generate_code(
-        &std::fs::read_to_string(&input).attach_path_err(&input)?,
+        &std::fs::read_to_string(input).attach_path_err(input)?,
         config,
     )?;
 
     if !output_dir.exists() {
-        std::fs::create_dir(&output_dir).attach_path_err(&output_dir)?;
+        std::fs::create_dir(output_dir).attach_path_err(output_dir)?;
     } else if !output_dir.is_dir() {
         return Err(Error::not_a_directory(
             "Expected output argument to be a directory or non-existent.",
@@ -232,8 +232,8 @@ pub fn generate_files(
     }
 
     // pass 2: delete code for removed tables
-    for item in std::fs::read_dir(&output_dir).attach_path_err(&output_dir)? {
-        let item = item.attach_path_err(&output_dir)?;
+    for item in std::fs::read_dir(output_dir).attach_path_err(output_dir)? {
+        let item = item.attach_path_err(output_dir)?;
 
         // check if item is a directory
         let file_type = item
