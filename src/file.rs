@@ -2,11 +2,16 @@ use crate::{Error, IOErrorToError, Result};
 use std::path::PathBuf;
 
 pub struct MarkedFile {
+    /// File contents that were read / need to be written
     pub file_contents: String,
+    /// Path of the read / to write file
     pub path: PathBuf,
 }
 
 impl MarkedFile {
+    /// Tries to open the file at `path`
+    ///
+    /// If the file does not exist, a empty file is created
     pub fn new(path: PathBuf) -> Result<MarkedFile> {
         Ok(MarkedFile {
             path: path.clone(),
@@ -90,6 +95,10 @@ impl MarkedFile {
                 .starts_with(crate::parser::FILE_SIGNATURE)
     }
 
+    /// Ensure that the file, has the dsync file signature
+    /// to prevent accidental overwriting of non-dsync files
+    ///
+    /// Returns a [Err] if the file does not have a signature
     pub fn ensure_file_signature(&self) -> Result<()> {
         if !self.has_file_signature() {
             return Err(Error::no_file_signature(format!("Expected file '{path:#?}' to have file signature ('{sig}') -- you might be accidentally overwriting files that weren't generated!", path=self.path, sig=crate::parser::FILE_SIGNATURE)));

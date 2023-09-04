@@ -11,22 +11,31 @@ pub const FILE_SIGNATURE: &str = "/* @generated and managed by dsync */";
 
 #[derive(Debug, Clone)]
 pub struct ParsedColumnMacro {
+    /// Rust type to use (like `String`)
     pub ty: String,
+    /// Rust ident for the field name
     pub name: Ident,
     pub is_nullable: bool,
     pub is_unsigned: bool,
 }
 
+/// Struct to hold all information needed from a parsed `diesel::table!` macro
 #[derive(Debug, Clone)]
 pub struct ParsedTableMacro {
+    /// Name of the table
     pub name: Ident,
+    /// Rust struct name to use
     pub struct_name: String,
+    /// All parsed columns
     pub columns: Vec<ParsedColumnMacro>,
+    /// All Primary key column idents
     pub primary_key_columns: Vec<Ident>,
+    /// All foreign key relations (foreign_table_name, local_join_column)
     pub foreign_keys: Vec<(
         ForeignTableName,
         JoinColumn, /* this is the column from this table which maps to the foreign table's primary key*/
     )>,
+    /// Final generated code
     pub generated_code: String,
 }
 
@@ -42,13 +51,18 @@ impl ParsedTableMacro {
 type ForeignTableName = Ident;
 type JoinColumn = String;
 
+/// Parsed representation of the `diesel::joinable!` macro
 #[derive(Debug, Clone)]
 pub struct ParsedJoinMacro {
+    /// Table ident with the foreign key
     pub table1: Ident,
+    /// Table ident for the foreign key
     pub table2: Ident,
+    /// Column ident of for the foreign key
     pub table1_columns: String,
 }
 
+/// Try to parse a diesel schema file contents
 pub fn parse_and_generate_code(
     schema_file_contents: String,
     config: &GenerationConfig,
@@ -149,6 +163,7 @@ fn handle_joinable_macro(macro_item: syn::ItemMacro) -> Result<ParsedJoinMacro> 
     })
 }
 
+/// Try to parse a `diesel::table!` macro
 fn handle_table_macro(
     macro_item: syn::ItemMacro,
     config: &GenerationConfig,
