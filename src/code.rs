@@ -4,7 +4,7 @@ use inflector::Inflector;
 use crate::parser::{ParsedTableMacro, FILE_SIGNATURE};
 use crate::{GenerationConfig, TableOptions};
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum StructType {
     /// Variant for the `Read` struct which can be queried and has all properties
     Read,
@@ -50,6 +50,7 @@ impl StructType {
     }
 }
 
+#[derive(Debug)]
 struct Struct<'a> {
     /// Struct name (like `UpdateTodos`)
     identifier: String,
