@@ -188,12 +188,9 @@ fn handle_table_macro(
         match &item {
             proc_macro2::TokenTree::Punct(punct) => {
                 // skip any "#[]"
-                match punct.to_string().as_str() {
-                    "#" => {
-                        skip_square_brackets = true;
-                        continue;
-                    }
-                    _ => {}
+                if punct.to_string().as_str() == "#" {
+                    skip_square_brackets = true;
+                    continue;
                 }
             }
             proc_macro2::TokenTree::Ident(ident) => {
