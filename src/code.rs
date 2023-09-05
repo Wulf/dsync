@@ -223,7 +223,6 @@ impl<'a> Struct<'a> {
     fn render(&mut self) {
         let ty = self.ty;
         let table = &self.table;
-        let _opts = self.config.table(&table.name.to_string());
 
         let primary_keys: Vec<String> = table.primary_key_column_names();
 
