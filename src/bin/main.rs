@@ -1,5 +1,6 @@
 use clap::{CommandFactory, Parser, Subcommand};
 use clap_complete::{generate, Shell};
+use dsync::FileChangeStatus;
 use dsync::{error::IOErrorToError, GenerationConfig, TableOptions};
 use std::collections::HashMap;
 use std::io::{BufWriter, Write};
@@ -144,7 +145,7 @@ fn actual_main() -> dsync::Result<()> {
         default_table_options = default_table_options.disable_fns();
     }
 
-    dsync::generate_files(
+    let changes = dsync::generate_files(
         &args.input,
         &args.output,
         GenerationConfig {
@@ -155,6 +156,17 @@ fn actual_main() -> dsync::Result<()> {
             model_path: args.model_path,
         },
     )?;
+
+    let mut modified: usize = 0;
+
+    for change in changes {
+        println!("{} {}", change.status, change.file.to_string_lossy());
+        if change.status != FileChangeStatus::Unchanged {
+            modified += 1;
+        }
+    }
+
+    println!("Modified {} files", modified);
 
     Ok(())
 }

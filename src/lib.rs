@@ -9,7 +9,8 @@ use file::MarkedFile;
 use parser::ParsedTableMacro;
 pub use parser::FILE_SIGNATURE;
 use std::collections::HashMap;
-use std::path::Path;
+use std::fmt::Display;
+use std::path::{Path, PathBuf};
 
 /// Options for a individual table
 #[derive(Debug, Clone)]
@@ -177,6 +178,58 @@ pub fn generate_code(
     parser::parse_and_generate_code(diesel_schema_file_contents, &config)
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum FileChangeStatus {
+    /// Status for unchanged file contents
+    Unchanged,
+    /// Status for modified file contents
+    Modified,
+    /// Status if the file has been deleted
+    Deleted,
+}
+
+impl Display for FileChangeStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                FileChangeStatus::Unchanged => "Unchanged",
+                FileChangeStatus::Modified => "Modified",
+                FileChangeStatus::Deleted => "Deleted",
+            }
+        )
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct FileChange {
+    /// File in question
+    pub file: PathBuf,
+    /// Status of the file
+    pub status: FileChangeStatus,
+}
+
+impl FileChange {
+    pub fn new<P: AsRef<std::path::Path>>(path: P, status: FileChangeStatus) -> Self {
+        Self {
+            file: path.as_ref().to_owned(),
+            status,
+        }
+    }
+}
+
+// easily create a [FileChange] from a [MarkedFile]
+impl From<&MarkedFile> for FileChange {
+    fn from(value: &MarkedFile) -> Self {
+        if value.is_modified() {
+            Self::new(&value.path, FileChangeStatus::Modified)
+        } else {
+            Self::new(&value.path, FileChangeStatus::Unchanged)
+        }
+    }
+}
+
 /// Generate all Models for a given diesel schema file
 ///
 /// Models are saved to disk
@@ -184,7 +237,7 @@ pub fn generate_files(
     input_diesel_schema_file: &Path,
     output_models_dir: &Path,
     config: GenerationConfig,
-) -> Result<()> {
+) -> Result<Vec<FileChange>> {
     let generated = generate_code(
         &std::fs::read_to_string(input_diesel_schema_file)
             .attach_path_err(input_diesel_schema_file)?,
@@ -199,6 +252,9 @@ pub fn generate_files(
             output_models_dir,
         ));
     }
+
+    // using generated len, because that is very likely the amount (at least) for files
+    let mut file_changes = Vec::with_capacity(generated.len());
 
     // check that the mod.rs file exists
     let mut mod_rs = MarkedFile::new(output_models_dir.join("mod.rs"))?;
@@ -222,9 +278,12 @@ pub fn generate_files(
         table_generated_rs.file_contents = table.generated_code.clone();
         table_generated_rs.write()?;
 
+        file_changes.push(FileChange::from(&table_generated_rs));
+
         table_mod_rs.ensure_mod_stmt("generated");
         table_mod_rs.ensure_use_stmt("generated::*");
         table_mod_rs.write()?;
+        file_changes.push(FileChange::from(&table_mod_rs));
 
         mod_rs.ensure_mod_stmt(&table.name.to_string());
     }
@@ -267,6 +326,10 @@ pub fn generate_files(
 
         // this table was deleted, let's delete the generated code
         std::fs::remove_file(&generated_rs_path).attach_path_err(&generated_rs_path)?;
+        file_changes.push(FileChange::new(
+            &generated_rs_path,
+            FileChangeStatus::Deleted,
+        ));
 
         // remove the mod.rs file if there isn't anything left in there except the use stmt
         let table_mod_rs_path = item.path().join("mod.rs");
@@ -278,9 +341,11 @@ pub fn generate_files(
             table_mod_rs.write()?;
 
             if table_mod_rs.file_contents.trim().is_empty() {
-                table_mod_rs.delete()?;
+                let table_mod_rs = table_mod_rs.delete()?;
+                file_changes.push(FileChange::new(table_mod_rs, FileChangeStatus::Deleted));
             } else {
                 table_mod_rs.write()?; // write the changes we made above
+                file_changes.push(FileChange::from(&table_mod_rs));
             }
         }
 
@@ -300,6 +365,7 @@ pub fn generate_files(
     }
 
     mod_rs.write()?;
+    file_changes.push(FileChange::from(&mod_rs));
 
-    Ok(())
+    Ok(file_changes)
 }
