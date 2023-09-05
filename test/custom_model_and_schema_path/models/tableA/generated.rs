@@ -1,4 +1,4 @@
-/* This file is generated and managed by dsync */
+/* @generated and managed by dsync */
 
 use crate::diesel::*;
 use crate::data::schema::*;
