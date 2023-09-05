@@ -145,8 +145,8 @@ fn actual_main() -> dsync::Result<()> {
     }
 
     dsync::generate_files(
-        args.input,
-        args.output,
+        &args.input,
+        &args.output,
         GenerationConfig {
             default_table_options,
             table_options: HashMap::from([]),

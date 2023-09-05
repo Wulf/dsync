@@ -13,14 +13,15 @@ impl MarkedFile {
     ///
     /// If the file does not exist, a empty file is created
     pub fn new(path: PathBuf) -> Result<MarkedFile> {
+        let file_contents = if !path.exists() {
+            std::fs::write(&path, "").attach_path_err(&path)?;
+            "".to_string()
+        } else {
+            std::fs::read_to_string(&path).attach_path_err(&path)?
+        };
         Ok(MarkedFile {
-            path: path.clone(),
-            file_contents: if !path.exists() {
-                std::fs::write(&path, "").attach_path_err(&path)?;
-                "".to_string()
-            } else {
-                std::fs::read_to_string(&path).attach_path_err(&path)?
-            },
+            path,
+            file_contents,
         })
     }
 

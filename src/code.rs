@@ -40,7 +40,7 @@ impl StructType {
     /// Format a struct with all prefix- and suffixes
     ///
     /// Example: `UpdateTodos`
-    pub fn format(&self, name: &'_ str) -> String {
+    pub fn format(&self, name: &str) -> String {
         format!(
             "{struct_prefix}{struct_name}{struct_suffix}",
             struct_prefix = self.prefix(),
@@ -222,7 +222,7 @@ impl<'a> Struct<'a> {
     fn render(&mut self) {
         let ty = self.ty;
         let table = &self.table;
-        let _opts = self.config.table(table.name.to_string().as_str());
+        let _opts = self.config.table(&table.name.to_string());
 
         let primary_keys: Vec<String> = table.primary_key_column_names();
 
@@ -250,7 +250,7 @@ impl<'a> Struct<'a> {
             tsync_attr = self.attr_tsync(),
             derive_attr = self.attr_derive(),
             table_name = table.name,
-            struct_name = ty.format(table.struct_name.as_str()),
+            struct_name = ty.format(&table.struct_name),
             primary_key = if ty != StructType::Read {
                 "".to_string()
             } else {
@@ -547,12 +547,12 @@ fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String 
 }
 
 /// Generate a full file for a given diesel table
-pub fn generate_for_table(table: ParsedTableMacro, config: &GenerationConfig) -> String {
+pub fn generate_for_table(table: &ParsedTableMacro, config: &GenerationConfig) -> String {
     let table_options = config.table(&table.name.to_string());
     // first, we generate struct code
-    let read_struct = Struct::new(StructType::Read, &table, config);
-    let update_struct = Struct::new(StructType::Update, &table, config);
-    let create_struct = Struct::new(StructType::Create, &table, config);
+    let read_struct = Struct::new(StructType::Read, table, config);
+    let update_struct = Struct::new(StructType::Update, table, config);
+    let create_struct = Struct::new(StructType::Create, table, config);
 
     let mut structs = String::new();
     structs.push_str(read_struct.code());
@@ -562,11 +562,11 @@ pub fn generate_for_table(table: ParsedTableMacro, config: &GenerationConfig) ->
     structs.push_str(update_struct.code());
 
     let functions = if table_options.get_fns() {
-        build_table_fns(&table, config, create_struct, update_struct)
+        build_table_fns(table, config, create_struct, update_struct)
     } else {
         "".to_string()
     };
-    let imports = build_imports(&table, config);
+    let imports = build_imports(table, config);
 
     format!("{FILE_SIGNATURE}\n\n{imports}\n\n{structs}\n{functions}")
 }

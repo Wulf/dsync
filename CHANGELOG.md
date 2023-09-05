@@ -4,6 +4,7 @@
 
 - replace `structopt` with `clap`
 - add subcommand to generate shell completions
+- function `generate_files` now takes in `&Path`s instead of `PathBuf`s
 
 ## 0.0.16
 
