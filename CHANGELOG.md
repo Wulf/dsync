@@ -25,6 +25,10 @@
 - add many doc-comments to fields and functions
 - list changes to files (unchanged, modified, deleted)
 
+## 0.0.17 (yanked)
+
+- used for testing publishing CI
+
 ## 0.0.16
 
 - add option `schema-path` and `model-path` to specify custom paths for diesel schemas input and model output
