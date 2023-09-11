@@ -14,12 +14,7 @@ impl MarkedFile {
     ///
     /// If the file does not exist, a empty file is created
     pub fn new(path: PathBuf) -> Result<MarkedFile> {
-        let mut modified = false;
         let file_contents = if !path.exists() {
-            // TODO: should this really be created empty, instead this should likely only be done on save
-            std::fs::write(&path, "").attach_path_err(&path)?;
-            // set modified, because a file was written
-            modified = true;
             "".to_string()
         } else {
             std::fs::read_to_string(&path).attach_path_err(&path)?
@@ -27,7 +22,7 @@ impl MarkedFile {
         Ok(MarkedFile {
             path,
             file_contents,
-            modified,
+            modified: false,
         })
     }
 
