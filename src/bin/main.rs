@@ -98,6 +98,10 @@ pub struct MainOptions {
     /// Generate common structs only once in a "common.rs" file
     #[arg(long = "once-common-structs")]
     pub once_common_structs: bool,
+
+    /// Generate the "ConnectionType" type only once in a "common.rs" file
+    #[arg(long = "once-connection-type")]
+    pub once_connection_type: bool,
 }
 
 #[derive(Debug, ValueEnum, Clone, PartialEq, Default)]
@@ -198,6 +202,7 @@ fn actual_main() -> dsync::Result<()> {
             schema_path: args.schema_path,
             model_path: args.model_path,
             once_common_structs: args.once_common_structs,
+            once_connection_type: args.once_connection_type,
         },
     )?;
 

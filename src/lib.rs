@@ -232,6 +232,8 @@ pub struct GenerationConfig<'a> {
     pub model_path: String,
     /// Generate common structs only once in a "common.rs" file
     pub once_common_structs: bool,
+    /// Generate the "ConnectionType" type only once in a "common.rs" file
+    pub once_connection_type: bool,
 }
 
 impl GenerationConfig<'_> {
@@ -336,14 +338,19 @@ pub fn generate_files(
     // check that the mod.rs file exists
     let mut mod_rs = MarkedFile::new(output_models_dir.join("mod.rs"))?;
 
-    if config.once_common_structs {
+    if config.once_common_structs || config.once_connection_type {
         let mut common_file = MarkedFile::new(output_models_dir.join("common.rs"))?;
         common_file.ensure_file_signature()?;
         common_file.change_file_contents({
             let mut tmp = String::from(FILE_SIGNATURE);
-            tmp.push_str(&code::generate_common_structs(
-                &config.default_table_options,
-            ));
+            if config.once_common_structs {
+                tmp.push_str(&code::generate_common_structs(
+                    &config.default_table_options,
+                ));
+            }
+            if config.once_connection_type {
+                tmp.push_str(&code::generate_connection_type(&config));
+            }
             tmp
         });
         common_file.write()?;

@@ -507,6 +507,14 @@ pub struct PaginationResult<T> {{
     )
 }
 
+/// Generate connection-type type
+pub fn generate_connection_type(config: &GenerationConfig) -> String {
+    format!(
+        "\ntype ConnectionType = {connection_type};",
+        connection_type = config.connection_type,
+    )
+}
+
 /// Generate all imports for the struct file that are required
 fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String {
     let table_options = config.table(&table.name.to_string());
@@ -547,16 +555,13 @@ fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String 
         ""
     };
 
-    let connection_type_alias = if table_options.get_fns() {
-        format!(
-            "\ntype ConnectionType = {connection_type};",
-            connection_type = config.connection_type,
-        )
+    let connection_type_alias = if table_options.get_fns() && !config.once_connection_type {
+        generate_connection_type(config)
     } else {
         "".to_string()
     };
 
-    let common_structs_imports = if config.once_common_structs {
+    let common_structs_imports = if config.once_common_structs || config.once_connection_type {
         format!("\nuse {}common::*;", config.model_path)
     } else {
         "".into()
