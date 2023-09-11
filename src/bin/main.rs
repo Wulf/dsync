@@ -94,6 +94,10 @@ pub struct MainOptions {
     /// Only Generate a single model file instead of a directory with "mod.rs" and "generated.rs"
     #[arg(long = "single-model-file")]
     pub single_model_file: bool,
+
+    /// Generate common structs only once in a "common.rs" file
+    #[arg(long = "once-common-structs")]
+    pub once_common_structs: bool,
 }
 
 #[derive(Debug, ValueEnum, Clone, PartialEq, Default)]
@@ -193,6 +197,7 @@ fn actual_main() -> dsync::Result<()> {
             connection_type: args.connection_type,
             schema_path: args.schema_path,
             model_path: args.model_path,
+            once_common_structs: args.once_common_structs,
         },
     )?;
 

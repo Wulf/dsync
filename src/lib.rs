@@ -230,6 +230,8 @@ pub struct GenerationConfig<'a> {
     ///
     /// by default `crate::models::`
     pub model_path: String,
+    /// Generate common structs only once in a "common.rs" file
+    pub once_common_structs: bool,
 }
 
 impl GenerationConfig<'_> {
@@ -334,8 +336,27 @@ pub fn generate_files(
     // check that the mod.rs file exists
     let mut mod_rs = MarkedFile::new(output_models_dir.join("mod.rs"))?;
 
+    if config.once_common_structs {
+        let mut common_file = MarkedFile::new(output_models_dir.join("common.rs"))?;
+        common_file.ensure_file_signature()?;
+        common_file.change_file_contents({
+            let mut tmp = String::from(FILE_SIGNATURE);
+            tmp.push_str(&code::generate_common_structs(
+                &config.default_table_options,
+            ));
+            tmp
+        });
+        common_file.write()?;
+        file_changes.push(FileChange::from(&common_file));
+
+        mod_rs.ensure_mod_stmt("common");
+    }
+
     // pass 1: add code for new tables
     for table in generated.iter() {
+        if config.once_common_structs && table.name == "common" {
+            return Err(Error::other("Cannot have a table named \"common\" while having option \"once_common_structs\" enabled"));
+        }
         let table_name = table.name.to_string();
         let table_config = config.table(&table_name);
         let table_dir = if table_config.single_model_file {
