@@ -117,6 +117,7 @@ cargo install dsync
 * `--no-crud`: (optional) Do not generate the CRUD functions for generated models
 * `--create-str`: (optional) Set which string type to use for `Create*` structs (possible are `string`, `str`, `cow`)
 * `--update-str`: (optional) Set which string type to use for `Update*` structs (possible are `string`, `str`, `cow`)
+* `--single-model-file`: (optional) Generate only a single model file, instead of a directory with `mod.rs` and `generated.rs`
 * note: the CLI has fail-safes to prevent accidental file overwriting
 
 ```sh

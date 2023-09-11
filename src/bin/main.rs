@@ -90,6 +90,10 @@ pub struct MainOptions {
     /// Set which string type to use for Update* structs
     #[arg(long = "update-str", default_value = "string")]
     pub update_str: StringTypeCli,
+
+    /// Only Generate a single model file instead of a directory with "mod.rs" and "generated.rs"
+    #[arg(long = "single-model-file")]
+    pub single_model_file: bool,
 }
 
 #[derive(Debug, ValueEnum, Clone, PartialEq, Default)]
@@ -174,6 +178,10 @@ fn actual_main() -> dsync::Result<()> {
 
     if args.no_crud {
         default_table_options = default_table_options.disable_fns();
+    }
+
+    if args.single_model_file {
+        default_table_options = default_table_options.single_model_file();
     }
 
     let changes = dsync::generate_files(
