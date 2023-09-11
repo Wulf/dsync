@@ -275,7 +275,7 @@ pub fn generate_files(
         let mut table_mod_rs = MarkedFile::new(table_dir.join("mod.rs"))?;
 
         table_generated_rs.ensure_file_signature()?;
-        table_generated_rs.file_contents = table.generated_code.clone();
+        table_generated_rs.change_file_contents(table.generated_code.clone());
         table_generated_rs.write()?;
 
         file_changes.push(FileChange::from(&table_generated_rs));
@@ -340,7 +340,7 @@ pub fn generate_files(
             table_mod_rs.remove_use_stmt("generated::*");
             table_mod_rs.write()?;
 
-            if table_mod_rs.file_contents.trim().is_empty() {
+            if table_mod_rs.get_file_contents().trim().is_empty() {
                 let table_mod_rs = table_mod_rs.delete()?;
                 file_changes.push(FileChange::new(table_mod_rs, FileChangeStatus::Deleted));
             } else {
