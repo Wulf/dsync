@@ -115,6 +115,8 @@ cargo install dsync
 * `--schema-path`: (optional) set a custom schema import path, default `crate::schema::`
 * `--no-serde`: (optional) if set, does not output any serde related code
 * `--no-crud`: (optional) Do not generate the CRUD functions for generated models
+* `--create-str`: (optional) Set which string type to use for `Create*` structs (possible are `string`, `str`, `cow`)
+* `--update-str`: (optional) Set which string type to use for `Update*` structs (possible are `string`, `str`, `cow`)
 * note: the CLI has fail-safes to prevent accidental file overwriting
 
 ```sh

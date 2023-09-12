@@ -240,9 +240,32 @@ impl<'a> Struct<'a> {
             return;
         }
 
+        let lifetimes = {
+            let lifetimes = match self.ty {
+                StructType::Read => "",
+                StructType::Update => self.opts.get_update_str_type().get_lifetime(),
+                StructType::Create => self.opts.get_create_str_type().get_lifetime(),
+            };
+
+            if lifetimes.is_empty() {
+                String::new()
+            } else {
+                format!("<{}>", lifetimes)
+            }
+        };
+
         let mut lines = vec![];
-        for f in fields.iter() {
+        for mut f in fields.into_iter() {
             let field_name = &f.name;
+
+            if f.base_type == "String" {
+                f.base_type = match self.ty {
+                    StructType::Read => f.base_type,
+                    StructType::Update => self.opts.get_update_str_type().as_str().to_string(),
+                    StructType::Create => self.opts.get_create_str_type().as_str().to_string(),
+                }
+            }
+
             let mut field_type = f.to_rust_type();
 
             // always wrap a field in "Option<>" for a update struct, instead of flat options
@@ -259,7 +282,7 @@ impl<'a> Struct<'a> {
             indoc! {r#"
             {tsync_attr}{derive_attr}
             #[diesel(table_name={table_name}{primary_key}{belongs_to})]
-            pub struct {struct_name} {{
+            pub struct {struct_name}{lifetimes} {{
             {lines}
             }}
         "#},
@@ -267,6 +290,7 @@ impl<'a> Struct<'a> {
             derive_attr = self.attr_derive(),
             table_name = table.name,
             struct_name = ty.format(&table.struct_name),
+            lifetimes = lifetimes,
             primary_key = if ty != StructType::Read {
                 "".to_string()
             } else {

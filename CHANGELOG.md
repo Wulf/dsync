@@ -7,6 +7,8 @@
 - function `generate_files` now takes in `&Path`s instead of `PathBuf`s
 - remove `to_singular` name generations
 - replace dependency `Inflector` with `heck`
+- add option `create-str` to set `Create*` structs string type
+- add option `update-str` to set `Update*` structs string type
 
 ## 0.0.16
 
