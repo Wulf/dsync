@@ -1,13 +1,16 @@
-name: Continuous Integration
-on: 
+name: CI
+on:
   push:
+    branches:
+      - main
   pull_request:
+  workflow_dispatch:
 
 env:
   CARGO_TERM_COLOR: always
-  
+
 concurrency:
-  group:  CI-${{ github.ref }}
+  group: CI-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -62,7 +65,7 @@ jobs:
           key: ${{ runner.os }}-cargo-dev-${{ hashFiles('**/Cargo.lock') }}
       - run: bash test/test_all.sh
       - run: git diff --exit-code --quiet || exit 1
-      
+
   # things that use the cargo-test cache
   test:
     name: cargo test
@@ -79,11 +82,10 @@ jobs:
             ~/.cargo
           key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.lock') }}
       - run: cargo test
-  
-  
+
   # Things that don't need a cache
   fmt:
-    name: rustfmt
+    name: cargo fmt
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -92,15 +94,15 @@ jobs:
           toolchain: nightly
       - run: rustup component add rustfmt
       - run: cargo fmt --all -- --check
-    
+
   release:
     runs-on: ubuntu-latest
     name: release
     needs: [build, clippy, test, test-script, fmt]
-    if: github.ref == 'refs/heads/release'
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
       - run: cargo publish
-        env: 
+        env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
