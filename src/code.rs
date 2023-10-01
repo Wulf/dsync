@@ -240,6 +240,13 @@ impl<'a> Struct<'a> {
             .join(" ");
 
         let fields = self.fields();
+
+        if fields.is_empty() {
+            self.has_fields = Some(false);
+            self.rendered_code = None;
+            return;
+        }
+
         let mut lines = vec![];
         for f in fields.iter() {
             let field_name = &f.name;
@@ -277,13 +284,8 @@ impl<'a> Struct<'a> {
             lines = lines.join("\n"),
         );
 
-        if fields.is_empty() {
-            self.has_fields = Some(false);
-            self.rendered_code = None;
-        } else {
-            self.has_fields = Some(true);
-            self.rendered_code = Some(struct_code);
-        }
+        self.has_fields = Some(true);
+        self.rendered_code = Some(struct_code);
     }
 }
 
