@@ -239,12 +239,25 @@ impl<'a> Struct<'a> {
             .collect::<Vec<String>>()
             .join(" ");
 
+        let fields = self.fields();
+        let mut lines = vec![];
+        for f in fields.iter() {
+            let field_name = &f.name;
+            let field_type = if f.is_optional {
+                format!("Option<{}>", f.base_type)
+            } else {
+                f.base_type.clone()
+            };
+
+            lines.push(format!(r#"    pub {field_name}: {field_type},"#));
+        }
+
         let struct_code = format!(
             indoc! {r#"
             {tsync_attr}{derive_attr}
             #[diesel(table_name={table_name}{primary_key}{belongs_to})]
             pub struct {struct_name} {{
-            $COLUMNS$
+            {lines}
             }}
         "#},
             tsync_attr = self.attr_tsync(),
@@ -260,28 +273,16 @@ impl<'a> Struct<'a> {
                 "".to_string()
             } else {
                 belongs_to
-            }
+            },
+            lines = lines.join("\n"),
         );
-
-        let fields = self.fields();
-        let mut lines = vec![];
-        for f in fields.iter() {
-            let field_name = &f.name;
-            let field_type = if f.is_optional {
-                format!("Option<{}>", f.base_type)
-            } else {
-                f.base_type.clone()
-            };
-
-            lines.push(format!(r#"    pub {field_name}: {field_type},"#));
-        }
 
         if fields.is_empty() {
             self.has_fields = Some(false);
             self.rendered_code = None;
         } else {
             self.has_fields = Some(true);
-            self.rendered_code = Some(struct_code.replace("$COLUMNS$", &lines.join("\n")));
+            self.rendered_code = Some(struct_code);
         }
     }
 }
