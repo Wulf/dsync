@@ -278,7 +278,7 @@ impl<'a> Struct<'a> {
 
         if fields.is_empty() {
             self.has_fields = Some(false);
-            self.rendered_code = Some("".to_string());
+            self.rendered_code = None;
         } else {
             self.has_fields = Some(true);
             self.rendered_code = Some(struct_code.replace("$COLUMNS$", &lines.join("\n")));
