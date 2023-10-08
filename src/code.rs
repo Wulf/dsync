@@ -383,8 +383,6 @@ fn build_table_fns(
     let schema_path = &config.schema_path;
     let create_struct_identifier = &create_struct.identifier;
     let update_struct_identifier = &update_struct.identifier;
-    let item_id_params = item_id_params;
-    let item_id_filters = item_id_filters;
 
     let mut buffer = String::new();
 
