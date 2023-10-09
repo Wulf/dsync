@@ -1,10 +1,10 @@
 /* @generated and managed by dsync */
 
 use crate::diesel::*;
-use crate::schema::*;
-use diesel::QueryResult;
-use serde::{Deserialize, Serialize};
 use crate::data::models::table_a::TableA;
+use crate::schema::*;
+use serde::{Deserialize, Serialize};
+use diesel::QueryResult;
 
 type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
 

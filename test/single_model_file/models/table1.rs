@@ -2,9 +2,8 @@
 
 use crate::diesel::*;
 use crate::schema::*;
-use diesel::QueryResult;
 use serde::{Deserialize, Serialize};
-
+use diesel::QueryResult;
 
 type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
 

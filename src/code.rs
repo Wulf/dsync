@@ -561,74 +561,46 @@ pub fn generate_connection_type(config: &GenerationConfig) -> String {
 
 /// Generate all imports for the struct file that are required
 fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String {
+    // Note: i guess this could also just be a string that is appended to, or a vec of "Cow", but i personally think this is the most use-able
+    // because you dont have to think of any context style (like forgetting to put "\n" before / after something)
+    let mut imports_vec = Vec::with_capacity(10);
+    imports_vec.push("use crate::diesel::*;".into());
+
     let table_options = config.table(&table.name.to_string());
-    let belongs_imports = table
-        .foreign_keys
-        .iter()
-        .map(|fk| {
-            format!(
-                "use {model_path}{foreign_table_name_model}::{singular_struct_name};",
-                foreign_table_name_model = fk.0.to_string().to_snake_case().to_lowercase(),
-                singular_struct_name = fk.0.to_string().to_pascal_case(),
-                model_path = config.model_path
-            )
-        })
-        .collect::<Vec<String>>()
-        .join("\n");
+    imports_vec.extend(table.foreign_keys.iter().map(|fk| {
+        format!(
+            "use {model_path}{foreign_table_name_model}::{singular_struct_name};",
+            foreign_table_name_model = fk.0.to_string().to_snake_case().to_lowercase(),
+            singular_struct_name = fk.0.to_string().to_pascal_case(),
+            model_path = config.model_path
+        )
+    }));
     #[cfg(feature = "async")]
-    let async_imports = if table_options.get_async() {
-        "\nuse diesel_async::RunQueryDsl;"
-    } else {
-        ""
-    };
-    #[cfg(not(feature = "async"))]
-    let async_imports = "";
+    if table_options.get_async() {
+        imports_vec.push("use diesel_async::RunQueryDsl;".into());
+    }
 
-    let mut schema_path = config.schema_path.clone();
-    schema_path.push('*');
+    // no "::" because that is already included in the schema_path
+    imports_vec.push(format!("use {}*;", config.schema_path));
 
-    let serde_imports = if table_options.get_serde() {
-        "use serde::{Deserialize, Serialize};"
-    } else {
-        ""
+    if table_options.get_serde() {
+        imports_vec.push("use serde::{Deserialize, Serialize};".into());
     };
 
-    let fns_imports = if table_options.get_fns() {
-        "\nuse diesel::QueryResult;"
-    } else {
-        ""
+    if table_options.get_fns() {
+        imports_vec.push("use diesel::QueryResult;".into());
     };
 
-    let connection_type_alias = if table_options.get_fns() && !config.once_connection_type {
-        generate_connection_type(config)
-    } else {
-        "".to_string()
+    if config.once_common_structs || config.once_connection_type {
+        imports_vec.push(format!("use {}common::*;", config.model_path));
     };
 
-    let common_structs_imports = if config.once_common_structs || config.once_connection_type {
-        format!("\nuse {}common::*;", config.model_path)
-    } else {
-        "".into()
+    // this needs to be last, because it not really is a import, so it would split the import sections
+    if table_options.get_fns() && !config.once_connection_type {
+        imports_vec.push(generate_connection_type(config));
     };
 
-    formatdoc!(
-        "
-        use crate::diesel::*;
-        use {schema_path};{fns_imports}{common_structs_imports}
-        {serde_imports}{async_imports}
-        {belongs_imports}
-        {connection_type_alias}
-        ",
-        belongs_imports = belongs_imports,
-        async_imports = async_imports,
-        schema_path = schema_path,
-        serde_imports = serde_imports,
-        fns_imports = fns_imports,
-        connection_type_alias = connection_type_alias,
-        common_structs_imports = common_structs_imports,
-    )
-    .trim_end()
-    .to_string()
+    imports_vec.join("\n")
 }
 
 /// Generate a full file for a given diesel table
