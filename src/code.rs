@@ -323,7 +323,7 @@ impl<'a> Struct<'a> {
             pub struct {struct_name}{lifetimes} {{
             {lines}
             }}
-        "#,
+            "#,
             tsync_attr = self.attr_tsync(),
             derive_attr = self.attr_derive(),
             table_name = table.name,
@@ -618,7 +618,7 @@ fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String 
         {serde_imports}{async_imports}
         {belongs_imports}
         {connection_type_alias}
-    ",
+        ",
         belongs_imports = belongs_imports,
         async_imports = async_imports,
         schema_path = schema_path,
