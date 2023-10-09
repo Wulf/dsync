@@ -102,6 +102,14 @@ pub struct MainOptions {
     /// Generate the "ConnectionType" type only once in a "common.rs" file
     #[arg(long = "once-connection-type")]
     pub once_connection_type: bool,
+
+    /// A Prefix to treat a table matching this as readonly (only generate the Read struct)
+    #[arg(long = "readonly-prefix")]
+    pub readonly_prefixes: Vec<String>,
+
+    /// A Suffix to treat a table matching this as readonly (only generate the Read struct)
+    #[arg(long = "readonly-suffix")]
+    pub readonly_suffixes: Vec<String>,
 }
 
 #[derive(Debug, ValueEnum, Clone, PartialEq, Default)]
@@ -203,6 +211,8 @@ fn actual_main() -> dsync::Result<()> {
             model_path: args.model_path,
             once_common_structs: args.once_common_structs,
             once_connection_type: args.once_connection_type,
+            readonly_prefixes: args.readonly_prefixes,
+            readonly_suffixes: args.readonly_suffixes,
         },
     )?;
 

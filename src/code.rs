@@ -243,6 +243,18 @@ impl<'a> Struct<'a> {
         let ty = self.ty;
         let table = &self.table;
 
+        if self.opts.get_readonly() {
+            match ty {
+                StructType::Read => (),
+                StructType::Update | StructType::Create => {
+                    self.has_fields = Some(false);
+                    self.rendered_code = None;
+
+                    return;
+                }
+            }
+        }
+
         let primary_keys: Vec<String> = table.primary_key_column_names();
 
         let belongs_to = table
@@ -402,6 +414,7 @@ fn build_table_fns(
     let schema_path = &config.schema_path;
     let create_struct_identifier = &create_struct.identifier;
     let update_struct_identifier = &update_struct.identifier;
+    let is_readonly = table_options.get_readonly();
 
     let mut buffer = String::new();
 
@@ -415,8 +428,9 @@ impl {struct_name} {{
 "##
     ));
 
-    if create_struct.has_fields() {
-        buffer.push_str(&format!(
+    if !is_readonly {
+        if create_struct.has_fields() {
+            buffer.push_str(&format!(
             r##"
     pub{async_keyword} fn create(db: &mut ConnectionType, item: &{create_struct_identifier}) -> QueryResult<Self> {{
         use {schema_path}{table_name}::dsl::*;
@@ -425,16 +439,17 @@ impl {struct_name} {{
     }}
 "##
         ));
-    } else {
-        buffer.push_str(&format!(
-            r##"
+        } else {
+            buffer.push_str(&format!(
+                r##"
     pub{async_keyword} fn create(db: &mut ConnectionType) -> QueryResult<Self> {{
         use {schema_path}{table_name}::dsl::*;
 
         insert_into({table_name}).default_values().get_result::<Self>(db){await_keyword}
     }}
 "##
-        ));
+            ));
+        }
     }
 
     buffer.push_str(&format!(
@@ -471,7 +486,7 @@ impl {struct_name} {{
     // then don't require item_id_params (otherwise it'll be duplicated)
 
     // if has_update_struct {
-    if update_struct.has_fields() {
+    if update_struct.has_fields() && !is_readonly {
         // It's possible we have a form struct with all primary keys (for example, for a join table).
         // In this scenario, we also have to check whether there are any updatable columns for which
         // we should generate an update() method.
@@ -485,15 +500,17 @@ impl {struct_name} {{
 "##));
     }
 
-    buffer.push_str(&format!(
-        r##"
+    if !is_readonly {
+        buffer.push_str(&format!(
+            r##"
     pub{async_keyword} fn delete(db: &mut ConnectionType, {item_id_params}) -> QueryResult<usize> {{
         use {schema_path}{table_name}::dsl::*;
 
         diesel::delete({table_name}.{item_id_filters}).execute(db){await_keyword}
     }}
 "##
-    ));
+        ));
+    }
 
     buffer.push_str(
         r##"
