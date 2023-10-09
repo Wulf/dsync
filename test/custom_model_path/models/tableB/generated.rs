@@ -40,7 +40,6 @@ pub struct PaginationResult<T> {
 }
 
 impl TableB {
-
     pub fn create(db: &mut ConnectionType, item: &CreateTableB) -> QueryResult<Self> {
         use crate::schema::tableB::dsl::*;
 
@@ -82,5 +81,4 @@ impl TableB {
 
         diesel::delete(tableB.filter(_id.eq(param__id))).execute(db)
     }
-
 }

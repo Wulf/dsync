@@ -12,9 +12,7 @@ pub struct Table1 {
     pub id: i32,
 }
 
-
 impl Table1 {
-
     pub fn create(db: &mut ConnectionType) -> QueryResult<Self> {
         use crate::schema::table1::dsl::*;
 
@@ -50,5 +48,4 @@ impl Table1 {
 
         diesel::delete(table1.filter(id.eq(param_id))).execute(db)
     }
-
 }

@@ -45,7 +45,6 @@ pub struct PaginationResult<T> {
 }
 
 impl Todos {
-
     pub fn create(db: &mut ConnectionType, item: &CreateTodos) -> QueryResult<Self> {
         use crate::schema::todos::dsl::*;
 
@@ -87,5 +86,4 @@ impl Todos {
 
         diesel::delete(todos.filter(text.eq(param_text))).execute(db)
     }
-
 }

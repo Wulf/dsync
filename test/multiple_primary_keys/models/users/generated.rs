@@ -41,7 +41,6 @@ pub struct PaginationResult<T> {
 }
 
 impl Users {
-
     pub fn create(db: &mut ConnectionType, item: &CreateUsers) -> QueryResult<Self> {
         use crate::schema::users::dsl::*;
 
@@ -83,5 +82,4 @@ impl Users {
 
         diesel::delete(users.filter(name.eq(param_name)).filter(address.eq(param_address))).execute(db)
     }
-
 }

@@ -420,13 +420,10 @@ fn build_table_fns(
 
     if !config.once_common_structs {
         buffer.push_str(&generate_common_structs(&table_options));
+        buffer.push('\n');
     }
 
-    buffer.push_str(&format!(
-        r##"
-impl {struct_name} {{
-"##
-    ));
+    buffer.push_str(&format!("impl {struct_name} {{"));
 
     if !is_readonly {
         if create_struct.has_fields() {
@@ -512,10 +509,7 @@ impl {struct_name} {{
         ));
     }
 
-    buffer.push_str(
-        r##"
-}"##,
-    );
+    buffer.push('}');
 
     buffer
 }

@@ -63,7 +63,6 @@ pub struct PaginationResult<T> {
 }
 
 impl FangTasks {
-
     pub fn create(db: &mut ConnectionType, item: &CreateFangTasks) -> QueryResult<Self> {
         use crate::schema::fang_tasks::dsl::*;
 
@@ -105,5 +104,4 @@ impl FangTasks {
 
         diesel::delete(fang_tasks.filter(id.eq(param_id))).execute(db)
     }
-
 }
