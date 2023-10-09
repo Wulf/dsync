@@ -21,7 +21,6 @@ pub struct CreateTodos {
 }
 
 
-
 #[derive(Debug, Serialize)]
 pub struct PaginationResult<T> {
     pub items: Vec<T>,

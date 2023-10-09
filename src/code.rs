@@ -144,6 +144,10 @@ impl<'a> Struct<'a> {
         obj
     }
 
+    pub fn has_code(&self) -> bool {
+        self.rendered_code.is_some()
+    }
+
     /// Get the rendered code, or a empty string
     pub fn code(&self) -> &str {
         self.rendered_code.as_deref().unwrap_or_default()
@@ -618,12 +622,16 @@ pub fn generate_for_table(table: &ParsedTableMacro, config: &GenerationConfig) -
     let update_struct = Struct::new(StructType::Update, table, config);
     let create_struct = Struct::new(StructType::Create, table, config);
 
-    let mut structs = String::new();
-    structs.push_str(read_struct.code());
-    structs.push('\n');
-    structs.push_str(create_struct.code());
-    structs.push('\n');
-    structs.push_str(update_struct.code());
+    let mut structs = String::from(read_struct.code());
+    if create_struct.has_code() {
+        structs.push('\n');
+        structs.push_str(create_struct.code());
+    }
+
+    if update_struct.has_code() {
+        structs.push('\n');
+        structs.push_str(update_struct.code());
+    }
 
     let functions = if table_options.get_fns() {
         build_table_fns(table, config, create_struct, update_struct)

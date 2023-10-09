@@ -15,8 +15,6 @@ pub struct Table2 {
 }
 
 
-
-
 #[derive(Debug, Serialize)]
 pub struct PaginationResult<T> {
     pub items: Vec<T>,

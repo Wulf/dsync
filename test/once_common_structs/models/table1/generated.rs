@@ -16,8 +16,6 @@ pub struct Table1 {
 }
 
 
-
-
 impl Table1 {
 
     pub fn create(db: &mut ConnectionType) -> QueryResult<Self> {
