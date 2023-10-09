@@ -530,18 +530,18 @@ pub fn generate_common_structs(table_options: &TableOptions<'_>) -> String {
     #[cfg(not(feature = "tsync"))]
     let tsync = "";
 
-    format!(
+    formatdoc!(
         r##"{tsync}
-#[derive({debug_derive}, {serde_derive})]
-pub struct PaginationResult<T> {{
-    pub items: Vec<T>,
-    pub total_items: i64,
-    /// 0-based index
-    pub page: i64,
-    pub page_size: i64,
-    pub num_pages: i64,
-}}
-"##,
+        #[derive({debug_derive}, {serde_derive})]
+        pub struct PaginationResult<T> {{
+            pub items: Vec<T>,
+            pub total_items: i64,
+            /// 0-based index
+            pub page: i64,
+            pub page_size: i64,
+            pub num_pages: i64,
+        }}
+        "##,
         serde_derive = if table_options.get_serde() {
             derives::SERIALIZE
         } else {
