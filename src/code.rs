@@ -548,7 +548,7 @@ pub fn generate_common_structs(table_options: &TableOptions<'_>) -> String {
 /// Generate connection-type type
 pub fn generate_connection_type(config: &GenerationConfig) -> String {
     format!(
-        "\ntype ConnectionType = {connection_type};",
+        "type ConnectionType = {connection_type};",
         connection_type = config.connection_type,
     )
 }
@@ -591,6 +591,7 @@ fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String 
 
     // this needs to be last, because it not really is a import, so it would split the import sections
     if table_options.get_fns() && !config.once_connection_type {
+        imports_vec.push(String::new());
         imports_vec.push(generate_connection_type(config));
     };
 

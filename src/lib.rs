@@ -390,6 +390,7 @@ pub fn generate_files(
                 ));
             }
             if config.once_connection_type {
+                tmp.push('\n');
                 tmp.push_str(&code::generate_connection_type(&config));
             }
             tmp
