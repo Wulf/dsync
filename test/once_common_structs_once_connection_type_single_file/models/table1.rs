@@ -6,7 +6,7 @@ use diesel::QueryResult;
 use crate::models::common::*;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, Selectable)]
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name=table1, primary_key(id))]
 pub struct Table1 {
     pub id: crate::schema::sql_types::Int,

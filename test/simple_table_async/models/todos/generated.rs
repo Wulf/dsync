@@ -9,7 +9,7 @@ use diesel_async::RunQueryDsl;
 
 type ConnectionType = diesel_async::pooled_connection::deadpool::Object<diesel_async::AsyncPgConnection>;
 
-#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Selectable)]
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name=todos, primary_key(id))]
 pub struct Todos {
     pub id: i32,
@@ -20,7 +20,7 @@ pub struct Todos {
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
+#[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
 #[diesel(table_name=todos)]
 pub struct CreateTodos {
     pub unsigned: u32,
@@ -28,7 +28,7 @@ pub struct CreateTodos {
     pub completed: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, Default)]
 #[diesel(table_name=todos)]
 pub struct UpdateTodos {
     pub unsigned: Option<u32>,

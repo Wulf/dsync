@@ -10,6 +10,7 @@
 - add option `create-str` to set `Create*` structs string type
 - add option `update-str` to set `Update*` structs string type
 - add option `--single-model-file` to only generate a single file instead of a directory with `mod.rs` and `generated.rs`
+- derive generation has been refactored and now only necessary derives are added to a given struct
 
 ## 0.0.16
 

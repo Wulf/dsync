@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 
 type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
 
-#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Selectable)]
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name=todos, primary_key(text))]
 pub struct Todos {
     pub text: String,
@@ -17,7 +17,7 @@ pub struct Todos {
     pub varchar_nullable: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
+#[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
 #[diesel(table_name=todos)]
 pub struct CreateTodos<'a> {
     pub text: Cow<'a, str>,
@@ -26,7 +26,7 @@ pub struct CreateTodos<'a> {
     pub varchar_nullable: Option<Cow<'a, str>>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, Default)]
 #[diesel(table_name=todos)]
 pub struct UpdateTodos<'a> {
     pub text_nullable: Option<Option<Cow<'a, str>>>,

@@ -109,6 +109,21 @@ impl From<&ParsedColumnMacro> for StructField {
     }
 }
 
+/// Collection of all dervies available
+pub mod derives {
+    pub const DEBUG: &str = "Debug";
+    pub const DEFAULT: &str = "Default";
+    pub const CLONE: &str = "Clone";
+    pub const QUERYABLE: &str = "Queryable";
+    pub const INSERTABLE: &str = "Insertable";
+    pub const SERIALIZE: &str = "Serialize";
+    pub const DESERIALIZE: &str = "Deserialize";
+    pub const ASCHANGESET: &str = "AsChangeset";
+    pub const SELECTABLE: &str = "Selectable";
+    pub const IDENTIFIABLE: &str = "Identifiable";
+    pub const ASSOCIATIONS: &str = "Associations";
+}
+
 impl<'a> Struct<'a> {
     /// Create a new instance
     pub fn new(
@@ -153,32 +168,39 @@ impl<'a> Struct<'a> {
 
     /// Assemble all derives for the struct
     fn attr_derive(&self) -> String {
-        format!("#[derive(Debug, {derive_serde}Clone, Queryable, Insertable{derive_aschangeset}{derive_identifiable}{derive_associations}{derive_selectable}{derive_default})]",
-                derive_selectable = match self.ty {
-                    StructType::Read => { ", Selectable" }
-                    _ => { "" }
-                },
-                derive_associations = match self.ty {
-                    StructType::Read => {
-                        if !self.table.foreign_keys.is_empty() { ", Associations" } else { "" }
-                    }
-                    _ => { "" }
-                },
-                derive_identifiable = match self.ty {
-                    StructType::Read => {
-                        if !self.table.foreign_keys.is_empty() { ", Identifiable" } else { "" }
-                    }
-                    _ => { "" }
-                },
-                derive_aschangeset = if self.fields().iter().all(|f| self.table.primary_key_column_names().contains(&f.name)) {""} else { ", AsChangeset" },
-                derive_default = match self.ty {
-                    StructType::Update => { ", Default" }
-                    _ => { "" }
-                },
-                derive_serde = if self.config.table(&self.table.name.to_string()).get_serde() {
-                    "Serialize, Deserialize, "
-                } else { "" }
-        )
+        let mut derives_vec = Vec::with_capacity(10);
+        // Default derives that exist on every struct
+        derives_vec.extend_from_slice(&[derives::DEBUG, derives::CLONE]);
+
+        if self.config.table(&self.table.name.to_string()).get_serde() {
+            derives_vec.extend_from_slice(&[derives::SERIALIZE, derives::DESERIALIZE]);
+        }
+
+        match self.ty {
+            StructType::Read => {
+                // derives that always exist, regardless of extra conditions
+                derives_vec.extend_from_slice(&[derives::QUERYABLE, derives::SELECTABLE]);
+
+                if !self.table.foreign_keys.is_empty() {
+                    derives_vec.extend_from_slice(&[derives::ASSOCIATIONS, derives::IDENTIFIABLE]);
+                }
+            }
+            StructType::Update => {
+                // NOTE: the following might not be fully necessary and there is not test for this, see https://github.com/Wulf/dsync/pull/87/files/4ca7054981d6925c3709643e3020c31666024ce2#r1375325415 for a explanation
+                if !self
+                    .fields()
+                    .iter()
+                    .all(|f| self.table.primary_key_column_names().contains(&f.name))
+                {
+                    derives_vec.push(derives::ASCHANGESET);
+                }
+
+                derives_vec.push(derives::DEFAULT);
+            }
+            StructType::Create => derives_vec.extend_from_slice(&[derives::INSERTABLE]),
+        }
+
+        format!("#[derive({})]", derives_vec.join(", "))
     }
 
     /// Convert [ParsedColumnMacro]'s to [StructField]'s
@@ -489,7 +511,7 @@ pub fn generate_common_structs(table_options: &TableOptions<'_>) -> String {
 
     format!(
         r##"{tsync}
-#[derive(Debug, {serde_derive})]
+#[derive({debug_derive}, {serde_derive})]
 pub struct PaginationResult<T> {{
     pub items: Vec<T>,
     pub total_items: i64,
@@ -500,10 +522,11 @@ pub struct PaginationResult<T> {{
 }}
 "##,
         serde_derive = if table_options.get_serde() {
-            "Serialize"
+            derives::SERIALIZE
         } else {
             ""
-        }
+        },
+        debug_derive = derives::DEBUG
     )
 }
 

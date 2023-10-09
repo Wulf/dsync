@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 
 type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
 
-#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Selectable)]
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name=fang_tasks, primary_key(id))]
 pub struct FangTasks {
     pub id: uuid::Uuid,
@@ -23,7 +23,7 @@ pub struct FangTasks {
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
+#[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
 #[diesel(table_name=fang_tasks)]
 pub struct CreateFangTasks {
     pub id: uuid::Uuid,
@@ -38,7 +38,7 @@ pub struct CreateFangTasks {
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, Default)]
 #[diesel(table_name=fang_tasks)]
 pub struct UpdateFangTasks {
     pub metadata: Option<serde_json::Value>,

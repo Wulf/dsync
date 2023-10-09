@@ -8,7 +8,7 @@ use diesel::QueryResult;
 
 type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
 
-#[derive(Debug, Clone, Queryable, Insertable, AsChangeset, Selectable)]
+#[derive(Debug, Clone, Queryable, Selectable)]
 #[diesel(table_name=todos, primary_key(id))]
 pub struct Todos {
     pub id: i32,
@@ -19,7 +19,7 @@ pub struct Todos {
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
-#[derive(Debug, Clone, Queryable, Insertable, AsChangeset)]
+#[derive(Debug, Clone, Insertable)]
 #[diesel(table_name=todos)]
 pub struct CreateTodos {
     pub unsigned: u32,
@@ -27,7 +27,7 @@ pub struct CreateTodos {
     pub completed: bool,
 }
 
-#[derive(Debug, Clone, Queryable, Insertable, AsChangeset, Default)]
+#[derive(Debug, Clone, AsChangeset, Default)]
 #[diesel(table_name=todos)]
 pub struct UpdateTodos {
     pub unsigned: Option<u32>,

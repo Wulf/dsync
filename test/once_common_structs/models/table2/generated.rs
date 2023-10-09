@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 
 type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
 
-#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, Selectable)]
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name=table2, primary_key(id))]
 pub struct Table2 {
     pub id: crate::schema::sql_types::Int,
