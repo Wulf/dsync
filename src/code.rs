@@ -1,5 +1,5 @@
 use heck::{ToPascalCase, ToSnakeCase};
-use indoc::indoc;
+use indoc::formatdoc;
 use std::borrow::Cow;
 
 use crate::parser::{ParsedColumnMacro, ParsedTableMacro, FILE_SIGNATURE};
@@ -316,14 +316,14 @@ impl<'a> Struct<'a> {
             lines.push(format!(r#"    pub {field_name}: {field_type},"#));
         }
 
-        let struct_code = format!(
-            indoc! {r#"
+        let struct_code = formatdoc!(
+            r#"
             {tsync_attr}{derive_attr}
             #[diesel(table_name={table_name}{primary_key}{belongs_to})]
             pub struct {struct_name}{lifetimes} {{
             {lines}
             }}
-        "#},
+        "#,
             tsync_attr = self.attr_tsync(),
             derive_attr = self.attr_derive(),
             table_name = table.name,
@@ -611,14 +611,14 @@ fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String 
         "".into()
     };
 
-    format!(
-        indoc! {"
+    formatdoc!(
+        "
         use crate::diesel::*;
         use {schema_path};{fns_imports}{common_structs_imports}
         {serde_imports}{async_imports}
         {belongs_imports}
         {connection_type_alias}
-    "},
+    ",
         belongs_imports = belongs_imports,
         async_imports = async_imports,
         schema_path = schema_path,
