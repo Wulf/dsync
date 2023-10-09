@@ -32,7 +32,7 @@ clap = { version = "4.3", features = ["derive", "wrap_help"] }
 clap_complete = "4.3"
 syn = { version = "1", features = ["extra-traits", "full"] }
 proc-macro2 = "1"
-indoc = "2.0.0"
+indoc = "2.0.4"
 heck = "0.4" # same case converter diesel uses
 thiserror = "1.0"
 
