@@ -292,7 +292,7 @@ impl<'a> Struct<'a> {
             }
         };
 
-        let mut lines = vec![];
+        let mut lines = Vec::with_capacity(fields.len());
         for mut f in fields.into_iter() {
             let field_name = &f.name;
 
