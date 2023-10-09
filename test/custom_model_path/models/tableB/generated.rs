@@ -28,7 +28,6 @@ pub struct UpdateTableB {
     pub link: Option<i32>,
 }
 
-
 #[derive(Debug, Serialize)]
 pub struct PaginationResult<T> {
     pub items: Vec<T>,

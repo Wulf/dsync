@@ -29,7 +29,6 @@ pub struct UpdateUsers {
     pub secret: Option<String>,
 }
 
-
 #[derive(Debug, Serialize)]
 pub struct PaginationResult<T> {
     pub items: Vec<T>,

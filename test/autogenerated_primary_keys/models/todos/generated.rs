@@ -26,7 +26,6 @@ pub struct UpdateTodos {
     pub text: Option<String>,
 }
 
-
 #[derive(Debug, Serialize)]
 pub struct PaginationResult<T> {
     pub items: Vec<T>,

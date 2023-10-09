@@ -518,15 +518,15 @@ fn build_table_fns(
 pub fn generate_common_structs(table_options: &TableOptions<'_>) -> String {
     #[cfg(feature = "tsync")]
     let tsync = match table_options.get_tsync() {
-        true => "#[tsync::tsync]",
+        true => "#[tsync::tsync]\n",
         false => "",
     };
     #[cfg(not(feature = "tsync"))]
     let tsync = "";
 
     formatdoc!(
-        r##"{tsync}
-        #[derive({debug_derive}, {serde_derive})]
+        r##"
+        {tsync}#[derive({debug_derive}, {serde_derive})]
         pub struct PaginationResult<T> {{
             pub items: Vec<T>,
             pub total_items: i64,

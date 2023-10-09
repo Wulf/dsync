@@ -2,9 +2,8 @@
 
 use crate::diesel::*;
 use crate::schema::*;
-use diesel::QueryResult;
 use serde::{Deserialize, Serialize};
-
+use diesel::QueryResult;
 
 type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
 
@@ -14,7 +13,6 @@ pub struct TableSuffix {
     pub id: i32,
     pub testprop: i32,
 }
-
 
 #[derive(Debug, Serialize)]
 pub struct PaginationResult<T> {
@@ -27,7 +25,6 @@ pub struct PaginationResult<T> {
 }
 
 impl TableSuffix {
-
     pub fn read(db: &mut ConnectionType, param_id: i32) -> QueryResult<Self> {
         use crate::schema::tableSuffix::dsl::*;
 
@@ -51,5 +48,4 @@ impl TableSuffix {
             num_pages: total_items / page_size + i64::from(total_items % page_size != 0)
         })
     }
-
 }

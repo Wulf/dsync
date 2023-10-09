@@ -383,7 +383,7 @@ pub fn generate_files(
         let mut common_file = MarkedFile::new(output_models_dir.join("common.rs"))?;
         common_file.ensure_file_signature()?;
         common_file.change_file_contents({
-            let mut tmp = String::from(FILE_SIGNATURE);
+            let mut tmp = format!("{FILE_SIGNATURE}\n");
             if config.once_common_structs {
                 tmp.push_str(&code::generate_common_structs(
                     &config.default_table_options,

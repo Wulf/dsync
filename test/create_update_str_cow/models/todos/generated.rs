@@ -33,7 +33,6 @@ pub struct UpdateTodos<'a> {
     pub varchar_nullable: Option<Option<Cow<'a, str>>>,
 }
 
-
 #[derive(Debug, Serialize)]
 pub struct PaginationResult<T> {
     pub items: Vec<T>,

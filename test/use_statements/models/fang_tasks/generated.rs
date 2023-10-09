@@ -51,7 +51,6 @@ pub struct UpdateFangTasks {
     pub updated_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
-
 #[derive(Debug, Serialize)]
 pub struct PaginationResult<T> {
     pub items: Vec<T>,

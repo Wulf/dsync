@@ -2,9 +2,8 @@
 
 use crate::diesel::*;
 use crate::schema::*;
-use diesel::QueryResult;
 use serde::{Deserialize, Serialize};
-
+use diesel::QueryResult;
 
 type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
 
@@ -27,7 +26,6 @@ pub struct UpdateNormal {
     pub testprop: Option<i32>,
 }
 
-
 #[derive(Debug, Serialize)]
 pub struct PaginationResult<T> {
     pub items: Vec<T>,
@@ -39,7 +37,6 @@ pub struct PaginationResult<T> {
 }
 
 impl Normal {
-
     pub fn create(db: &mut ConnectionType, item: &CreateNormal) -> QueryResult<Self> {
         use crate::schema::normal::dsl::*;
 
@@ -81,5 +78,4 @@ impl Normal {
 
         diesel::delete(normal.filter(id.eq(param_id))).execute(db)
     }
-
 }

@@ -20,7 +20,6 @@ pub struct UpdateTodos {
     pub created_at: Option<chrono::NaiveDateTime>,
 }
 
-
 #[derive(Debug, Serialize)]
 pub struct PaginationResult<T> {
     pub items: Vec<T>,
