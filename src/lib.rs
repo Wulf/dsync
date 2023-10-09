@@ -392,7 +392,12 @@ pub fn generate_files(
             if config.once_connection_type {
                 tmp.push('\n');
                 tmp.push_str(&code::generate_connection_type(&config));
+
+                // add ending new-line, this should not cause duplicate new-lines because this only gets run if any of the options is set
+                // this will need to be refactored if there should ever be more options using common_file
+                tmp.push('\n');
             }
+
             tmp
         });
         common_file.write()?;
