@@ -131,7 +131,7 @@ dependencies = [
  "heck",
  "indoc",
  "proc-macro2",
- "syn 1.0.107",
+ "syn 2.0.29",
  "thiserror",
 ]
 
