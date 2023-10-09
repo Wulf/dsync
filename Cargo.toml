@@ -28,8 +28,8 @@ async = []
 backtrace = []
 
 [dependencies]
-clap = { version = "4.3", features = ["derive", "wrap_help"] }
-clap_complete = "4.3"
+clap = { version = "4.4", features = ["derive", "wrap_help"] }
+clap_complete = "4.4"
 syn = { version = "2", features = ["extra-traits", "full"] }
 proc-macro2 = "1"
 indoc = "2.0.4"
