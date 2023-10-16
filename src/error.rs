@@ -8,7 +8,7 @@ use std::{io::Error as ioError, path::Path};
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-/// Macro to not repeat having to do multiple implementations of a [ErrorInner] variant with the same string type
+/// Macro to not repeat having to do multiple implementations of a [ErrorEnum] variant with the same string type
 macro_rules! fn_string {
     ($fn_name:ident, $fortype:expr) => {
         #[doc = concat!("Create a new [Self] as [", stringify!($fortype), "]")]
@@ -21,7 +21,7 @@ macro_rules! fn_string {
     };
 }
 
-/// Error type for libytdlr, contains a backtrace, wrapper around [ErrorInner]
+/// Error type for libytdlr, contains a backtrace, wrapper around [ErrorEnum]
 #[derive(Debug)]
 pub struct Error {
     /// The actual error
@@ -32,7 +32,7 @@ pub struct Error {
 }
 
 impl Error {
-    /// Construct a new [Error] instance based on [ErrorInner]
+    /// Construct a new [Error] instance based on [ErrorEnum]
     pub fn new(source: ErrorEnum) -> Self {
         Self {
             source,
@@ -91,7 +91,7 @@ impl std::error::Error for Error {
     }
 }
 
-// implement all From<> variants that ErrorInner also implements
+// implement all From<> variants that ErrorEnum also implements
 impl<T> From<T> for Error
 where
     T: Into<ErrorEnum>,
