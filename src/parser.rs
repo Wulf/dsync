@@ -4,6 +4,7 @@ use syn::Item::Macro;
 
 use crate::{code, Error, GenerationConfig, Result};
 
+/// dsync file signature for generated & managed files
 pub const FILE_SIGNATURE: &str = "/* @generated and managed by dsync */";
 
 // TODO: handle postgres array types

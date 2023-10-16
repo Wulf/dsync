@@ -24,6 +24,7 @@ use std::collections::HashMap;
 use std::fmt::Display;
 use std::path::{Path, PathBuf};
 
+/// Available options for string types
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub enum StringType {
     /// Use "String"
@@ -224,6 +225,7 @@ impl<'a> Default for TableOptions<'a> {
     }
 }
 
+/// Global config, not table specific
 #[derive(Debug, Clone)]
 pub struct GenerationConfig<'a> {
     /// Specific Table options for a given table
@@ -269,6 +271,7 @@ pub fn generate_code(
     parser::parse_and_generate_code(diesel_schema_file_contents, config)
 }
 
+/// Status indicating what happened to a file
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FileChangeStatus {
     /// Status for unchanged file contents
@@ -293,6 +296,7 @@ impl Display for FileChangeStatus {
     }
 }
 
+/// Status indicating what happened to a specific file
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FileChange {
     /// File in question
