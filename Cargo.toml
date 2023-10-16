@@ -6,14 +6,22 @@ readme = "README.md"
 repository = "https://github.com/Wulf/dsync"
 license = "MIT OR Apache-2.0"
 keywords = ["diesel", "crud", "database", "codegen", "generation"]
-categories = ["command-line-utilities", "development-tools", "development-tools::ffi", "web-programming"]
+categories = [
+    "command-line-utilities",
+    "development-tools",
+    "development-tools::ffi",
+    "web-programming",
+]
 authors = ["Haris <4259838+Wulf@users.noreply.github.com>"]
 edition = "2021"
 
 [features]
 default = ["tsync", "backtrace"]
+# enable support for tsync (https://github.com/Wulf/tsync)
 tsync = []
+# enable support for diesel_async (https://github.com/weiznich/diesel_async)
 async = []
+# enable support for backtraces on errors
 backtrace = []
 
 [dependencies]

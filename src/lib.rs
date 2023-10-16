@@ -1,3 +1,15 @@
+//! dsync library
+//!
+//! The dsync library allows creating a custom binary for dsync
+//!
+//! ## Features
+//!
+//! - `async`: enable support for [diesel_async](https://github.com/weiznich/diesel_async)
+//! - `tsync`: enable support for [tsync](https://github.com/Wulf/tsync)
+//! - `backtrace`: enable attaching backtraces to dsync errors
+//!
+//! default features: `tsync`, `backtrace`
+
 mod code;
 pub mod error;
 mod file;
