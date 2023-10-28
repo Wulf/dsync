@@ -248,6 +248,21 @@ pub struct GenerationConfig<'a> {
     pub once_connection_type: bool,
 }
 
+impl<'a> Default for GenerationConfig<'a> {
+    fn default() -> Self {
+        Self {
+            table_options: Default::default(),
+            default_table_options: Default::default(),
+            connection_type: "diesel::pg::PgConnection".into(),
+            diesel_backend: "diesel::pg::Pg".into(),
+            schema_path: "crate::schema::".into(),
+            model_path: "crate::models::".into(),
+            once_common_structs: true,
+            once_connection_type: true,
+        }
+    }
+}
+
 impl GenerationConfig<'_> {
     pub fn table(&self, name: &str) -> TableOptions<'_> {
         let t = self
