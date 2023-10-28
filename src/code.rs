@@ -583,7 +583,7 @@ pub struct PaginationResult<T> {{
 }}
 "##,
         serde_derive = if table_options.get_serde() {
-            "Serialize"
+            "serde::Serialize"
         } else {
             ""
         }
