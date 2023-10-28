@@ -120,7 +120,7 @@ impl<'a> TableOptions<'a> {
     #[cfg(feature = "tsync")]
     pub fn tsync(self) -> Self {
         Self {
-            tsync: Some(true),
+            tsync: Some(false),
             ..self
         }
     }
@@ -214,14 +214,26 @@ impl<'a> Default for TableOptions<'a> {
 
 #[derive(Debug, Clone)]
 pub struct GenerationConfig<'a> {
-    /// Specific Table options for a given table
+    /// Specific code generation options for a particular table
     pub table_options: HashMap<&'a str, TableOptions<'a>>,
-    /// Default table options, used when not in `table_options`
+    /// Default table options, can be overriden by `table_options`
     pub default_table_options: TableOptions<'a>,
     /// Connection type to insert
     ///
-    /// Example: `diesel::SqliteConnection`
+    /// For example:
+    /// - `diesel::pg::PgConnection` (default)
+    /// - `diesel::sqlite::SqliteConnection`
+    /// - `diesel::mysql::MysqlConnection`
+    /// - or, your custom diesel connection type (struct which implements `diesel::connection::Connection`)
     pub connection_type: String,
+    /// Diesel backend
+    ///
+    /// For example:
+    /// - `diesel::pg::Pg` (default)
+    /// - `diesel::sqlite::Sqlite`
+    /// - `diesel::mysql::Mysql`
+    /// - or, your custom diesel backend type (struct which implements `diesel::backend::Backend`)
+    pub diesel_backend: String,
     /// Diesel schema import path
     ///
     /// by default `crate::schema::`
@@ -231,9 +243,26 @@ pub struct GenerationConfig<'a> {
     /// by default `crate::models::`
     pub model_path: String,
     /// Generate common structs only once in a "common.rs" file
+    /// (true by default)
     pub once_common_structs: bool,
     /// Generate the "ConnectionType" type only once in a "common.rs" file
+    /// (true by default)
     pub once_connection_type: bool,
+}
+
+impl<'a> Default for GenerationConfig<'a> {
+    fn default() -> Self {
+        Self {
+            table_options: Default::default(),
+            default_table_options: Default::default(),
+            connection_type: "diesel::pg::PgConnection".into(),
+            diesel_backend: "diesel::pg::Pg".into(),
+            schema_path: "crate::schema::".into(),
+            model_path: "crate::models::".into(),
+            once_common_structs: true,
+            once_connection_type: true,
+        }
+    }
 }
 
 impl GenerationConfig<'_> {
@@ -343,6 +372,7 @@ pub fn generate_files(
         common_file.ensure_file_signature()?;
         common_file.change_file_contents({
             let mut tmp = String::from(FILE_SIGNATURE);
+            tmp.push('\n');
             if config.once_common_structs {
                 tmp.push_str(&code::generate_common_structs(
                     &config.default_table_options,

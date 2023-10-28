@@ -215,7 +215,7 @@ impl<'a> Struct<'a> {
     /// Render the full struct
     fn render(&mut self) {
         let ty = self.ty;
-        let table = &self.table;
+        let table = self.table;
 
         let primary_keys: Vec<String> = table.primary_key_column_names();
 
@@ -422,24 +422,61 @@ impl {struct_name} {{
     ));
 
     buffer.push_str(&format!(r##"
-    /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
-    pub{async_keyword} fn paginate(db: &mut ConnectionType, page: i64, page_size: i64) -> QueryResult<PaginationResult<Self>> {{
+    /// Paginates through the table where page is a 1-based index (i.e. page 1 is the first page)
+    pub{async_keyword} fn paginate(db: &mut ConnectionType, param_page_starting_with_1: i64, param_page_size: i64, filter: {struct_name}Filter) -> QueryResult<PaginationResult<Self>> {{
         use {schema_path}{table_name}::dsl::*;
 
-        let page_size = if page_size < 1 {{ 1 }} else {{ page_size }};
-        let total_items = {table_name}.count().get_result(db){await_keyword}?;
-        let items = {table_name}.limit(page_size).offset(page * page_size).load::<Self>(db){await_keyword}?;
+        let param_page = param_page_starting_with_1.max(0);
+        let param_page_size = param_page_size.max(1);
+        let total_items = Self::filter(filter.clone()).count().get_result(db)?;
+        let items = Self::filter(filter).limit(param_page_size).offset(param_page * param_page_size).load::<Self>(db){await_keyword}?;
 
         Ok(PaginationResult {{
             items,
             total_items,
-            page,
-            page_size,
+            page: param_page,
+            page_size: param_page_size,
             /* ceiling division of integers */
-            num_pages: total_items / page_size + i64::from(total_items % page_size != 0)
+            num_pages: total_items / param_page_size + i64::from(total_items % param_page_size != 0)
         }})
     }}
 "##));
+
+    // Table::filter() helper fn
+    {
+        let diesel_backend = config.diesel_backend.clone();
+        let filters = table
+            .columns
+            .iter()
+            .map(|column| {
+                let column_name = column.name.to_string();
+                format!(
+                    r##"
+        if let Some(filter_{column_name}) = filter.{column_name}.clone() {{
+            query = query.filter({schema_path}{table_name}::{column_name}.eq(filter_{column_name}));
+        }}"##
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("");
+        buffer.push_str(&format!(
+            r##"
+    /// A utility function to help build custom search queries
+    /// 
+    /// Example:
+    /// 
+    pub fn filter<'a>(
+        filter: {struct_name}Filter,
+    ) -> {schema_path}{table_name}::BoxedQuery<'a, {diesel_backend}> {{
+        let mut query = {schema_path}{table_name}::table.into_boxed();
+
+        {filters}
+
+        query
+    }}
+"##
+        ));
+    }
 
     // TODO: If primary key columns are attached to the form struct (not optionally)
     // then don't require item_id_params (otherwise it'll be duplicated)
@@ -470,9 +507,55 @@ impl {struct_name} {{
     ));
 
     buffer.push_str(
-        r##"
-}"##,
+        r#"
+}"#,
     );
+
+    // generate filter struct for filter() helper function
+    {
+        let filter_fields = table
+            .columns
+            .iter()
+            .map(|column| {
+                let column_name = column.name.to_string();
+                format!(
+                    "pub {column_name}: Option<{column_type}>,",
+                    column_name = column_name,
+                    column_type = if column.is_nullable {
+                        format!("Option<{}>", column.ty)
+                    } else {
+                        column.ty.clone()
+                    }
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("\n    ");
+        let filter_fields_default = table
+            .columns
+            .iter()
+            .map(|column| {
+                let column_name = column.name.to_string();
+                format!("{column_name}: None,")
+            })
+            .collect::<Vec<_>>()
+            .join("\n            ");
+        buffer.push_str(&format!(
+            r##"
+#[derive(Clone)]
+pub struct {struct_name}Filter {{
+    {filter_fields}
+}}
+
+impl Default for {struct_name}Filter {{
+    fn default() -> {struct_name}Filter {{
+        {struct_name}Filter {{
+            {filter_fields_default}
+        }}
+    }}
+}}
+"##
+        ));
+    }
 
     buffer
 }
@@ -500,7 +583,7 @@ pub struct PaginationResult<T> {{
 }}
 "##,
         serde_derive = if table_options.get_serde() {
-            "Serialize"
+            "serde::Serialize"
         } else {
             ""
         }
@@ -510,7 +593,7 @@ pub struct PaginationResult<T> {{
 /// Generate connection-type type
 pub fn generate_connection_type(config: &GenerationConfig) -> String {
     format!(
-        "\ntype ConnectionType = {connection_type};",
+        "\npub type ConnectionType = {connection_type};",
         connection_type = config.connection_type,
     )
 }
@@ -569,7 +652,7 @@ fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String 
 
     format!(
         indoc! {"
-        use crate::diesel::*;
+        use diesel::*;
         use {schema_path};{fns_imports}{common_structs_imports}
         {serde_imports}{async_imports}
         {belongs_imports}

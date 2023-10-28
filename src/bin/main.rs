@@ -102,6 +102,18 @@ pub struct MainOptions {
     /// Generate the "ConnectionType" type only once in a "common.rs" file
     #[arg(long = "once-connection-type")]
     pub once_connection_type: bool,
+
+    /// Set which diesel backend to use (something which implements `diesel::backend::Backend`)
+    /// Deisel provides the following backends:
+    /// - `diesel::pg::Pg`
+    /// - `diesel::sqlite::Sqlite`
+    /// - `diesel::mysql::Mysql`
+    ///
+    /// See `crate::GenerationConfig::diesel_backend` for more details.
+    ///
+    /// Default is "diesel::pg::Pg"
+    #[arg(long = "diesel-backend", default_value = "diesel::pg::Pg")]
+    pub diesel_backend: String,
 }
 
 #[derive(Debug, ValueEnum, Clone, PartialEq, Default)]
@@ -203,6 +215,7 @@ fn actual_main() -> dsync::Result<()> {
             model_path: args.model_path,
             once_common_structs: args.once_common_structs,
             once_connection_type: args.once_connection_type,
+            diesel_backend: args.diesel_backend,
         },
     )?;
 
