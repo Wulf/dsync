@@ -6,7 +6,7 @@ use diesel::QueryResult;
 use serde::{Deserialize, Serialize};
 
 
-type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
+pub type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, Selectable)]
 #[diesel(table_name=table1, primary_key(id))]
@@ -17,7 +17,7 @@ pub struct Table1 {
 
 
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, serde::Serialize)]
 pub struct PaginationResult<T> {
     pub items: Vec<T>,
     pub total_items: i64,

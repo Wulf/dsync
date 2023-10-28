@@ -15,7 +15,7 @@ pub struct Table1 {
 
 
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, serde::Serialize)]
 pub struct PaginationResult<T> {
     pub items: Vec<T>,
     pub total_items: i64,

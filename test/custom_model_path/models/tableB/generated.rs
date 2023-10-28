@@ -6,7 +6,7 @@ use diesel::QueryResult;
 use serde::{Deserialize, Serialize};
 use crate::data::models::table_a::TableA;
 
-type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
+pub type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Identifiable, Associations, Selectable)]
 #[diesel(table_name=tableB, primary_key(_id), belongs_to(TableA, foreign_key=link))]
@@ -29,7 +29,7 @@ pub struct UpdateTableB {
 }
 
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, serde::Serialize)]
 pub struct PaginationResult<T> {
     pub items: Vec<T>,
     pub total_items: i64,

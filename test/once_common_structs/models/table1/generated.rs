@@ -7,7 +7,7 @@ use crate::models::common::*;
 use serde::{Deserialize, Serialize};
 
 
-type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
+pub type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, Selectable)]
 #[diesel(table_name=table1, primary_key(id))]

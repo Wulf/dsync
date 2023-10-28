@@ -6,7 +6,7 @@ use diesel::QueryResult;
 
 
 
-type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
+pub type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
 
 #[derive(Debug, Clone, Queryable, Insertable, AsChangeset, Selectable)]
 #[diesel(table_name=todos, primary_key(id))]

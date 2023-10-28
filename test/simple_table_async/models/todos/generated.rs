@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use diesel_async::RunQueryDsl;
 
 
-type ConnectionType = diesel_async::pooled_connection::deadpool::Object<diesel_async::AsyncPgConnection>;
+pub type ConnectionType = diesel_async::pooled_connection::deadpool::Object<diesel_async::AsyncPgConnection>;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Selectable)]
 #[diesel(table_name=todos, primary_key(id))]
@@ -39,7 +39,7 @@ pub struct UpdateTodos {
 }
 
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, serde::Serialize)]
 pub struct PaginationResult<T> {
     pub items: Vec<T>,
     pub total_items: i64,
