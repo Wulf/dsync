@@ -11,7 +11,7 @@ authors = ["Haris <4259838+Wulf@users.noreply.github.com>"]
 edition = "2021"
 
 [features]
-default = ["tsync", "backtrace"]
+default = ["backtrace"]
 tsync = []
 async = []
 backtrace = []
