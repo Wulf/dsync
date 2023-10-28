@@ -593,7 +593,7 @@ pub struct PaginationResult<T> {{
 /// Generate connection-type type
 pub fn generate_connection_type(config: &GenerationConfig) -> String {
     format!(
-        "\ntype ConnectionType = {connection_type};",
+        "\npub type ConnectionType = {connection_type};",
         connection_type = config.connection_type,
     )
 }
