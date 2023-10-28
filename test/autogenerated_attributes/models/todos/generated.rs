@@ -52,22 +52,43 @@ impl Todos {
         todos.filter(id.eq(param_id)).first::<Self>(db)
     }
 
-    /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
-    pub fn paginate(db: &mut ConnectionType, page: i64, page_size: i64) -> QueryResult<PaginationResult<Self>> {
+    /// Paginates through the table where page is a 1-based index (i.e. page 1 is the first page)
+    pub fn paginate(db: &mut ConnectionType, param_page_starting_with_1: i64, param_page_size: i64, filter: TodosFilter) -> QueryResult<PaginationResult<Self>> {
         use crate::schema::todos::dsl::*;
 
-        let page_size = if page_size < 1 { 1 } else { page_size };
-        let total_items = todos.count().get_result(db)?;
-        let items = todos.limit(page_size).offset(page * page_size).load::<Self>(db)?;
+        let param_page = param_page_starting_with_1.max(0);
+        let param_page_size = param_page_size.max(1);
+        let total_items = Self::filter(filter.clone()).count().get_result(db)?;
+        let items = Self::filter(filter).limit(param_page_size).offset(param_page * param_page_size).load::<Self>(db)?;
 
         Ok(PaginationResult {
             items,
             total_items,
-            page,
-            page_size,
+            page: param_page,
+            page_size: param_page_size,
             /* ceiling division of integers */
-            num_pages: total_items / page_size + i64::from(total_items % page_size != 0)
+            num_pages: total_items / param_page_size + i64::from(total_items % param_page_size != 0)
         })
+    }
+
+    /// A utility function to help build custom search queries
+    /// 
+    /// Example:
+    /// 
+    pub fn filter<'a>(
+        filter: TodosFilter,
+    ) -> crate::schema::todos::BoxedQuery<'a, diesel::pg::Pg> {
+        let mut query = crate::schema::todos::table.into_boxed();
+        
+        
+        if let Some(filter_id) = filter.id.clone() {
+            query = query.filter(crate::schema::todos::id.eq(filter_id));
+        }
+        if let Some(filter_created_at) = filter.created_at.clone() {
+            query = query.filter(crate::schema::todos::created_at.eq(filter_created_at));
+        }
+        
+        query
     }
 
     pub fn update(db: &mut ConnectionType, param_id: i32, item: &UpdateTodos) -> QueryResult<Self> {
@@ -82,4 +103,18 @@ impl Todos {
         diesel::delete(todos.filter(id.eq(param_id))).execute(db)
     }
 
+}
+#[derive(Clone)]
+pub struct TodosFilter {
+    pub id: Option<i32>,
+    pub created_at: Option<chrono::NaiveDateTime>,
+}
+
+impl Default for TodosFilter {
+    fn default() -> TodosFilter {
+        TodosFilter {
+            id: None,
+            created_at: None,
+        }
+    }
 }

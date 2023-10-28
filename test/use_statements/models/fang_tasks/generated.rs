@@ -77,22 +77,67 @@ impl FangTasks {
         fang_tasks.filter(id.eq(param_id)).first::<Self>(db)
     }
 
-    /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
-    pub fn paginate(db: &mut ConnectionType, page: i64, page_size: i64) -> QueryResult<PaginationResult<Self>> {
+    /// Paginates through the table where page is a 1-based index (i.e. page 1 is the first page)
+    pub fn paginate(db: &mut ConnectionType, param_page_starting_with_1: i64, param_page_size: i64, filter: FangTasksFilter) -> QueryResult<PaginationResult<Self>> {
         use crate::schema::fang_tasks::dsl::*;
 
-        let page_size = if page_size < 1 { 1 } else { page_size };
-        let total_items = fang_tasks.count().get_result(db)?;
-        let items = fang_tasks.limit(page_size).offset(page * page_size).load::<Self>(db)?;
+        let param_page = param_page_starting_with_1.max(0);
+        let param_page_size = param_page_size.max(1);
+        let total_items = Self::filter(filter.clone()).count().get_result(db)?;
+        let items = Self::filter(filter).limit(param_page_size).offset(param_page * param_page_size).load::<Self>(db)?;
 
         Ok(PaginationResult {
             items,
             total_items,
-            page,
-            page_size,
+            page: param_page,
+            page_size: param_page_size,
             /* ceiling division of integers */
-            num_pages: total_items / page_size + i64::from(total_items % page_size != 0)
+            num_pages: total_items / param_page_size + i64::from(total_items % param_page_size != 0)
         })
+    }
+
+    /// A utility function to help build custom search queries
+    /// 
+    /// Example:
+    /// 
+    pub fn filter<'a>(
+        filter: FangTasksFilter,
+    ) -> crate::schema::fang_tasks::BoxedQuery<'a, diesel::pg::Pg> {
+        let mut query = crate::schema::fang_tasks::table.into_boxed();
+        
+        
+        if let Some(filter_id) = filter.id.clone() {
+            query = query.filter(crate::schema::fang_tasks::id.eq(filter_id));
+        }
+        if let Some(filter_metadata) = filter.metadata.clone() {
+            query = query.filter(crate::schema::fang_tasks::metadata.eq(filter_metadata));
+        }
+        if let Some(filter_error_message) = filter.error_message.clone() {
+            query = query.filter(crate::schema::fang_tasks::error_message.eq(filter_error_message));
+        }
+        if let Some(filter_state) = filter.state.clone() {
+            query = query.filter(crate::schema::fang_tasks::state.eq(filter_state));
+        }
+        if let Some(filter_task_type) = filter.task_type.clone() {
+            query = query.filter(crate::schema::fang_tasks::task_type.eq(filter_task_type));
+        }
+        if let Some(filter_uniq_hash) = filter.uniq_hash.clone() {
+            query = query.filter(crate::schema::fang_tasks::uniq_hash.eq(filter_uniq_hash));
+        }
+        if let Some(filter_retries) = filter.retries.clone() {
+            query = query.filter(crate::schema::fang_tasks::retries.eq(filter_retries));
+        }
+        if let Some(filter_scheduled_at) = filter.scheduled_at.clone() {
+            query = query.filter(crate::schema::fang_tasks::scheduled_at.eq(filter_scheduled_at));
+        }
+        if let Some(filter_created_at) = filter.created_at.clone() {
+            query = query.filter(crate::schema::fang_tasks::created_at.eq(filter_created_at));
+        }
+        if let Some(filter_updated_at) = filter.updated_at.clone() {
+            query = query.filter(crate::schema::fang_tasks::updated_at.eq(filter_updated_at));
+        }
+        
+        query
     }
 
     pub fn update(db: &mut ConnectionType, param_id: uuid::Uuid, item: &UpdateFangTasks) -> QueryResult<Self> {
@@ -107,4 +152,34 @@ impl FangTasks {
         diesel::delete(fang_tasks.filter(id.eq(param_id))).execute(db)
     }
 
+}
+#[derive(Clone)]
+pub struct FangTasksFilter {
+    pub id: Option<uuid::Uuid>,
+    pub metadata: Option<serde_json::Value>,
+    pub error_message: Option<Option<String>>,
+    pub state: Option<crate::schema::sql_types::FangTaskState>,
+    pub task_type: Option<String>,
+    pub uniq_hash: Option<Option<String>>,
+    pub retries: Option<i32>,
+    pub scheduled_at: Option<chrono::DateTime<chrono::Utc>>,
+    pub created_at: Option<chrono::DateTime<chrono::Utc>>,
+    pub updated_at: Option<chrono::DateTime<chrono::Utc>>,
+}
+
+impl Default for FangTasksFilter {
+    fn default() -> FangTasksFilter {
+        FangTasksFilter {
+            id: None,
+            metadata: None,
+            error_message: None,
+            state: None,
+            task_type: None,
+            uniq_hash: None,
+            retries: None,
+            scheduled_at: None,
+            created_at: None,
+            updated_at: None,
+        }
+    }
 }

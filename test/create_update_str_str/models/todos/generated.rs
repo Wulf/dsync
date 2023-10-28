@@ -59,22 +59,49 @@ impl Todos {
         todos.filter(text.eq(param_text)).first::<Self>(db)
     }
 
-    /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
-    pub fn paginate(db: &mut ConnectionType, page: i64, page_size: i64) -> QueryResult<PaginationResult<Self>> {
+    /// Paginates through the table where page is a 1-based index (i.e. page 1 is the first page)
+    pub fn paginate(db: &mut ConnectionType, param_page_starting_with_1: i64, param_page_size: i64, filter: TodosFilter) -> QueryResult<PaginationResult<Self>> {
         use crate::schema::todos::dsl::*;
 
-        let page_size = if page_size < 1 { 1 } else { page_size };
-        let total_items = todos.count().get_result(db)?;
-        let items = todos.limit(page_size).offset(page * page_size).load::<Self>(db)?;
+        let param_page = param_page_starting_with_1.max(0);
+        let param_page_size = param_page_size.max(1);
+        let total_items = Self::filter(filter.clone()).count().get_result(db)?;
+        let items = Self::filter(filter).limit(param_page_size).offset(param_page * param_page_size).load::<Self>(db)?;
 
         Ok(PaginationResult {
             items,
             total_items,
-            page,
-            page_size,
+            page: param_page,
+            page_size: param_page_size,
             /* ceiling division of integers */
-            num_pages: total_items / page_size + i64::from(total_items % page_size != 0)
+            num_pages: total_items / param_page_size + i64::from(total_items % param_page_size != 0)
         })
+    }
+
+    /// A utility function to help build custom search queries
+    /// 
+    /// Example:
+    /// 
+    pub fn filter<'a>(
+        filter: TodosFilter,
+    ) -> crate::schema::todos::BoxedQuery<'a, diesel::pg::Pg> {
+        let mut query = crate::schema::todos::table.into_boxed();
+        
+        
+        if let Some(filter_text) = filter.text.clone() {
+            query = query.filter(crate::schema::todos::text.eq(filter_text));
+        }
+        if let Some(filter_text_nullable) = filter.text_nullable.clone() {
+            query = query.filter(crate::schema::todos::text_nullable.eq(filter_text_nullable));
+        }
+        if let Some(filter_varchar) = filter.varchar.clone() {
+            query = query.filter(crate::schema::todos::varchar.eq(filter_varchar));
+        }
+        if let Some(filter_varchar_nullable) = filter.varchar_nullable.clone() {
+            query = query.filter(crate::schema::todos::varchar_nullable.eq(filter_varchar_nullable));
+        }
+        
+        query
     }
 
     pub fn update(db: &mut ConnectionType, param_text: String, item: &UpdateTodos) -> QueryResult<Self> {
@@ -89,4 +116,22 @@ impl Todos {
         diesel::delete(todos.filter(text.eq(param_text))).execute(db)
     }
 
+}
+#[derive(Clone)]
+pub struct TodosFilter {
+    pub text: Option<String>,
+    pub text_nullable: Option<Option<String>>,
+    pub varchar: Option<String>,
+    pub varchar_nullable: Option<Option<String>>,
+}
+
+impl Default for TodosFilter {
+    fn default() -> TodosFilter {
+        TodosFilter {
+            text: None,
+            text_nullable: None,
+            varchar: None,
+            varchar_nullable: None,
+        }
+    }
 }

@@ -55,22 +55,46 @@ impl Users {
         users.filter(name.eq(param_name)).filter(address.eq(param_address)).first::<Self>(db)
     }
 
-    /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
-    pub fn paginate(db: &mut ConnectionType, page: i64, page_size: i64) -> QueryResult<PaginationResult<Self>> {
+    /// Paginates through the table where page is a 1-based index (i.e. page 1 is the first page)
+    pub fn paginate(db: &mut ConnectionType, param_page_starting_with_1: i64, param_page_size: i64, filter: UsersFilter) -> QueryResult<PaginationResult<Self>> {
         use crate::schema::users::dsl::*;
 
-        let page_size = if page_size < 1 { 1 } else { page_size };
-        let total_items = users.count().get_result(db)?;
-        let items = users.limit(page_size).offset(page * page_size).load::<Self>(db)?;
+        let param_page = param_page_starting_with_1.max(0);
+        let param_page_size = param_page_size.max(1);
+        let total_items = Self::filter(filter.clone()).count().get_result(db)?;
+        let items = Self::filter(filter).limit(param_page_size).offset(param_page * param_page_size).load::<Self>(db)?;
 
         Ok(PaginationResult {
             items,
             total_items,
-            page,
-            page_size,
+            page: param_page,
+            page_size: param_page_size,
             /* ceiling division of integers */
-            num_pages: total_items / page_size + i64::from(total_items % page_size != 0)
+            num_pages: total_items / param_page_size + i64::from(total_items % param_page_size != 0)
         })
+    }
+
+    /// A utility function to help build custom search queries
+    /// 
+    /// Example:
+    /// 
+    pub fn filter<'a>(
+        filter: UsersFilter,
+    ) -> crate::schema::users::BoxedQuery<'a, diesel::pg::Pg> {
+        let mut query = crate::schema::users::table.into_boxed();
+        
+        
+        if let Some(filter_name) = filter.name.clone() {
+            query = query.filter(crate::schema::users::name.eq(filter_name));
+        }
+        if let Some(filter_address) = filter.address.clone() {
+            query = query.filter(crate::schema::users::address.eq(filter_address));
+        }
+        if let Some(filter_secret) = filter.secret.clone() {
+            query = query.filter(crate::schema::users::secret.eq(filter_secret));
+        }
+        
+        query
     }
 
     pub fn update(db: &mut ConnectionType, param_name: String, param_address: String, item: &UpdateUsers) -> QueryResult<Self> {
@@ -85,4 +109,20 @@ impl Users {
         diesel::delete(users.filter(name.eq(param_name)).filter(address.eq(param_address))).execute(db)
     }
 
+}
+#[derive(Clone)]
+pub struct UsersFilter {
+    pub name: Option<String>,
+    pub address: Option<String>,
+    pub secret: Option<String>,
+}
+
+impl Default for UsersFilter {
+    fn default() -> UsersFilter {
+        UsersFilter {
+            name: None,
+            address: None,
+            secret: None,
+        }
+    }
 }

@@ -29,22 +29,40 @@ impl Table1 {
         table1.filter(id.eq(param_id)).first::<Self>(db)
     }
 
-    /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
-    pub fn paginate(db: &mut ConnectionType, page: i64, page_size: i64) -> QueryResult<PaginationResult<Self>> {
+    /// Paginates through the table where page is a 1-based index (i.e. page 1 is the first page)
+    pub fn paginate(db: &mut ConnectionType, param_page_starting_with_1: i64, param_page_size: i64, filter: Table1Filter) -> QueryResult<PaginationResult<Self>> {
         use crate::schema::table1::dsl::*;
 
-        let page_size = if page_size < 1 { 1 } else { page_size };
-        let total_items = table1.count().get_result(db)?;
-        let items = table1.limit(page_size).offset(page * page_size).load::<Self>(db)?;
+        let param_page = param_page_starting_with_1.max(0);
+        let param_page_size = param_page_size.max(1);
+        let total_items = Self::filter(filter.clone()).count().get_result(db)?;
+        let items = Self::filter(filter).limit(param_page_size).offset(param_page * param_page_size).load::<Self>(db)?;
 
         Ok(PaginationResult {
             items,
             total_items,
-            page,
-            page_size,
+            page: param_page,
+            page_size: param_page_size,
             /* ceiling division of integers */
-            num_pages: total_items / page_size + i64::from(total_items % page_size != 0)
+            num_pages: total_items / param_page_size + i64::from(total_items % param_page_size != 0)
         })
+    }
+
+    /// A utility function to help build custom search queries
+    /// 
+    /// Example:
+    /// 
+    pub fn filter<'a>(
+        filter: Table1Filter,
+    ) -> crate::schema::table1::BoxedQuery<'a, diesel::pg::Pg> {
+        let mut query = crate::schema::table1::table.into_boxed();
+        
+        
+        if let Some(filter_id) = filter.id.clone() {
+            query = query.filter(crate::schema::table1::id.eq(filter_id));
+        }
+        
+        query
     }
 
     pub fn delete(db: &mut ConnectionType, param_id: crate::schema::sql_types::Int) -> QueryResult<usize> {
@@ -53,4 +71,16 @@ impl Table1 {
         diesel::delete(table1.filter(id.eq(param_id))).execute(db)
     }
 
+}
+#[derive(Clone)]
+pub struct Table1Filter {
+    pub id: Option<crate::schema::sql_types::Int>,
+}
+
+impl Default for Table1Filter {
+    fn default() -> Table1Filter {
+        Table1Filter {
+            id: None,
+        }
+    }
 }

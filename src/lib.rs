@@ -214,14 +214,26 @@ impl<'a> Default for TableOptions<'a> {
 
 #[derive(Debug, Clone)]
 pub struct GenerationConfig<'a> {
-    /// Specific Table options for a given table
+    /// Specific code generation options for a particular table
     pub table_options: HashMap<&'a str, TableOptions<'a>>,
-    /// Default table options, used when not in `table_options`
+    /// Default table options, can be overriden by `table_options`
     pub default_table_options: TableOptions<'a>,
     /// Connection type to insert
     ///
-    /// Example: `diesel::SqliteConnection`
+    /// For example:
+    /// - `diesel::pg::PgConnection` (default)
+    /// - `diesel::sqlite::SqliteConnection`
+    /// - `diesel::mysql::MysqlConnection`
+    /// - or, your custom diesel connection type (struct which implements `diesel::connection::Connection`)
     pub connection_type: String,
+    /// Diesel backend
+    ///
+    /// For example:
+    /// - `diesel::pg::Pg` (default)
+    /// - `diesel::sqlite::Sqlite`
+    /// - `diesel::mysql::Mysql`
+    /// - or, your custom diesel backend type (struct which implements `diesel::backend::Backend`)
+    pub diesel_backend: String,
     /// Diesel schema import path
     ///
     /// by default `crate::schema::`
