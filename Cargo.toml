@@ -12,7 +12,10 @@ categories = [
     "development-tools::ffi",
     "web-programming",
 ]
-authors = ["Haris <4259838+Wulf@users.noreply.github.com>"]
+authors = [
+    "Haris <4259838+Wulf@users.noreply.github.com>",
+    "hasezoey <hasezoey@gmail.com>",
+]
 edition = "2021"
 
 [features]
