@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name=table2, primary_key(id))]
 pub struct Table2 {
-    pub id: crate::schema::sql_types::Int,
+    pub id: i32,
 }
 
 
@@ -31,7 +31,7 @@ impl Table2 {
         insert_into(table2).default_values().get_result::<Self>(db)
     }
 
-    pub fn read(db: &mut ConnectionType, param_id: crate::schema::sql_types::Int) -> QueryResult<Self> {
+    pub fn read(db: &mut ConnectionType, param_id: i32) -> QueryResult<Self> {
         use crate::schema::table2::dsl::*;
 
         table2.filter(id.eq(param_id)).first::<Self>(db)
@@ -55,7 +55,7 @@ impl Table2 {
         })
     }
 
-    pub fn delete(db: &mut ConnectionType, param_id: crate::schema::sql_types::Int) -> QueryResult<usize> {
+    pub fn delete(db: &mut ConnectionType, param_id: i32) -> QueryResult<usize> {
         use crate::schema::table2::dsl::*;
 
         diesel::delete(table2.filter(id.eq(param_id))).execute(db)

@@ -11,20 +11,20 @@ type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionMan
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name=normal, primary_key(id))]
 pub struct Normal {
-    pub id: crate::schema::sql_types::Int,
-    pub testprop: crate::schema::sql_types::Int,
+    pub id: i32,
+    pub testprop: i32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
 #[diesel(table_name=normal)]
 pub struct CreateNormal {
-    pub testprop: crate::schema::sql_types::Int,
+    pub testprop: i32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, Default)]
 #[diesel(table_name=normal)]
 pub struct UpdateNormal {
-    pub testprop: Option<crate::schema::sql_types::Int>,
+    pub testprop: Option<i32>,
 }
 
 
@@ -46,7 +46,7 @@ impl Normal {
         insert_into(normal).values(item).get_result::<Self>(db)
     }
 
-    pub fn read(db: &mut ConnectionType, param_id: crate::schema::sql_types::Int) -> QueryResult<Self> {
+    pub fn read(db: &mut ConnectionType, param_id: i32) -> QueryResult<Self> {
         use crate::schema::normal::dsl::*;
 
         normal.filter(id.eq(param_id)).first::<Self>(db)
@@ -70,13 +70,13 @@ impl Normal {
         })
     }
 
-    pub fn update(db: &mut ConnectionType, param_id: crate::schema::sql_types::Int, item: &UpdateNormal) -> QueryResult<Self> {
+    pub fn update(db: &mut ConnectionType, param_id: i32, item: &UpdateNormal) -> QueryResult<Self> {
         use crate::schema::normal::dsl::*;
 
         diesel::update(normal.filter(id.eq(param_id))).set(item).get_result(db)
     }
 
-    pub fn delete(db: &mut ConnectionType, param_id: crate::schema::sql_types::Int) -> QueryResult<usize> {
+    pub fn delete(db: &mut ConnectionType, param_id: i32) -> QueryResult<usize> {
         use crate::schema::normal::dsl::*;
 
         diesel::delete(normal.filter(id.eq(param_id))).execute(db)

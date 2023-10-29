@@ -11,8 +11,8 @@ type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionMan
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name=prefixTable, primary_key(id))]
 pub struct PrefixTable {
-    pub id: crate::schema::sql_types::Int,
-    pub testprop: crate::schema::sql_types::Int,
+    pub id: i32,
+    pub testprop: i32,
 }
 
 
@@ -28,7 +28,7 @@ pub struct PaginationResult<T> {
 
 impl PrefixTable {
 
-    pub fn read(db: &mut ConnectionType, param_id: crate::schema::sql_types::Int) -> QueryResult<Self> {
+    pub fn read(db: &mut ConnectionType, param_id: i32) -> QueryResult<Self> {
         use crate::schema::prefixTable::dsl::*;
 
         prefixTable.filter(id.eq(param_id)).first::<Self>(db)
