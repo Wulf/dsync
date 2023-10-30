@@ -104,7 +104,7 @@ pub struct MainOptions {
     pub once_connection_type: bool,
 
     /// Set which diesel backend to use (something which implements `diesel::backend::Backend`)
-    /// Deisel provides the following backends:
+    /// Diesel provides the following backends:
     /// - `diesel::pg::Pg`
     /// - `diesel::sqlite::Sqlite`
     /// - `diesel::mysql::Mysql`
