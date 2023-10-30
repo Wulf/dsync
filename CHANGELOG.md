@@ -12,6 +12,7 @@
 - add option `--single-model-file` to only generate a single file instead of a directory with `mod.rs` and `generated.rs`
 - add option `--readonly-prefix` and `--readonly-suffix` to treat a matching name as a readonly struct
 - derive generation has been refactored and now only necessary derives are added to a given struct
+- reduce amount of empty-newlines
 
 ## 0.0.16
 
