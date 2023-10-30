@@ -33,21 +33,21 @@ impl Table2 {
     }
 
     /// Paginates through the table where page is a 1-based index (i.e. page 1 is the first page)
-    pub fn paginate(db: &mut ConnectionType, param_page_starting_with_1: i64, param_page_size: i64, filter: Table2Filter) -> QueryResult<PaginationResult<Self>> {
+    pub fn paginate(db: &mut ConnectionType, page_starting_with_1: i64, page_size: i64, filter: Table2Filter) -> QueryResult<PaginationResult<Self>> {
         use crate::schema::table2::dsl::*;
 
-        let param_page = param_page_starting_with_1.max(0);
-        let param_page_size = param_page_size.max(1);
+        let param_page = page_starting_with_1.max(0);
+        let page_size = page_size.max(1);
         let total_items = Self::filter(filter.clone()).count().get_result(db)?;
-        let items = Self::filter(filter).limit(param_page_size).offset(param_page * param_page_size).load::<Self>(db)?;
+        let items = Self::filter(filter).limit(page_size).offset(param_page * page_size).load::<Self>(db)?;
 
         Ok(PaginationResult {
             items,
             total_items,
             page: param_page,
-            page_size: param_page_size,
+            page_size: page_size,
             /* ceiling division of integers */
-            num_pages: total_items / param_page_size + i64::from(total_items % param_page_size != 0)
+            num_pages: total_items / page_size + i64::from(total_items % page_size != 0)
         })
     }
 
