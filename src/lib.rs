@@ -12,6 +12,8 @@ use std::collections::HashMap;
 use std::fmt::Display;
 use std::path::{Path, PathBuf};
 
+use crate::error::ErrorEnum;
+
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub enum StringType {
     /// Use "String"
@@ -321,6 +323,24 @@ impl From<&MarkedFile> for FileChange {
     }
 }
 
+pub fn validate_config(config: &GenerationConfig) -> Result<()> {
+    const VALID_BACKENDS: [&str; 3] = [
+        "diesel::pg::Pg",
+        "diesel::sqlite::Sqlite",
+        "diesel::mysql::Mysql",
+    ];
+
+    if !VALID_BACKENDS.contains(&config.diesel_backend.as_str()) {
+        return Err(Error::new(ErrorEnum::InvalidGenerationConfig(format!(
+            "Invalid diesel_backend '{}', please use one of the following: {:?}",
+            &config.diesel_backend,
+            VALID_BACKENDS.clone().join(", ")
+        ))));
+    }
+
+    Ok(())
+}
+
 /// Generate all Models for a given diesel schema file
 ///
 /// Models are saved to disk
@@ -329,6 +349,8 @@ pub fn generate_files(
     output_models_dir: &Path,
     config: GenerationConfig,
 ) -> Result<Vec<FileChange>> {
+    validate_config(&config)?;
+
     let generated = generate_code(
         &std::fs::read_to_string(input_diesel_schema_file)
             .attach_path_err(input_diesel_schema_file)?,

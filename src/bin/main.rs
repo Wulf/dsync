@@ -110,9 +110,7 @@ pub struct MainOptions {
     /// - `diesel::mysql::Mysql`
     ///
     /// See `crate::GenerationConfig::diesel_backend` for more details.
-    ///
-    /// Default is "diesel::pg::Pg"
-    #[arg(long = "diesel-backend", default_value = "diesel::pg::Pg")]
+    #[arg(short = 'b', long = "diesel-backend")]
     pub diesel_backend: String,
 }
 
