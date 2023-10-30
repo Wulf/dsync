@@ -469,7 +469,6 @@ impl {struct_name} {{
         filter: {struct_name}Filter,
     ) -> {schema_path}{table_name}::BoxedQuery<'a, {diesel_backend}> {{
         let mut query = {schema_path}{table_name}::table.into_boxed();
-        
         {filters}
         
         query
