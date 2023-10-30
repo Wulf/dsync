@@ -541,7 +541,7 @@ impl {struct_name} {{
             .join("\n            ");
         buffer.push_str(&format!(
             r##"
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct {struct_name}Filter {{
     {filter_fields}
 }}
