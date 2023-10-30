@@ -444,7 +444,7 @@ impl {struct_name} {{
 
     // Table::filter() helper fn
     {
-        let diesel_backend = config.diesel_backend.clone();
+        let diesel_backend = &config.diesel_backend;
         let filters = table
             .columns
             .iter()
@@ -465,6 +465,16 @@ impl {struct_name} {{
     /// 
     /// Example:
     /// 
+    ///     ```rust
+    ///     // create a filter for completed todos
+    ///     let query = Todo::filter(TodoFilter {{
+    ///       completed: Some(true),
+    ///       ..Default::default()
+    ///     }});
+    /// 
+    ///     // delete completed todos
+    ///     diesel::delete(query).execute(db)?;
+    ///    ```
     pub fn filter<'a>(
         filter: {struct_name}Filter,
     ) -> {schema_path}{table_name}::BoxedQuery<'a, {diesel_backend}> {{
