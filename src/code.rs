@@ -454,6 +454,7 @@ fn build_table_fns(
         if create_struct.has_fields() {
             buffer.push_str(&format!(
             r##"
+    /// Insert a new row into `{table_name}` with a given [`{create_struct_identifier}`]
     pub{async_keyword} fn create(db: &mut ConnectionType, item: &{create_struct_identifier}) -> QueryResult<Self> {{
         use {schema_path}{table_name}::dsl::*;
 
@@ -464,6 +465,7 @@ fn build_table_fns(
         } else {
             buffer.push_str(&format!(
                 r##"
+    /// Insert a new row into `{table_name}` with all default values
     pub{async_keyword} fn create(db: &mut ConnectionType) -> QueryResult<Self> {{
         use {schema_path}{table_name}::dsl::*;
 
@@ -474,8 +476,16 @@ fn build_table_fns(
         }
     }
 
+    // this will also trigger for 0 primary keys, but diesel currently does not support that
+    let key_maybe_multiple = if primary_column_name_and_type.len() <= 1 {
+        "key"
+    } else {
+        "keys"
+    };
+
     buffer.push_str(&format!(
         r##"
+    /// Get a row from `{table_name}`, identified by the primary {key_maybe_multiple}
     pub{async_keyword} fn read(db: &mut ConnectionType, {item_id_params}) -> QueryResult<Self> {{
         use {schema_path}{table_name}::dsl::*;
 
@@ -514,6 +524,7 @@ fn build_table_fns(
         // we should generate an update() method.
 
         buffer.push_str(&format!(r##"
+    /// Update a row in `{table_name}`, identified by the primary {key_maybe_multiple} with [`{update_struct_identifier}`]
     pub{async_keyword} fn update(db: &mut ConnectionType, {item_id_params}, item: &{update_struct_identifier}) -> QueryResult<Self> {{
         use {schema_path}{table_name}::dsl::*;
 
@@ -525,6 +536,7 @@ fn build_table_fns(
     if !is_readonly {
         buffer.push_str(&format!(
             r##"
+    /// Delete a row in `{table_name}`, identified by the primary {key_maybe_multiple}
     pub{async_keyword} fn delete(db: &mut ConnectionType, {item_id_params}) -> QueryResult<usize> {{
         use {schema_path}{table_name}::dsl::*;
 

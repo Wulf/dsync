@@ -44,12 +44,14 @@ pub struct PaginationResult<T> {
 }
 
 impl Normal {
+    /// Insert a new row into `normal` with a given [`CreateNormal`]
     pub fn create(db: &mut ConnectionType, item: &CreateNormal) -> QueryResult<Self> {
         use crate::schema::normal::dsl::*;
 
         insert_into(normal).values(item).get_result::<Self>(db)
     }
 
+    /// Get a row from `normal`, identified by the primary key
     pub fn read(db: &mut ConnectionType, param_id: i32) -> QueryResult<Self> {
         use crate::schema::normal::dsl::*;
 
@@ -74,12 +76,14 @@ impl Normal {
         })
     }
 
+    /// Update a row in `normal`, identified by the primary key with [`UpdateNormal`]
     pub fn update(db: &mut ConnectionType, param_id: i32, item: &UpdateNormal) -> QueryResult<Self> {
         use crate::schema::normal::dsl::*;
 
         diesel::update(normal.filter(id.eq(param_id))).set(item).get_result(db)
     }
 
+    /// Delete a row in `normal`, identified by the primary key
     pub fn delete(db: &mut ConnectionType, param_id: i32) -> QueryResult<usize> {
         use crate::schema::normal::dsl::*;
 

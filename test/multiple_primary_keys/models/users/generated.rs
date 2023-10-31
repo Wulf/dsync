@@ -50,12 +50,14 @@ pub struct PaginationResult<T> {
 }
 
 impl Users {
+    /// Insert a new row into `users` with a given [`CreateUsers`]
     pub fn create(db: &mut ConnectionType, item: &CreateUsers) -> QueryResult<Self> {
         use crate::schema::users::dsl::*;
 
         insert_into(users).values(item).get_result::<Self>(db)
     }
 
+    /// Get a row from `users`, identified by the primary keys
     pub fn read(db: &mut ConnectionType, param_name: String, param_address: String) -> QueryResult<Self> {
         use crate::schema::users::dsl::*;
 
@@ -80,12 +82,14 @@ impl Users {
         })
     }
 
+    /// Update a row in `users`, identified by the primary keys with [`UpdateUsers`]
     pub fn update(db: &mut ConnectionType, param_name: String, param_address: String, item: &UpdateUsers) -> QueryResult<Self> {
         use crate::schema::users::dsl::*;
 
         diesel::update(users.filter(name.eq(param_name)).filter(address.eq(param_address))).set(item).get_result(db)
     }
 
+    /// Delete a row in `users`, identified by the primary keys
     pub fn delete(db: &mut ConnectionType, param_name: String, param_address: String) -> QueryResult<usize> {
         use crate::schema::users::dsl::*;
 

@@ -94,12 +94,14 @@ pub struct PaginationResult<T> {
 }
 
 impl FangTasks {
+    /// Insert a new row into `fang_tasks` with a given [`CreateFangTasks`]
     pub fn create(db: &mut ConnectionType, item: &CreateFangTasks) -> QueryResult<Self> {
         use crate::schema::fang_tasks::dsl::*;
 
         insert_into(fang_tasks).values(item).get_result::<Self>(db)
     }
 
+    /// Get a row from `fang_tasks`, identified by the primary key
     pub fn read(db: &mut ConnectionType, param_id: uuid::Uuid) -> QueryResult<Self> {
         use crate::schema::fang_tasks::dsl::*;
 
@@ -124,12 +126,14 @@ impl FangTasks {
         })
     }
 
+    /// Update a row in `fang_tasks`, identified by the primary key with [`UpdateFangTasks`]
     pub fn update(db: &mut ConnectionType, param_id: uuid::Uuid, item: &UpdateFangTasks) -> QueryResult<Self> {
         use crate::schema::fang_tasks::dsl::*;
 
         diesel::update(fang_tasks.filter(id.eq(param_id))).set(item).get_result(db)
     }
 
+    /// Delete a row in `fang_tasks`, identified by the primary key
     pub fn delete(db: &mut ConnectionType, param_id: uuid::Uuid) -> QueryResult<usize> {
         use crate::schema::fang_tasks::dsl::*;
 

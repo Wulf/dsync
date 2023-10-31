@@ -26,12 +26,14 @@ pub struct PaginationResult<T> {
 }
 
 impl Table2 {
+    /// Insert a new row into `table2` with all default values
     pub fn create(db: &mut ConnectionType) -> QueryResult<Self> {
         use crate::schema::table2::dsl::*;
 
         insert_into(table2).default_values().get_result::<Self>(db)
     }
 
+    /// Get a row from `table2`, identified by the primary key
     pub fn read(db: &mut ConnectionType, param_id: i32) -> QueryResult<Self> {
         use crate::schema::table2::dsl::*;
 
@@ -56,6 +58,7 @@ impl Table2 {
         })
     }
 
+    /// Delete a row in `table2`, identified by the primary key
     pub fn delete(db: &mut ConnectionType, param_id: i32) -> QueryResult<usize> {
         use crate::schema::table2::dsl::*;
 

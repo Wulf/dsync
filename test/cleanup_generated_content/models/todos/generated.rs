@@ -60,12 +60,14 @@ pub struct PaginationResult<T> {
 }
 
 impl Todos {
+    /// Insert a new row into `todos` with a given [`CreateTodos`]
     pub fn create(db: &mut ConnectionType, item: &CreateTodos) -> QueryResult<Self> {
         use crate::schema::todos::dsl::*;
 
         insert_into(todos).values(item).get_result::<Self>(db)
     }
 
+    /// Get a row from `todos`, identified by the primary key
     pub fn read(db: &mut ConnectionType, param_id: i32) -> QueryResult<Self> {
         use crate::schema::todos::dsl::*;
 
@@ -90,12 +92,14 @@ impl Todos {
         })
     }
 
+    /// Update a row in `todos`, identified by the primary key with [`UpdateTodos`]
     pub fn update(db: &mut ConnectionType, param_id: i32, item: &UpdateTodos) -> QueryResult<Self> {
         use crate::schema::todos::dsl::*;
 
         diesel::update(todos.filter(id.eq(param_id))).set(item).get_result(db)
     }
 
+    /// Delete a row in `todos`, identified by the primary key
     pub fn delete(db: &mut ConnectionType, param_id: i32) -> QueryResult<usize> {
         use crate::schema::todos::dsl::*;
 

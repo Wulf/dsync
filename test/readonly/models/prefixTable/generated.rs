@@ -28,6 +28,7 @@ pub struct PaginationResult<T> {
 }
 
 impl PrefixTable {
+    /// Get a row from `prefixTable`, identified by the primary key
     pub fn read(db: &mut ConnectionType, param_id: i32) -> QueryResult<Self> {
         use crate::schema::prefixTable::dsl::*;
 

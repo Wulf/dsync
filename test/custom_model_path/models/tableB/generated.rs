@@ -47,12 +47,14 @@ pub struct PaginationResult<T> {
 }
 
 impl TableB {
+    /// Insert a new row into `tableB` with a given [`CreateTableB`]
     pub fn create(db: &mut ConnectionType, item: &CreateTableB) -> QueryResult<Self> {
         use crate::schema::tableB::dsl::*;
 
         insert_into(tableB).values(item).get_result::<Self>(db)
     }
 
+    /// Get a row from `tableB`, identified by the primary key
     pub fn read(db: &mut ConnectionType, param__id: i32) -> QueryResult<Self> {
         use crate::schema::tableB::dsl::*;
 
@@ -77,12 +79,14 @@ impl TableB {
         })
     }
 
+    /// Update a row in `tableB`, identified by the primary key with [`UpdateTableB`]
     pub fn update(db: &mut ConnectionType, param__id: i32, item: &UpdateTableB) -> QueryResult<Self> {
         use crate::schema::tableB::dsl::*;
 
         diesel::update(tableB.filter(_id.eq(param__id))).set(item).get_result(db)
     }
 
+    /// Delete a row in `tableB`, identified by the primary key
     pub fn delete(db: &mut ConnectionType, param__id: i32) -> QueryResult<usize> {
         use crate::schema::tableB::dsl::*;
 

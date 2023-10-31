@@ -34,12 +34,14 @@ pub struct PaginationResult<T> {
 }
 
 impl TableA {
+    /// Insert a new row into `tableA` with a given [`CreateTableA`]
     pub fn create(db: &mut ConnectionType, item: &CreateTableA) -> QueryResult<Self> {
         use crate::data::schema::tableA::dsl::*;
 
         insert_into(tableA).values(item).get_result::<Self>(db)
     }
 
+    /// Get a row from `tableA`, identified by the primary key
     pub fn read(db: &mut ConnectionType, param__id: i32) -> QueryResult<Self> {
         use crate::data::schema::tableA::dsl::*;
 
@@ -64,6 +66,7 @@ impl TableA {
         })
     }
 
+    /// Delete a row in `tableA`, identified by the primary key
     pub fn delete(db: &mut ConnectionType, param__id: i32) -> QueryResult<usize> {
         use crate::data::schema::tableA::dsl::*;
 

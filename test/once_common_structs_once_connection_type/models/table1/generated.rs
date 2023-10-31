@@ -15,12 +15,14 @@ pub struct Table1 {
 }
 
 impl Table1 {
+    /// Insert a new row into `table1` with all default values
     pub fn create(db: &mut ConnectionType) -> QueryResult<Self> {
         use crate::schema::table1::dsl::*;
 
         insert_into(table1).default_values().get_result::<Self>(db)
     }
 
+    /// Get a row from `table1`, identified by the primary key
     pub fn read(db: &mut ConnectionType, param_id: i32) -> QueryResult<Self> {
         use crate::schema::table1::dsl::*;
 
@@ -45,6 +47,7 @@ impl Table1 {
         })
     }
 
+    /// Delete a row in `table1`, identified by the primary key
     pub fn delete(db: &mut ConnectionType, param_id: i32) -> QueryResult<usize> {
         use crate::schema::table1::dsl::*;
 
