@@ -11,15 +11,25 @@ type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionMan
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name=fang_tasks, primary_key(id))]
 pub struct FangTasks {
+    /// Field representing column `id`
     pub id: uuid::Uuid,
+    /// Field representing column `metadata`
     pub metadata: serde_json::Value,
+    /// Field representing column `error_message`
     pub error_message: Option<String>,
+    /// Field representing column `state`
     pub state: crate::schema::sql_types::FangTaskState,
+    /// Field representing column `task_type`
     pub task_type: String,
+    /// Field representing column `uniq_hash`
     pub uniq_hash: Option<String>,
+    /// Field representing column `retries`
     pub retries: i32,
+    /// Field representing column `scheduled_at`
     pub scheduled_at: chrono::DateTime<chrono::Utc>,
+    /// Field representing column `created_at`
     pub created_at: chrono::DateTime<chrono::Utc>,
+    /// Field representing column `updated_at`
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
@@ -27,15 +37,25 @@ pub struct FangTasks {
 #[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
 #[diesel(table_name=fang_tasks)]
 pub struct CreateFangTasks {
+    /// Field representing column `id`
     pub id: uuid::Uuid,
+    /// Field representing column `metadata`
     pub metadata: serde_json::Value,
+    /// Field representing column `error_message`
     pub error_message: Option<String>,
+    /// Field representing column `state`
     pub state: crate::schema::sql_types::FangTaskState,
+    /// Field representing column `task_type`
     pub task_type: String,
+    /// Field representing column `uniq_hash`
     pub uniq_hash: Option<String>,
+    /// Field representing column `retries`
     pub retries: i32,
+    /// Field representing column `scheduled_at`
     pub scheduled_at: chrono::DateTime<chrono::Utc>,
+    /// Field representing column `created_at`
     pub created_at: chrono::DateTime<chrono::Utc>,
+    /// Field representing column `updated_at`
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
@@ -43,14 +63,23 @@ pub struct CreateFangTasks {
 #[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, Default)]
 #[diesel(table_name=fang_tasks)]
 pub struct UpdateFangTasks {
+    /// Field representing column `metadata`
     pub metadata: Option<serde_json::Value>,
+    /// Field representing column `error_message`
     pub error_message: Option<Option<String>>,
+    /// Field representing column `state`
     pub state: Option<crate::schema::sql_types::FangTaskState>,
+    /// Field representing column `task_type`
     pub task_type: Option<String>,
+    /// Field representing column `uniq_hash`
     pub uniq_hash: Option<Option<String>>,
+    /// Field representing column `retries`
     pub retries: Option<i32>,
+    /// Field representing column `scheduled_at`
     pub scheduled_at: Option<chrono::DateTime<chrono::Utc>>,
+    /// Field representing column `created_at`
     pub created_at: Option<chrono::DateTime<chrono::Utc>>,
+    /// Field representing column `updated_at`
     pub updated_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 

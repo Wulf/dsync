@@ -11,6 +11,7 @@ type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionMan
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name=tableA, primary_key(_id))]
 pub struct TableA {
+    /// Field representing column `_id`
     pub _id: i32,
 }
 
@@ -18,6 +19,7 @@ pub struct TableA {
 #[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
 #[diesel(table_name=tableA)]
 pub struct CreateTableA {
+    /// Field representing column `_id`
     pub _id: i32,
 }
 

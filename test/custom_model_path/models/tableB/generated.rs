@@ -12,7 +12,9 @@ type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionMan
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable, Associations, Identifiable)]
 #[diesel(table_name=tableB, primary_key(_id), belongs_to(TableA, foreign_key=link))]
 pub struct TableB {
+    /// Field representing column `_id`
     pub _id: i32,
+    /// Field representing column `link`
     pub link: i32,
 }
 
@@ -20,7 +22,9 @@ pub struct TableB {
 #[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
 #[diesel(table_name=tableB)]
 pub struct CreateTableB {
+    /// Field representing column `_id`
     pub _id: i32,
+    /// Field representing column `link`
     pub link: i32,
 }
 
@@ -28,6 +32,7 @@ pub struct CreateTableB {
 #[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, Default)]
 #[diesel(table_name=tableB)]
 pub struct UpdateTableB {
+    /// Field representing column `link`
     pub link: Option<i32>,
 }
 

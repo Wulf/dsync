@@ -11,7 +11,9 @@ type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionMan
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name=prefixTable, primary_key(id))]
 pub struct PrefixTable {
+    /// Field representing column `id`
     pub id: i32,
+    /// Field representing column `testprop`
     pub testprop: i32,
 }
 

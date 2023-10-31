@@ -11,7 +11,9 @@ type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionMan
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name=normal, primary_key(id))]
 pub struct Normal {
+    /// Field representing column `id`
     pub id: i32,
+    /// Field representing column `testprop`
     pub testprop: i32,
 }
 
@@ -19,6 +21,7 @@ pub struct Normal {
 #[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
 #[diesel(table_name=normal)]
 pub struct CreateNormal {
+    /// Field representing column `testprop`
     pub testprop: i32,
 }
 
@@ -26,6 +29,7 @@ pub struct CreateNormal {
 #[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, Default)]
 #[diesel(table_name=normal)]
 pub struct UpdateNormal {
+    /// Field representing column `testprop`
     pub testprop: Option<i32>,
 }
 

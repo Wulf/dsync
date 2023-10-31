@@ -11,9 +11,13 @@ type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionMan
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name=todos, primary_key(text))]
 pub struct Todos {
+    /// Field representing column `text`
     pub text: String,
+    /// Field representing column `text_nullable`
     pub text_nullable: Option<String>,
+    /// Field representing column `varchar`
     pub varchar: String,
+    /// Field representing column `varchar_nullable`
     pub varchar_nullable: Option<String>,
 }
 
@@ -21,9 +25,13 @@ pub struct Todos {
 #[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
 #[diesel(table_name=todos)]
 pub struct CreateTodos<'a> {
+    /// Field representing column `text`
     pub text: &'a str,
+    /// Field representing column `text_nullable`
     pub text_nullable: Option<&'a str>,
+    /// Field representing column `varchar`
     pub varchar: &'a str,
+    /// Field representing column `varchar_nullable`
     pub varchar_nullable: Option<&'a str>,
 }
 
@@ -31,8 +39,11 @@ pub struct CreateTodos<'a> {
 #[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, Default)]
 #[diesel(table_name=todos)]
 pub struct UpdateTodos<'a> {
+    /// Field representing column `text_nullable`
     pub text_nullable: Option<Option<&'a str>>,
+    /// Field representing column `varchar`
     pub varchar: Option<&'a str>,
+    /// Field representing column `varchar_nullable`
     pub varchar_nullable: Option<Option<&'a str>>,
 }
 

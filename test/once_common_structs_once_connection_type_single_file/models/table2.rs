@@ -10,6 +10,7 @@ use crate::models::common::*;
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name=table2, primary_key(id))]
 pub struct Table2 {
+    /// Field representing column `id`
     pub id: i32,
 }
 

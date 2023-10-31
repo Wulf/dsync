@@ -10,11 +10,17 @@ type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionMan
 #[derive(Debug, Clone, Queryable, Selectable)]
 #[diesel(table_name=todos, primary_key(id))]
 pub struct Todos {
+    /// Field representing column `id`
     pub id: i32,
+    /// Field representing column `unsigned`
     pub unsigned: u32,
+    /// Field representing column `text`
     pub text: String,
+    /// Field representing column `completed`
     pub completed: bool,
+    /// Field representing column `created_at`
     pub created_at: chrono::DateTime<chrono::Utc>,
+    /// Field representing column `updated_at`
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
@@ -22,8 +28,11 @@ pub struct Todos {
 #[derive(Debug, Clone, Insertable)]
 #[diesel(table_name=todos)]
 pub struct CreateTodos {
+    /// Field representing column `unsigned`
     pub unsigned: u32,
+    /// Field representing column `text`
     pub text: String,
+    /// Field representing column `completed`
     pub completed: bool,
 }
 
@@ -31,10 +40,15 @@ pub struct CreateTodos {
 #[derive(Debug, Clone, AsChangeset, Default)]
 #[diesel(table_name=todos)]
 pub struct UpdateTodos {
+    /// Field representing column `unsigned`
     pub unsigned: Option<u32>,
+    /// Field representing column `text`
     pub text: Option<String>,
+    /// Field representing column `completed`
     pub completed: Option<bool>,
+    /// Field representing column `created_at`
     pub created_at: Option<chrono::DateTime<chrono::Utc>>,
+    /// Field representing column `updated_at`
     pub updated_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 

@@ -11,7 +11,9 @@ type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionMan
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name=todos, primary_key(id))]
 pub struct Todos {
+    /// Field representing column `id`
     pub id: i32,
+    /// Field representing column `text`
     pub text: String,
 }
 
@@ -19,6 +21,7 @@ pub struct Todos {
 #[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
 #[diesel(table_name=todos)]
 pub struct CreateTodos {
+    /// Field representing column `text`
     pub text: String,
 }
 
@@ -26,6 +29,7 @@ pub struct CreateTodos {
 #[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, Default)]
 #[diesel(table_name=todos)]
 pub struct UpdateTodos {
+    /// Field representing column `text`
     pub text: Option<String>,
 }
 

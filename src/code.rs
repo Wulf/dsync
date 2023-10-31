@@ -74,6 +74,8 @@ pub struct StructField {
     /// Name for the field
     // TODO: should this be a Ident instead of a string?
     pub name: String,
+    /// Actual table column name
+    pub column_name: String,
     /// Base Rust type, like "String" or "i32" or "u32"
     pub base_type: String,
     /// Indicate that this field is optional
@@ -105,6 +107,7 @@ impl From<&ParsedColumnMacro> for StructField {
             name,
             base_type,
             is_optional: value.is_nullable,
+            column_name: value.column_name.clone(),
         }
     }
 }
@@ -313,6 +316,10 @@ impl<'a> Struct<'a> {
                 field_type = format!("Option<{}>", field_type).into();
             }
 
+            lines.push(format!(
+                "    /// Field representing column `{column_name}`",
+                column_name = f.column_name
+            ));
             lines.push(format!(r#"    pub {field_name}: {field_type},"#));
         }
 
