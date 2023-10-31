@@ -316,8 +316,26 @@ impl<'a> Struct<'a> {
             lines.push(format!(r#"    pub {field_name}: {field_type},"#));
         }
 
+        let doccomment = match ty {
+            StructType::Read => format!(
+                "/// Struct representing a row in table `{table_name}`",
+                table_name = table.name
+            ),
+            StructType::Update => format!(
+                "/// Update Struct for a row in table `{table_name}` for [`{read_struct}`]",
+                table_name = table.name,
+                read_struct = table.struct_name
+            ),
+            StructType::Create => format!(
+                "/// Create Struct for a row in table `{table_name}` for [`{read_struct}`]",
+                table_name = table.name,
+                read_struct = table.struct_name
+            ),
+        };
+
         let struct_code = formatdoc!(
             r#"
+            {doccomment}
             {tsync_attr}{derive_attr}
             #[diesel(table_name={table_name}{primary_key}{belongs_to})]
             pub struct {struct_name}{lifetimes} {{

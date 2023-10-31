@@ -7,6 +7,7 @@ use diesel::QueryResult;
 
 type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
 
+/// Struct representing a row in table `todos`
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name=todos, primary_key(id))]
 pub struct Todos {
@@ -14,12 +15,14 @@ pub struct Todos {
     pub text: String,
 }
 
+/// Create Struct for a row in table `todos` for [`Todos`]
 #[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
 #[diesel(table_name=todos)]
 pub struct CreateTodos {
     pub text: String,
 }
 
+/// Update Struct for a row in table `todos` for [`Todos`]
 #[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, Default)]
 #[diesel(table_name=todos)]
 pub struct UpdateTodos {

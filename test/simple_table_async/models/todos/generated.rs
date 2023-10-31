@@ -8,6 +8,7 @@ use diesel::QueryResult;
 
 type ConnectionType = diesel_async::pooled_connection::deadpool::Object<diesel_async::AsyncPgConnection>;
 
+/// Struct representing a row in table `todos`
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name=todos, primary_key(id))]
 pub struct Todos {
@@ -19,6 +20,7 @@ pub struct Todos {
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
+/// Create Struct for a row in table `todos` for [`Todos`]
 #[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
 #[diesel(table_name=todos)]
 pub struct CreateTodos {
@@ -27,6 +29,7 @@ pub struct CreateTodos {
     pub completed: bool,
 }
 
+/// Update Struct for a row in table `todos` for [`Todos`]
 #[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, Default)]
 #[diesel(table_name=todos)]
 pub struct UpdateTodos {

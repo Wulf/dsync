@@ -8,6 +8,7 @@ use diesel::QueryResult;
 
 type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
 
+/// Struct representing a row in table `tableB`
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable, Associations, Identifiable)]
 #[diesel(table_name=tableB, primary_key(_id), belongs_to(TableA, foreign_key=link))]
 pub struct TableB {
@@ -15,6 +16,7 @@ pub struct TableB {
     pub link: i32,
 }
 
+/// Create Struct for a row in table `tableB` for [`TableB`]
 #[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
 #[diesel(table_name=tableB)]
 pub struct CreateTableB {
@@ -22,6 +24,7 @@ pub struct CreateTableB {
     pub link: i32,
 }
 
+/// Update Struct for a row in table `tableB` for [`TableB`]
 #[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, Default)]
 #[diesel(table_name=tableB)]
 pub struct UpdateTableB {

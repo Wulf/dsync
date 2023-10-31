@@ -7,6 +7,7 @@ use diesel::QueryResult;
 
 type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
 
+/// Struct representing a row in table `fang_tasks`
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name=fang_tasks, primary_key(id))]
 pub struct FangTasks {
@@ -22,6 +23,7 @@ pub struct FangTasks {
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
+/// Create Struct for a row in table `fang_tasks` for [`FangTasks`]
 #[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
 #[diesel(table_name=fang_tasks)]
 pub struct CreateFangTasks {
@@ -37,6 +39,7 @@ pub struct CreateFangTasks {
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }
 
+/// Update Struct for a row in table `fang_tasks` for [`FangTasks`]
 #[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, Default)]
 #[diesel(table_name=fang_tasks)]
 pub struct UpdateFangTasks {
