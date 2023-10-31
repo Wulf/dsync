@@ -9,7 +9,7 @@ use diesel::QueryResult;
 type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
 
 /// Struct representing a row in table `tableB`
-#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable, Associations, Identifiable)]
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable, QueryableByName, Associations, Identifiable)]
 #[diesel(table_name=tableB, primary_key(_id), belongs_to(TableA, foreign_key=link))]
 pub struct TableB {
     /// Field representing column `_id`

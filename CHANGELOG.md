@@ -26,6 +26,7 @@
 - list changes to files (unchanged, modified, deleted)
 - generate doc-comments for generated structs, fields and functions
 - change the diesel import to be `use diesel` (instead of the previous `use crate::diesel`)
+- add derive `QueryableByName` to read-structs
 
 ## 0.0.17 (yanked)
 

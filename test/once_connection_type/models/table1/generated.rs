@@ -7,7 +7,7 @@ use diesel::QueryResult;
 use crate::models::common::*;
 
 /// Struct representing a row in table `table1`
-#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable, QueryableByName)]
 #[diesel(table_name=table1, primary_key(id))]
 pub struct Table1 {
     /// Field representing column `id`

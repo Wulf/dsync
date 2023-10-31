@@ -125,6 +125,8 @@ pub mod derives {
     pub const SELECTABLE: &str = "Selectable";
     pub const IDENTIFIABLE: &str = "Identifiable";
     pub const ASSOCIATIONS: &str = "Associations";
+    #[cfg(feature = "derive-queryablebyname")]
+    pub const QUERYABLEBYNAME: &str = "QueryableByName";
 }
 
 impl<'a> Struct<'a> {
@@ -186,7 +188,12 @@ impl<'a> Struct<'a> {
         match self.ty {
             StructType::Read => {
                 // derives that always exist, regardless of extra conditions
-                derives_vec.extend_from_slice(&[derives::QUERYABLE, derives::SELECTABLE]);
+                derives_vec.extend_from_slice(&[
+                    derives::QUERYABLE,
+                    derives::SELECTABLE,
+                    #[cfg(feature = "derive-queryablebyname")]
+                    derives::QUERYABLEBYNAME,
+                ]);
 
                 if !self.table.foreign_keys.is_empty() {
                     derives_vec.extend_from_slice(&[derives::ASSOCIATIONS, derives::IDENTIFIABLE]);

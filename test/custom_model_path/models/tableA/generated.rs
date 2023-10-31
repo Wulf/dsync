@@ -8,7 +8,7 @@ use diesel::QueryResult;
 type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
 
 /// Struct representing a row in table `tableA`
-#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable, QueryableByName)]
 #[diesel(table_name=tableA, primary_key(_id))]
 pub struct TableA {
     /// Field representing column `_id`

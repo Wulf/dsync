@@ -19,13 +19,15 @@ authors = [
 edition = "2021"
 
 [features]
-default = ["tsync", "backtrace"]
+default = ["tsync", "backtrace", "derive-queryablebyname"]
 # enable support for tsync (https://github.com/Wulf/tsync)
 tsync = []
 # enable support for diesel_async (https://github.com/weiznich/diesel_async)
 async = []
 # enable support for backtraces on errors
 backtrace = []
+# enable derive "QueryableByName"
+derive-queryablebyname = []
 
 [dependencies]
 clap = { version = "4.4", features = ["derive", "wrap_help"] }

@@ -9,7 +9,7 @@ use diesel::QueryResult;
 type ConnectionType = diesel_async::pooled_connection::deadpool::Object<diesel_async::AsyncPgConnection>;
 
 /// Struct representing a row in table `todos`
-#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable, QueryableByName)]
 #[diesel(table_name=todos, primary_key(id))]
 pub struct Todos {
     /// Field representing column `id`
