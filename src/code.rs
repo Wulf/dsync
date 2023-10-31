@@ -600,7 +600,7 @@ fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String 
     // Note: i guess this could also just be a string that is appended to, or a vec of "Cow", but i personally think this is the most use-able
     // because you dont have to think of any context style (like forgetting to put "\n" before / after something)
     let mut imports_vec = Vec::with_capacity(10);
-    imports_vec.push("use crate::diesel::*;".into());
+    imports_vec.push("use diesel::*;".into());
 
     let table_options = config.table(&table.name.to_string());
     imports_vec.extend(table.foreign_keys.iter().map(|fk| {

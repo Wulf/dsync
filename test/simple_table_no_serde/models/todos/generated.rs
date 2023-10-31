@@ -1,6 +1,6 @@
 /* @generated and managed by dsync */
 
-use crate::diesel::*;
+use diesel::*;
 use crate::schema::*;
 use diesel::QueryResult;
 

@@ -25,6 +25,7 @@
 - add many doc-comments to fields and functions
 - list changes to files (unchanged, modified, deleted)
 - generate doc-comments for generated structs, fields and functions
+- change the diesel import to be `use diesel` (instead of the previous `use crate::diesel`)
 
 ## 0.0.17 (yanked)
 
