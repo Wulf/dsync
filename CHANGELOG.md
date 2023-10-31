@@ -24,6 +24,7 @@
 - rename `type Connection =` to `type ConnectionType =` to lessen naming conflicts
 - add many doc-comments to fields and functions
 - list changes to files (unchanged, modified, deleted)
+- generate doc-comments for generated structs, fields and functions
 
 ## 0.0.17 (yanked)
 
