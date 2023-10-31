@@ -16,6 +16,8 @@ pub struct ParsedColumnMacro {
     pub ty: String,
     /// Rust ident for the field name
     pub name: Ident,
+    /// Actual column name, as parsed from the attributes, or the same as "name"
+    pub column_name: String,
     pub is_nullable: bool,
     pub is_unsigned: bool,
 }
@@ -223,19 +225,37 @@ fn handle_table_macro(
                     // columns group
                     // println!("GROUP-cols {:#?}", group);
 
-                    let mut column_name: Option<Ident> = None;
+                    // rust name parsed from the macro (the "HERE" in "HERE -> TYPE")
+                    let mut rust_column_name: Option<Ident> = None;
+                    // actual column name, parsed from the attribute value, if any ("#[sql_name = "test"]")
+                    let mut actual_column_name: Option<String> = None;
                     let mut column_type: Option<Ident> = None;
                     let mut column_nullable: bool = false;
                     let mut column_unsigned: bool = false;
+                    // track if the last loop was a "#" (start of a attribute)
+                    let mut had_hashtag = false;
 
                     for column_tokens in group.stream().into_iter() {
+                        // reset "had_hastag" but still make it available for checking
+                        let had_hashtag_last = had_hashtag;
+                        had_hashtag = false;
                         match column_tokens {
-                            proc_macro2::TokenTree::Group(_) => {
+                            proc_macro2::TokenTree::Group(group) => {
+                                if had_hashtag_last {
+                                    // parse some extra information from the bracket group
+                                    // like the actual column name
+                                    if let Some((name, value)) = parse_diesel_attr_group(&group) {
+                                        if name == "sql_name" {
+                                            actual_column_name = Some(value);
+                                        }
+                                    }
+                                }
+
                                 continue;
                             }
                             proc_macro2::TokenTree::Ident(ident) => {
-                                if column_name.is_none() {
-                                    column_name = Some(ident);
+                                if rust_column_name.is_none() {
+                                    rust_column_name = Some(ident);
                                 } else if ident.to_string().eq_ignore_ascii_case("Nullable") {
                                     column_nullable = true;
                                 } else if ident.to_string().eq_ignore_ascii_case("Unsigned") {
@@ -247,22 +267,29 @@ fn handle_table_macro(
                             proc_macro2::TokenTree::Punct(punct) => {
                                 let char = punct.as_char();
 
-                                if char == '#' || char == '-' || char == '>' {
+                                if char == '#' {
+                                    had_hashtag = true;
+                                    continue;
+                                } else if char == '-' || char == '>' {
                                     // nothing for arrow or any additional #[]
                                     continue;
                                 } else if char == ','
-                                    && column_name.is_some()
+                                    && rust_column_name.is_some()
                                     && column_type.is_some()
                                 {
                                     // end of column def!
 
+                                    let rust_column_name_checked = rust_column_name.ok_or(
+                                        Error::unsupported_schema_format(
+                                            "Invalid column name syntax",
+                                        ),
+                                    )?;
+                                    let column_name = actual_column_name
+                                        .unwrap_or(rust_column_name_checked.to_string());
+
                                     // add the column
                                     table_columns.push(ParsedColumnMacro {
-                                        name: column_name.ok_or(
-                                            Error::unsupported_schema_format(
-                                                "Invalid column name syntax",
-                                            ),
-                                        )?,
+                                        name: rust_column_name_checked,
                                         ty: schema_type_to_rust_type(
                                             column_type
                                                 .ok_or(Error::unsupported_schema_format(
@@ -273,10 +300,12 @@ fn handle_table_macro(
                                         )?,
                                         is_nullable: column_nullable,
                                         is_unsigned: column_unsigned,
+                                        column_name,
                                     });
 
                                     // reset the properties
-                                    column_name = None;
+                                    rust_column_name = None;
+                                    actual_column_name = None;
                                     column_type = None;
                                     column_unsigned = false;
                                     column_nullable = false;
@@ -290,7 +319,7 @@ fn handle_table_macro(
                         }
                     }
 
-                    if column_name.is_some()
+                    if rust_column_name.is_some()
                         || column_type.is_some()
                         || column_nullable
                         || column_unsigned
@@ -328,6 +357,50 @@ fn handle_table_macro(
             "{FILE_SIGNATURE}\n\nFATAL ERROR: nothing was generated; this shouldn't be possible."
         ),
     })
+}
+
+/// Parse a diesel schema attribute group
+/// ```rs
+/// #[attr = value]
+/// ```
+/// into (attr, value)
+fn parse_diesel_attr_group(group: &proc_macro2::Group) -> Option<(Ident, String)> {
+    // diesel only uses square brackets, so ignore other types
+    if group.delimiter() != proc_macro2::Delimiter::Bracket {
+        return None;
+    }
+
+    let mut token_stream = group.stream().into_iter();
+    // parse the attribute name, if it is anything else, return None
+    let attr_name = match token_stream.next()? {
+        proc_macro2::TokenTree::Ident(ident) => ident,
+        _ => return None,
+    };
+
+    // diesel always uses "=" for assignments
+    let punct = match token_stream.next()? {
+        proc_macro2::TokenTree::Punct(punct) => punct,
+        _ => return None,
+    };
+
+    if punct.as_char() != '=' {
+        return None;
+    }
+
+    // diesel print-schema only uses literals currently, if anything else is used, it should be added here
+    let value = match token_stream.next()? {
+        proc_macro2::TokenTree::Literal(literal) => literal,
+        _ => return None,
+    };
+
+    let mut value = value.to_string();
+
+    // remove the starting and ending quotes
+    if value.starts_with('"') && value.ends_with('"') {
+        value = String::from(&value[1..value.len() - 1]); // safe char boundaries because '"' is only one byte long
+    }
+
+    Some((attr_name, value))
 }
 
 // A function to translate diesel schema types into rust types
