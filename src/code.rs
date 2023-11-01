@@ -465,16 +465,16 @@ impl {struct_name} {{
     /// 
     /// Example:
     /// 
-    ///     ```rust
-    ///     // create a filter for completed todos
-    ///     let query = Todo::filter(TodoFilter {{
-    ///       completed: Some(true),
-    ///       ..Default::default()
-    ///     }});
+    /// ```
+    /// // create a filter for completed todos
+    /// let query = Todo::filter(TodoFilter {{
+    ///     completed: Some(true),
+    ///     ..Default::default()
+    /// }});
     /// 
-    ///     // delete completed todos
-    ///     diesel::delete(query).execute(db)?;
-    ///    ```
+    /// // delete completed todos
+    /// diesel::delete(query).execute(db)?;
+    /// ```
     pub fn filter<'a>(
         filter: {struct_name}Filter,
     ) -> {schema_path}{table_name}::BoxedQuery<'a, {diesel_backend}> {{
@@ -526,41 +526,21 @@ impl {struct_name} {{
             .columns
             .iter()
             .map(|column| {
-                let column_name = column.name.to_string();
+                let struct_field = StructField::from(column);
                 format!(
                     "pub {column_name}: Option<{column_type}>,",
-                    column_name = column_name,
-                    column_type = if column.is_nullable {
-                        format!("Option<{}>", column.ty)
-                    } else {
-                        column.ty.clone()
-                    }
+                    column_name = struct_field.name,
+                    column_type = struct_field.to_rust_type()
                 )
             })
             .collect::<Vec<_>>()
             .join("\n    ");
-        let filter_fields_default = table
-            .columns
-            .iter()
-            .map(|column| {
-                let column_name = column.name.to_string();
-                format!("{column_name}: None,")
-            })
-            .collect::<Vec<_>>()
-            .join("\n            ");
+
         buffer.push_str(&format!(
             r##"
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct {struct_name}Filter {{
     {filter_fields}
-}}
-
-impl Default for {struct_name}Filter {{
-    fn default() -> {struct_name}Filter {{
-        {struct_name}Filter {{
-            {filter_fields_default}
-        }}
-    }}
 }}
 "##
         ));

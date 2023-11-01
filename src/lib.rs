@@ -330,9 +330,9 @@ pub fn validate_config(config: &GenerationConfig) -> Result<()> {
         "diesel::mysql::Mysql",
     ];
 
-    if !VALID_BACKENDS.contains(&config.diesel_backend.as_str()) {
+    if config.diesel_backend.is_empty() {
         return Err(Error::new(ErrorEnum::InvalidGenerationConfig(format!(
-            "Invalid diesel_backend '{}', please use one of the following: {:?}",
+            "Invalid diesel_backend '{}', please use one of the following: {:?}; or, a custom diesel backend type (a struct which implements `diesel::backend::Backend`).",
             &config.diesel_backend,
             VALID_BACKENDS.clone().join(", ")
         ))));

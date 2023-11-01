@@ -77,20 +77,20 @@ impl FangTasks {
         fang_tasks.filter(id.eq(param_id)).first::<Self>(db)
     }
 
-    /// Paginates through the table where page is a 1-based index (i.e. page 1 is the first page)
-    pub fn paginate(db: &mut ConnectionType, page_starting_with_1: i64, page_size: i64, filter: FangTasksFilter) -> QueryResult<PaginationResult<Self>> {
+    /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
+    pub fn paginate(db: &mut ConnectionType, page: i64, page_size: i64, filter: FangTasksFilter) -> QueryResult<PaginationResult<Self>> {
         use crate::schema::fang_tasks::dsl::*;
 
-        let param_page = page_starting_with_1.max(0);
+        let page = page.max(0);
         let page_size = page_size.max(1);
         let total_items = Self::filter(filter.clone()).count().get_result(db)?;
-        let items = Self::filter(filter).limit(page_size).offset(param_page * page_size).load::<Self>(db)?;
+        let items = Self::filter(filter).limit(page_size).offset(page * page_size).load::<Self>(db)?;
 
         Ok(PaginationResult {
             items,
             total_items,
-            page: param_page,
-            page_size: page_size,
+            page,
+            page_size,
             /* ceiling division of integers */
             num_pages: total_items / page_size + i64::from(total_items % page_size != 0)
         })
@@ -100,11 +100,20 @@ impl FangTasks {
     /// 
     /// Example:
     /// 
+    /// ```
+    /// // create a filter for completed todos
+    /// let query = Todo::filter(TodoFilter {
+    ///     completed: Some(true),
+    ///     ..Default::default()
+    /// });
+    /// 
+    /// // delete completed todos
+    /// diesel::delete(query).execute(db)?;
+    /// ```
     pub fn filter<'a>(
         filter: FangTasksFilter,
     ) -> crate::schema::fang_tasks::BoxedQuery<'a, diesel::pg::Pg> {
         let mut query = crate::schema::fang_tasks::table.into_boxed();
-        
         
         if let Some(filter_id) = filter.id.clone() {
             query = query.filter(crate::schema::fang_tasks::id.eq(filter_id));
@@ -153,7 +162,7 @@ impl FangTasks {
     }
 
 }
-#[derive(Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct FangTasksFilter {
     pub id: Option<uuid::Uuid>,
     pub metadata: Option<serde_json::Value>,
@@ -165,21 +174,4 @@ pub struct FangTasksFilter {
     pub scheduled_at: Option<chrono::DateTime<chrono::Utc>>,
     pub created_at: Option<chrono::DateTime<chrono::Utc>>,
     pub updated_at: Option<chrono::DateTime<chrono::Utc>>,
-}
-
-impl Default for FangTasksFilter {
-    fn default() -> FangTasksFilter {
-        FangTasksFilter {
-            id: None,
-            metadata: None,
-            error_message: None,
-            state: None,
-            task_type: None,
-            uniq_hash: None,
-            retries: None,
-            scheduled_at: None,
-            created_at: None,
-            updated_at: None,
-        }
-    }
 }
