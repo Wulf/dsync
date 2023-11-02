@@ -166,17 +166,18 @@ impl<'a> Struct<'a> {
         self.has_fields.unwrap()
     }
 
+    /// Assemble the `tsync` attribute for the struct
     fn attr_tsync(&self) -> &'static str {
         #[cfg(feature = "tsync")]
-        match self.opts.get_tsync() {
-            true => "#[tsync::tsync]\n",
-            false => "",
+        if self.opts.get_tsync() {
+            return "#[tsync::tsync]\n";
         }
-        #[cfg(not(feature = "tsync"))]
+
+        // default for no feature "tsync" and not being enabled at runtime
         ""
     }
 
-    /// Assemble all derives for the struct
+    /// Assemble the `derive` attribute for the struct
     fn attr_derive(&self) -> String {
         let mut derives_vec = Vec::with_capacity(10);
         // Default derives that exist on every struct
