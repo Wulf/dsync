@@ -5,7 +5,7 @@ use crate::data::models::table_a::TableA;
 use crate::data::schema::*;
 use diesel::QueryResult;
 
-type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
+pub type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
 
 /// Struct representing a row in table `tableB`
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Queryable, Selectable, QueryableByName, Associations, Identifiable)]

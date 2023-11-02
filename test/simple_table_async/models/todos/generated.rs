@@ -5,7 +5,7 @@ use diesel_async::RunQueryDsl;
 use crate::schema::*;
 use diesel::QueryResult;
 
-type ConnectionType = diesel_async::pooled_connection::deadpool::Object<diesel_async::AsyncPgConnection>;
+pub type ConnectionType = diesel_async::pooled_connection::deadpool::Object<diesel_async::AsyncPgConnection>;
 
 /// Struct representing a row in table `todos`
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Queryable, Selectable, QueryableByName)]

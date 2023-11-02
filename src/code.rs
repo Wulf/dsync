@@ -599,7 +599,7 @@ pub fn generate_common_structs(table_options: &TableOptions<'_>) -> String {
 /// Generate connection-type type
 pub fn generate_connection_type(config: &GenerationConfig) -> String {
     format!(
-        "type ConnectionType = {connection_type};",
+        "pub type ConnectionType = {connection_type};",
         connection_type = config.connection_type,
     )
 }
