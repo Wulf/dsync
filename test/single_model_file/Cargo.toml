@@ -1,0 +1,16 @@
+[lib]
+path = "lib.rs"
+
+[package]
+name = "single_model_file"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+diesel = { version = "*", default-features = false, features = [
+    "postgres",
+    "chrono",
+] }
+dsync = { path = "../../" }
+chrono = { version = "*", features = ["serde"] }
+serde = { version = "*", features = ["derive"] }

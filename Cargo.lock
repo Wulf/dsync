@@ -572,6 +572,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "single_model_file"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "diesel",
+ "dsync",
+ "serde",
+]
+
+[[package]]
 name = "smallvec"
 version = "1.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
