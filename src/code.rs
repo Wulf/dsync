@@ -445,22 +445,16 @@ fn build_table_fns(
 
     // template variables
     let table_name = table.name.to_string();
-    #[cfg(feature = "async")]
-    let async_keyword = if table_options.get_async() {
-        " async"
-    } else {
-        ""
+    #[allow(unused_labels)] // label is only used if feature is enabled
+    let (async_keyword, await_keyword) = 'async_block: {
+        #[cfg(feature = "async")]
+        if table_options.get_async() {
+            break 'async_block (" async", ".await");
+        }
+
+        ("", "")
     };
-    #[cfg(not(feature = "async"))]
-    let async_keyword = "";
-    #[cfg(feature = "async")]
-    let await_keyword = if table_options.get_async() {
-        ".await"
-    } else {
-        ""
-    };
-    #[cfg(not(feature = "async"))]
-    let await_keyword = "";
+
     let struct_name = &table.struct_name;
     let schema_path = &config.schema_path;
     let create_struct_identifier = &create_struct.identifier;
