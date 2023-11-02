@@ -139,8 +139,15 @@ Feel free to open tickets for support or feature requests.
 
 ## Development/Testing
 
-Use `./test/test_all.sh` to run tests.
-After running the test, there should be no unexpected changes to files in `./test` (use `git status` and `git diff` to see if there were any changes).
+-   **Testing codegen correctness**
+
+    Use `./test/test_all.sh` to run tests.
+    After running the test, there should be no unexpected changes to files in `./test` (use `git status` and `git diff` to see if there were any changes).
+
+-   **Testing codegen compilability**
+
+    Currently, we compile the projects in the `examples/` directory. Those should still compile and run after any changes to the codebase.
+
 
 ## License
 
