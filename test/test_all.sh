@@ -10,8 +10,19 @@ cd $SCRIPT_DIR
 for D in *; do 
     if [ -d "${D}" ]; then
         echo "Testing $D"
-        ${D}/test.sh
+
+        # check if next script returns an error
+        if ! ./$D/test.sh; then
+            echo "Test '$D' failed"
+
+            ERROR=1
+        fi
+        
         # output separator
         echo ""
     fi
 done
+
+if [ "$ERROR" == "1" ]; then
+    exit 1
+fi
