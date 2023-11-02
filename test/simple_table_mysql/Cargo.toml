@@ -1,0 +1,18 @@
+[lib]
+path = "lib.rs"
+
+[package]
+name = "simple_table_mysql"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+diesel = { version = "*", default-features = false, features = [
+    "mysql",
+    "r2d2",
+    "chrono",
+] }
+r2d2 = "*"
+dsync = { path = "../../" }
+chrono = { version = "*", features = ["serde"] }
+serde = { version = "*", features = ["derive"] }

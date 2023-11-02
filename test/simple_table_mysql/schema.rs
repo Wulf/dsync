@@ -8,7 +8,9 @@ diesel::table! {
         #[sql_name = "type"]
         #[max_length = 255]
         type_ -> Varchar,
-        created_at -> Timestamptz,
-        updated_at -> Timestamptz,
+        smallint -> Int2,
+        bigint -> Int8,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
