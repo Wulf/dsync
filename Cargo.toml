@@ -54,5 +54,6 @@ members = [
     "test/simple_table_pg",
     "test/simple_table_mysql",
     "test/simple_table_sqlite",
+    "test/custom_model_and_schema_path",
 ]
 resolver = "2"
