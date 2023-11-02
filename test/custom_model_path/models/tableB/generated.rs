@@ -3,13 +3,12 @@
 use crate::diesel::*;
 use crate::data::models::table_a::TableA;
 use crate::schema::*;
-use serde::{Deserialize, Serialize};
 use diesel::QueryResult;
 
 type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
 
 /// Struct representing a row in table `tableB`
-#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable, QueryableByName, Associations, Identifiable)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Queryable, Selectable, QueryableByName, Associations, Identifiable)]
 #[diesel(table_name=tableB, primary_key(_id), belongs_to(TableA, foreign_key=link))]
 pub struct TableB {
     /// Field representing column `_id`
@@ -19,7 +18,7 @@ pub struct TableB {
 }
 
 /// Create Struct for a row in table `tableB` for [`TableB`]
-#[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Insertable)]
 #[diesel(table_name=tableB)]
 pub struct CreateTableB {
     /// Field representing column `_id`
@@ -29,7 +28,7 @@ pub struct CreateTableB {
 }
 
 /// Update Struct for a row in table `tableB` for [`TableB`]
-#[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, PartialEq, Default)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, AsChangeset, PartialEq, Default)]
 #[diesel(table_name=tableB)]
 pub struct UpdateTableB {
     /// Field representing column `link`
@@ -37,7 +36,7 @@ pub struct UpdateTableB {
 }
 
 /// Result of a `.paginate` function
-#[derive(Debug, Serialize)]
+#[derive(Debug, serde::Serialize)]
 pub struct PaginationResult<T> {
     /// Resulting items that are from the current page
     pub items: Vec<T>,

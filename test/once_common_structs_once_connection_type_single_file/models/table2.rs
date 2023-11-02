@@ -2,12 +2,11 @@
 
 use crate::diesel::*;
 use crate::schema::*;
-use serde::{Deserialize, Serialize};
 use diesel::QueryResult;
 use crate::models::common::*;
 
 /// Struct representing a row in table `table2`
-#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable, QueryableByName)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Queryable, Selectable, QueryableByName)]
 #[diesel(table_name=table2, primary_key(id))]
 pub struct Table2 {
     /// Field representing column `id`

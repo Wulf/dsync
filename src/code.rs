@@ -119,8 +119,8 @@ pub mod derives {
     pub const CLONE: &str = "Clone";
     pub const QUERYABLE: &str = "Queryable";
     pub const INSERTABLE: &str = "Insertable";
-    pub const SERIALIZE: &str = "Serialize";
-    pub const DESERIALIZE: &str = "Deserialize";
+    pub const SERIALIZE: &str = "serde::Serialize";
+    pub const DESERIALIZE: &str = "serde::Deserialize";
     pub const ASCHANGESET: &str = "AsChangeset";
     pub const SELECTABLE: &str = "Selectable";
     pub const IDENTIFIABLE: &str = "Identifiable";
@@ -627,10 +627,6 @@ fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String 
 
     // no "::" because that is already included in the schema_path
     imports_vec.push(format!("use {}*;", config.schema_path));
-
-    if table_options.get_serde() {
-        imports_vec.push("use serde::{Deserialize, Serialize};".into());
-    };
 
     if table_options.get_fns() {
         imports_vec.push("use diesel::QueryResult;".into());

@@ -1,6 +1,6 @@
 /* @generated and managed by dsync */
 /// Result of a `.paginate` function
-#[derive(Debug, Serialize)]
+#[derive(Debug, serde::Serialize)]
 pub struct PaginationResult<T> {
     /// Resulting items that are from the current page
     pub items: Vec<T>,

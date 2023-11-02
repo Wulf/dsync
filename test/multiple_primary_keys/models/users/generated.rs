@@ -2,13 +2,12 @@
 
 use crate::diesel::*;
 use crate::schema::*;
-use serde::{Deserialize, Serialize};
 use diesel::QueryResult;
 
 type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
 
 /// Struct representing a row in table `users`
-#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable, QueryableByName)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Queryable, Selectable, QueryableByName)]
 #[diesel(table_name=users, primary_key(name,address))]
 pub struct Users {
     /// Field representing column `name`
@@ -20,7 +19,7 @@ pub struct Users {
 }
 
 /// Create Struct for a row in table `users` for [`Users`]
-#[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Insertable)]
 #[diesel(table_name=users)]
 pub struct CreateUsers {
     /// Field representing column `name`
@@ -32,7 +31,7 @@ pub struct CreateUsers {
 }
 
 /// Update Struct for a row in table `users` for [`Users`]
-#[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, PartialEq, Default)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, AsChangeset, PartialEq, Default)]
 #[diesel(table_name=users)]
 pub struct UpdateUsers {
     /// Field representing column `secret`
@@ -40,7 +39,7 @@ pub struct UpdateUsers {
 }
 
 /// Result of a `.paginate` function
-#[derive(Debug, Serialize)]
+#[derive(Debug, serde::Serialize)]
 pub struct PaginationResult<T> {
     /// Resulting items that are from the current page
     pub items: Vec<T>,

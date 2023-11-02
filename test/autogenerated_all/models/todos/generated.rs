@@ -2,13 +2,12 @@
 
 use crate::diesel::*;
 use crate::schema::*;
-use serde::{Deserialize, Serialize};
 use diesel::QueryResult;
 
 type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
 
 /// Struct representing a row in table `todos`
-#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable, QueryableByName)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Queryable, Selectable, QueryableByName)]
 #[diesel(table_name=todos, primary_key(id))]
 pub struct Todos {
     /// Field representing column `id`
@@ -18,7 +17,7 @@ pub struct Todos {
 }
 
 /// Update Struct for a row in table `todos` for [`Todos`]
-#[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, PartialEq, Default)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, AsChangeset, PartialEq, Default)]
 #[diesel(table_name=todos)]
 pub struct UpdateTodos {
     /// Field representing column `created_at`
@@ -26,7 +25,7 @@ pub struct UpdateTodos {
 }
 
 /// Result of a `.paginate` function
-#[derive(Debug, Serialize)]
+#[derive(Debug, serde::Serialize)]
 pub struct PaginationResult<T> {
     /// Resulting items that are from the current page
     pub items: Vec<T>,

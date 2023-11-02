@@ -3,13 +3,12 @@
 use crate::diesel::*;
 use diesel_async::RunQueryDsl;
 use crate::schema::*;
-use serde::{Deserialize, Serialize};
 use diesel::QueryResult;
 
 type ConnectionType = diesel_async::pooled_connection::deadpool::Object<diesel_async::AsyncPgConnection>;
 
 /// Struct representing a row in table `todos`
-#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable, QueryableByName)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Queryable, Selectable, QueryableByName)]
 #[diesel(table_name=todos, primary_key(id))]
 pub struct Todos {
     /// Field representing column `id`
@@ -27,7 +26,7 @@ pub struct Todos {
 }
 
 /// Create Struct for a row in table `todos` for [`Todos`]
-#[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Insertable)]
 #[diesel(table_name=todos)]
 pub struct CreateTodos {
     /// Field representing column `unsigned`
@@ -39,7 +38,7 @@ pub struct CreateTodos {
 }
 
 /// Update Struct for a row in table `todos` for [`Todos`]
-#[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, PartialEq, Default)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, AsChangeset, PartialEq, Default)]
 #[diesel(table_name=todos)]
 pub struct UpdateTodos {
     /// Field representing column `unsigned`
@@ -55,7 +54,7 @@ pub struct UpdateTodos {
 }
 
 /// Result of a `.paginate` function
-#[derive(Debug, Serialize)]
+#[derive(Debug, serde::Serialize)]
 pub struct PaginationResult<T> {
     /// Resulting items that are from the current page
     pub items: Vec<T>,

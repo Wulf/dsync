@@ -2,13 +2,12 @@
 
 use crate::diesel::*;
 use crate::schema::*;
-use serde::{Deserialize, Serialize};
 use diesel::QueryResult;
 
 type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
 
 /// Struct representing a row in table `fang_tasks`
-#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable, QueryableByName)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Queryable, Selectable, QueryableByName)]
 #[diesel(table_name=fang_tasks, primary_key(id))]
 pub struct FangTasks {
     /// Field representing column `id`
@@ -34,7 +33,7 @@ pub struct FangTasks {
 }
 
 /// Create Struct for a row in table `fang_tasks` for [`FangTasks`]
-#[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Insertable)]
 #[diesel(table_name=fang_tasks)]
 pub struct CreateFangTasks {
     /// Field representing column `id`
@@ -60,7 +59,7 @@ pub struct CreateFangTasks {
 }
 
 /// Update Struct for a row in table `fang_tasks` for [`FangTasks`]
-#[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, PartialEq, Default)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, AsChangeset, PartialEq, Default)]
 #[diesel(table_name=fang_tasks)]
 pub struct UpdateFangTasks {
     /// Field representing column `metadata`
@@ -84,7 +83,7 @@ pub struct UpdateFangTasks {
 }
 
 /// Result of a `.paginate` function
-#[derive(Debug, Serialize)]
+#[derive(Debug, serde::Serialize)]
 pub struct PaginationResult<T> {
     /// Resulting items that are from the current page
     pub items: Vec<T>,
