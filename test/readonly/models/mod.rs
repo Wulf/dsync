@@ -1,4 +1,7 @@
 pub mod normal;
-pub mod prefixTable;
-pub mod tableSuffix;
-pub mod prefixTableSuffix;
+
+
+
+pub mod prefix_table;
+pub mod table_suffix;
+pub mod prefix_table_suffix;

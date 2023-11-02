@@ -18,6 +18,7 @@ mod parser;
 use error::IOErrorToError;
 pub use error::{Error, Result};
 use file::MarkedFile;
+use heck::ToSnakeCase;
 use parser::ParsedTableMacro;
 pub use parser::FILE_SIGNATURE;
 use std::collections::HashMap;
@@ -350,6 +351,14 @@ impl From<&MarkedFile> for FileChange {
     }
 }
 
+/// Helper function for consistent table module name generation
+/// this is used for the rust module path name and for the filename
+///
+/// input: "tableA", output -> "table_a"
+fn get_table_module_name(table_name: &str) -> String {
+    table_name.to_snake_case().to_lowercase()
+}
+
 /// Generate all Models for a given diesel schema file
 ///
 /// Models are saved to disk
@@ -412,11 +421,12 @@ pub fn generate_files(
             return Err(Error::other("Cannot have a table named \"common\" while having option \"once_common_structs\" enabled"));
         }
         let table_name = table.name.to_string();
+        let table_filename = get_table_module_name(&table_name);
         let table_config = config.table(&table_name);
         let table_dir = if table_config.single_model_file {
             output_models_dir.to_owned()
         } else {
-            output_models_dir.join(&table_name)
+            output_models_dir.join(&table_filename)
         };
 
         if !table_dir.exists() {
@@ -451,11 +461,12 @@ pub fn generate_files(
             file_changes.push(FileChange::from(&table_mod_rs));
         }
 
-        mod_rs.ensure_mod_stmt(&table.name.to_string());
+        mod_rs.ensure_mod_stmt(&table_filename);
     }
 
     // pass 2: delete code for removed tables
     for item in std::fs::read_dir(output_models_dir).attach_path_err(output_models_dir)? {
+        // TODO: this does not work with "single-model-file"
         let item = item.attach_path_err(output_models_dir)?;
 
         // check if item is a directory
@@ -482,9 +493,7 @@ pub fn generate_files(
             item.path()
         )))?;
         let found = generated.iter().find(|g| {
-            g.name
-                .to_string()
-                .eq_ignore_ascii_case(associated_table_name)
+            get_table_module_name(&g.name.to_string()).eq_ignore_ascii_case(associated_table_name)
         });
         if found.is_some() {
             continue;

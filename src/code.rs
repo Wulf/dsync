@@ -1,9 +1,9 @@
-use heck::{ToPascalCase, ToSnakeCase};
+use heck::ToPascalCase;
 use indoc::formatdoc;
 use std::borrow::Cow;
 
 use crate::parser::{ParsedColumnMacro, ParsedTableMacro, FILE_SIGNATURE};
-use crate::{GenerationConfig, TableOptions};
+use crate::{get_table_module_name, GenerationConfig, TableOptions};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum StructType {
@@ -615,7 +615,7 @@ fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String 
     imports_vec.extend(table.foreign_keys.iter().map(|fk| {
         format!(
             "use {model_path}{foreign_table_name_model}::{singular_struct_name};",
-            foreign_table_name_model = fk.0.to_string().to_snake_case().to_lowercase(),
+            foreign_table_name_model = get_table_module_name(&fk.0.to_string()),
             singular_struct_name = fk.0.to_string().to_pascal_case(),
             model_path = config.model_path
         )
