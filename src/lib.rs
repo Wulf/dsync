@@ -334,7 +334,7 @@ pub fn validate_config(config: &GenerationConfig) -> Result<()> {
         return Err(Error::new(ErrorEnum::InvalidGenerationConfig(format!(
             "Invalid diesel_backend '{}', please use one of the following: {:?}; or, a custom diesel backend type (a struct which implements `diesel::backend::Backend`).",
             &config.diesel_backend,
-            VALID_BACKENDS.clone().join(", ")
+            VALID_BACKENDS.join(", ")
         ))));
     }
 
