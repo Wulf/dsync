@@ -1,6 +1,6 @@
 /* @generated and managed by dsync */
 
-use diesel::*;
+use crate::diesel::*;
 use crate::schema::*;
 use serde::{Deserialize, Serialize};
 use diesel::QueryResult;

@@ -1,6 +1,6 @@
 /* @generated and managed by dsync */
 
-use diesel::*;
+use crate::diesel::*;
 use crate::data::models::table_a::TableA;
 use crate::schema::*;
 use serde::{Deserialize, Serialize};
