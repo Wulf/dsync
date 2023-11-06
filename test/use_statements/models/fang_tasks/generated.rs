@@ -60,7 +60,7 @@ pub struct CreateFangTasks {
 }
 
 /// Update Struct for a row in table `fang_tasks` for [`FangTasks`]
-#[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, PartialEq, Default)]
 #[diesel(table_name=fang_tasks)]
 pub struct UpdateFangTasks {
     /// Field representing column `metadata`

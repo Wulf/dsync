@@ -127,6 +127,7 @@ pub mod derives {
     pub const ASSOCIATIONS: &str = "Associations";
     #[cfg(feature = "derive-queryablebyname")]
     pub const QUERYABLEBYNAME: &str = "QueryableByName";
+    pub const PARTIALEQ: &str = "PartialEq";
 }
 
 impl<'a> Struct<'a> {
@@ -207,6 +208,7 @@ impl<'a> Struct<'a> {
                     .all(|f| self.table.primary_key_column_names().contains(&f.name))
                 {
                     derives_vec.push(derives::ASCHANGESET);
+                    derives_vec.push(derives::PARTIALEQ);
                 }
 
                 derives_vec.push(derives::DEFAULT);

@@ -29,7 +29,7 @@ pub struct CreateTableB {
 }
 
 /// Update Struct for a row in table `tableB` for [`TableB`]
-#[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, PartialEq, Default)]
 #[diesel(table_name=tableB)]
 pub struct UpdateTableB {
     /// Field representing column `link`

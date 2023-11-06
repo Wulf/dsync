@@ -26,6 +26,7 @@
 - list changes to files (unchanged, modified, deleted)
 - generate doc-comments for generated structs, fields and functions
 - add derive `QueryableByName` to read-structs
+- add derive `PartialEq` to update-structs
 
 ## 0.0.17 (yanked)
 

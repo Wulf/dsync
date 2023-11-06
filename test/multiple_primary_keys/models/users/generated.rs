@@ -32,7 +32,7 @@ pub struct CreateUsers {
 }
 
 /// Update Struct for a row in table `users` for [`Users`]
-#[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, PartialEq, Default)]
 #[diesel(table_name=users)]
 pub struct UpdateUsers {
     /// Field representing column `secret`
