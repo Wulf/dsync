@@ -100,9 +100,25 @@ jobs:
     name: release
     needs: [build, clippy, test, test-script, fmt]
     if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write  # for actions/checkout to fetch code and for semantic-release to push commits, release releases and tags
+      issues: write # for semantic-release to comment on and close issues
+      pull-requests: write # for semantic-release to comment on and close pull requests
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@stable
-      - run: cargo publish
+      - name: Semantic Release
+        uses: cycjimmy/semantic-release-action@v4
+        with:
+          dry_run: true
+          extra_plugins: |
+            @semantic-release/git
+            @semantic-release/changelog
+            @semantic-release/commit-analyzer
+            @semantic-release/release-notes-generator
+            @semantic-release/github
+            @semantic-release-cargo/semantic-release-cargo
+            @commitlint/config-conventional
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
