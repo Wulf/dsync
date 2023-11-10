@@ -36,7 +36,7 @@ pub struct CreateTodos<'a> {
 }
 
 /// Update Struct for a row in table `todos` for [`Todos`]
-#[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, PartialEq, Default)]
 #[diesel(table_name=todos)]
 pub struct UpdateTodos<'a> {
     /// Field representing column `text_nullable`

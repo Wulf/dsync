@@ -46,7 +46,7 @@ pub struct CreateTodos {
 }
 
 /// Update Struct for a row in table `todos` for [`Todos`]
-#[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, PartialEq, Default)]
 #[diesel(table_name=todos)]
 pub struct UpdateTodos {
     /// Field representing column `unsigned`

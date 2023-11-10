@@ -26,7 +26,7 @@ pub struct CreateNormal {
 }
 
 /// Update Struct for a row in table `normal` for [`Normal`]
-#[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, PartialEq, Default)]
 #[diesel(table_name=normal)]
 pub struct UpdateNormal {
     /// Field representing column `testprop`
