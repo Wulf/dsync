@@ -248,7 +248,12 @@ pub struct GenerationConfig<'a> {
     pub default_table_options: TableOptions<'a>,
     /// Connection type to insert
     ///
-    /// Example: `diesel::SqliteConnection`
+    /// For example:
+    /// - `diesel::pg::PgConnection`
+    /// - `diesel::sqlite::SqliteConnection`
+    /// - `diesel::mysql::MysqlConnection`
+    /// - `diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::pg::PgConnection>>`
+    /// - or, your custom diesel connection type (struct which implements `diesel::connection::Connection`)
     pub connection_type: String,
     /// Diesel schema import path
     ///
