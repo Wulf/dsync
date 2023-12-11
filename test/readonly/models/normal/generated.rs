@@ -7,7 +7,7 @@ use diesel::QueryResult;
 pub type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::pg::PgConnection>>;
 
 /// Struct representing a row in table `normal`
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Queryable, Selectable, QueryableByName)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, diesel::Queryable, diesel::Selectable, diesel::QueryableByName)]
 #[diesel(table_name=normal, primary_key(id))]
 pub struct Normal {
     /// Field representing column `id`
@@ -17,7 +17,7 @@ pub struct Normal {
 }
 
 /// Create Struct for a row in table `normal` for [`Normal`]
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Insertable)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, diesel::Insertable)]
 #[diesel(table_name=normal)]
 pub struct CreateNormal {
     /// Field representing column `testprop`
@@ -25,7 +25,7 @@ pub struct CreateNormal {
 }
 
 /// Update Struct for a row in table `normal` for [`Normal`]
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, AsChangeset, PartialEq, Default)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, diesel::AsChangeset, PartialEq, Default)]
 #[diesel(table_name=normal)]
 pub struct UpdateNormal {
     /// Field representing column `testprop`

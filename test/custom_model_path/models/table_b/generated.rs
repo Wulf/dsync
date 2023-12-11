@@ -8,7 +8,7 @@ use diesel::QueryResult;
 pub type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::pg::PgConnection>>;
 
 /// Struct representing a row in table `tableB`
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Queryable, Selectable, QueryableByName, Associations, Identifiable)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, diesel::Queryable, diesel::Selectable, diesel::QueryableByName, diesel::Associations, diesel::Identifiable)]
 #[diesel(table_name=tableB, primary_key(_id), belongs_to(TableA, foreign_key=link))]
 pub struct TableB {
     /// Field representing column `_id`
@@ -18,7 +18,7 @@ pub struct TableB {
 }
 
 /// Create Struct for a row in table `tableB` for [`TableB`]
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Insertable)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, diesel::Insertable)]
 #[diesel(table_name=tableB)]
 pub struct CreateTableB {
     /// Field representing column `_id`
@@ -28,7 +28,7 @@ pub struct CreateTableB {
 }
 
 /// Update Struct for a row in table `tableB` for [`TableB`]
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, AsChangeset, PartialEq, Default)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, diesel::AsChangeset, PartialEq, Default)]
 #[diesel(table_name=tableB)]
 pub struct UpdateTableB {
     /// Field representing column `link`

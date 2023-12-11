@@ -117,16 +117,16 @@ pub mod derives {
     pub const DEBUG: &str = "Debug";
     pub const DEFAULT: &str = "Default";
     pub const CLONE: &str = "Clone";
-    pub const QUERYABLE: &str = "Queryable";
-    pub const INSERTABLE: &str = "Insertable";
+    pub const QUERYABLE: &str = "diesel::Queryable";
+    pub const INSERTABLE: &str = "diesel::Insertable";
     pub const SERIALIZE: &str = "serde::Serialize";
     pub const DESERIALIZE: &str = "serde::Deserialize";
-    pub const ASCHANGESET: &str = "AsChangeset";
-    pub const SELECTABLE: &str = "Selectable";
-    pub const IDENTIFIABLE: &str = "Identifiable";
-    pub const ASSOCIATIONS: &str = "Associations";
+    pub const ASCHANGESET: &str = "diesel::AsChangeset";
+    pub const SELECTABLE: &str = "diesel::Selectable";
+    pub const IDENTIFIABLE: &str = "diesel::Identifiable";
+    pub const ASSOCIATIONS: &str = "diesel::Associations";
     #[cfg(feature = "derive-queryablebyname")]
-    pub const QUERYABLEBYNAME: &str = "QueryableByName";
+    pub const QUERYABLEBYNAME: &str = "diesel::QueryableByName";
     pub const PARTIALEQ: &str = "PartialEq";
 }
 

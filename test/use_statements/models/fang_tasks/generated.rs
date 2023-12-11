@@ -7,7 +7,7 @@ use diesel::QueryResult;
 pub type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::pg::PgConnection>>;
 
 /// Struct representing a row in table `fang_tasks`
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Queryable, Selectable, QueryableByName)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, diesel::Queryable, diesel::Selectable, diesel::QueryableByName)]
 #[diesel(table_name=fang_tasks, primary_key(id))]
 pub struct FangTasks {
     /// Field representing column `id`
@@ -33,7 +33,7 @@ pub struct FangTasks {
 }
 
 /// Create Struct for a row in table `fang_tasks` for [`FangTasks`]
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Insertable)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, diesel::Insertable)]
 #[diesel(table_name=fang_tasks)]
 pub struct CreateFangTasks {
     /// Field representing column `id`
@@ -59,7 +59,7 @@ pub struct CreateFangTasks {
 }
 
 /// Update Struct for a row in table `fang_tasks` for [`FangTasks`]
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, AsChangeset, PartialEq, Default)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, diesel::AsChangeset, PartialEq, Default)]
 #[diesel(table_name=fang_tasks)]
 pub struct UpdateFangTasks {
     /// Field representing column `metadata`
