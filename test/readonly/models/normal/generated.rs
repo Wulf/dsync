@@ -2,7 +2,6 @@
 
 use crate::diesel::*;
 use crate::schema::*;
-use diesel::QueryResult;
 
 pub type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::pg::PgConnection>>;
 
@@ -49,21 +48,21 @@ pub struct PaginationResult<T> {
 
 impl Normal {
     /// Insert a new row into `normal` with a given [`CreateNormal`]
-    pub fn create(db: &mut ConnectionType, item: &CreateNormal) -> QueryResult<Self> {
+    pub fn create(db: &mut ConnectionType, item: &CreateNormal) -> diesel::QueryResult<Self> {
         use crate::schema::normal::dsl::*;
 
         diesel::insert_into(normal).values(item).get_result::<Self>(db)
     }
 
     /// Get a row from `normal`, identified by the primary key
-    pub fn read(db: &mut ConnectionType, param_id: i32) -> QueryResult<Self> {
+    pub fn read(db: &mut ConnectionType, param_id: i32) -> diesel::QueryResult<Self> {
         use crate::schema::normal::dsl::*;
 
         normal.filter(id.eq(param_id)).first::<Self>(db)
     }
 
     /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
-    pub fn paginate(db: &mut ConnectionType, page: i64, page_size: i64) -> QueryResult<PaginationResult<Self>> {
+    pub fn paginate(db: &mut ConnectionType, page: i64, page_size: i64) -> diesel::QueryResult<PaginationResult<Self>> {
         use crate::schema::normal::dsl::*;
 
         let page_size = if page_size < 1 { 1 } else { page_size };
@@ -81,14 +80,14 @@ impl Normal {
     }
 
     /// Update a row in `normal`, identified by the primary key with [`UpdateNormal`]
-    pub fn update(db: &mut ConnectionType, param_id: i32, item: &UpdateNormal) -> QueryResult<Self> {
+    pub fn update(db: &mut ConnectionType, param_id: i32, item: &UpdateNormal) -> diesel::QueryResult<Self> {
         use crate::schema::normal::dsl::*;
 
         diesel::update(normal.filter(id.eq(param_id))).set(item).get_result(db)
     }
 
     /// Delete a row in `normal`, identified by the primary key
-    pub fn delete(db: &mut ConnectionType, param_id: i32) -> QueryResult<usize> {
+    pub fn delete(db: &mut ConnectionType, param_id: i32) -> diesel::QueryResult<usize> {
         use crate::schema::normal::dsl::*;
 
         diesel::delete(normal.filter(id.eq(param_id))).execute(db)

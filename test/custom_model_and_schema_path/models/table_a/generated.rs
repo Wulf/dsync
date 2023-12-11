@@ -2,7 +2,6 @@
 
 use crate::diesel::*;
 use crate::data::schema::*;
-use diesel::QueryResult;
 
 pub type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::pg::PgConnection>>;
 
@@ -39,21 +38,21 @@ pub struct PaginationResult<T> {
 
 impl TableA {
     /// Insert a new row into `tableA` with a given [`CreateTableA`]
-    pub fn create(db: &mut ConnectionType, item: &CreateTableA) -> QueryResult<Self> {
+    pub fn create(db: &mut ConnectionType, item: &CreateTableA) -> diesel::QueryResult<Self> {
         use crate::data::schema::tableA::dsl::*;
 
         diesel::insert_into(tableA).values(item).get_result::<Self>(db)
     }
 
     /// Get a row from `tableA`, identified by the primary key
-    pub fn read(db: &mut ConnectionType, param__id: i32) -> QueryResult<Self> {
+    pub fn read(db: &mut ConnectionType, param__id: i32) -> diesel::QueryResult<Self> {
         use crate::data::schema::tableA::dsl::*;
 
         tableA.filter(_id.eq(param__id)).first::<Self>(db)
     }
 
     /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
-    pub fn paginate(db: &mut ConnectionType, page: i64, page_size: i64) -> QueryResult<PaginationResult<Self>> {
+    pub fn paginate(db: &mut ConnectionType, page: i64, page_size: i64) -> diesel::QueryResult<PaginationResult<Self>> {
         use crate::data::schema::tableA::dsl::*;
 
         let page_size = if page_size < 1 { 1 } else { page_size };
@@ -71,7 +70,7 @@ impl TableA {
     }
 
     /// Delete a row in `tableA`, identified by the primary key
-    pub fn delete(db: &mut ConnectionType, param__id: i32) -> QueryResult<usize> {
+    pub fn delete(db: &mut ConnectionType, param__id: i32) -> diesel::QueryResult<usize> {
         use crate::data::schema::tableA::dsl::*;
 
         diesel::delete(tableA.filter(_id.eq(param__id))).execute(db)

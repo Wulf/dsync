@@ -482,7 +482,7 @@ fn build_table_fns(
             buffer.push_str(&format!(
             r##"
     /// Insert a new row into `{table_name}` with a given [`{create_struct_identifier}`]
-    pub{async_keyword} fn create(db: &mut ConnectionType, item: &{create_struct_identifier}) -> QueryResult<Self> {{
+    pub{async_keyword} fn create(db: &mut ConnectionType, item: &{create_struct_identifier}) -> diesel::QueryResult<Self> {{
         use {schema_path}{table_name}::dsl::*;
 
         diesel::insert_into({table_name}).values(item).get_result::<Self>(db){await_keyword}
@@ -493,7 +493,7 @@ fn build_table_fns(
             buffer.push_str(&format!(
                 r##"
     /// Insert a new row into `{table_name}` with all default values
-    pub{async_keyword} fn create(db: &mut ConnectionType) -> QueryResult<Self> {{
+    pub{async_keyword} fn create(db: &mut ConnectionType) -> diesel::QueryResult<Self> {{
         use {schema_path}{table_name}::dsl::*;
 
         diesel::insert_into({table_name}).default_values().get_result::<Self>(db){await_keyword}
@@ -513,7 +513,7 @@ fn build_table_fns(
     buffer.push_str(&format!(
         r##"
     /// Get a row from `{table_name}`, identified by the primary {key_maybe_multiple}
-    pub{async_keyword} fn read(db: &mut ConnectionType, {item_id_params}) -> QueryResult<Self> {{
+    pub{async_keyword} fn read(db: &mut ConnectionType, {item_id_params}) -> diesel::QueryResult<Self> {{
         use {schema_path}{table_name}::dsl::*;
 
         {table_name}.{item_id_filters}.first::<Self>(db){await_keyword}
@@ -523,7 +523,7 @@ fn build_table_fns(
 
     buffer.push_str(&format!(r##"
     /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
-    pub{async_keyword} fn paginate(db: &mut ConnectionType, page: i64, page_size: i64) -> QueryResult<PaginationResult<Self>> {{
+    pub{async_keyword} fn paginate(db: &mut ConnectionType, page: i64, page_size: i64) -> diesel::QueryResult<PaginationResult<Self>> {{
         use {schema_path}{table_name}::dsl::*;
 
         let page_size = if page_size < 1 {{ 1 }} else {{ page_size }};
@@ -552,7 +552,7 @@ fn build_table_fns(
 
         buffer.push_str(&format!(r##"
     /// Update a row in `{table_name}`, identified by the primary {key_maybe_multiple} with [`{update_struct_identifier}`]
-    pub{async_keyword} fn update(db: &mut ConnectionType, {item_id_params}, item: &{update_struct_identifier}) -> QueryResult<Self> {{
+    pub{async_keyword} fn update(db: &mut ConnectionType, {item_id_params}, item: &{update_struct_identifier}) -> diesel::QueryResult<Self> {{
         use {schema_path}{table_name}::dsl::*;
 
         diesel::update({table_name}.{item_id_filters}).set(item).get_result(db){await_keyword}
@@ -564,7 +564,7 @@ fn build_table_fns(
         buffer.push_str(&format!(
             r##"
     /// Delete a row in `{table_name}`, identified by the primary {key_maybe_multiple}
-    pub{async_keyword} fn delete(db: &mut ConnectionType, {item_id_params}) -> QueryResult<usize> {{
+    pub{async_keyword} fn delete(db: &mut ConnectionType, {item_id_params}) -> diesel::QueryResult<usize> {{
         use {schema_path}{table_name}::dsl::*;
 
         diesel::delete({table_name}.{item_id_filters}).execute(db){await_keyword}
@@ -645,10 +645,6 @@ fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String 
 
     // no "::" because that is already included in the schema_path
     imports_vec.push(format!("use {}*;", config.schema_path));
-
-    if table_options.get_fns() {
-        imports_vec.push("use diesel::QueryResult;".into());
-    };
 
     if config.once_common_structs || config.once_connection_type {
         imports_vec.push(format!("use {}common::*;", config.model_path));

@@ -2,7 +2,6 @@
 
 use crate::diesel::*;
 use crate::schema::*;
-use diesel::QueryResult;
 
 pub type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::pg::PgConnection>>;
 
@@ -99,21 +98,21 @@ pub struct PaginationResult<T> {
 
 impl FangTasks {
     /// Insert a new row into `fang_tasks` with a given [`CreateFangTasks`]
-    pub fn create(db: &mut ConnectionType, item: &CreateFangTasks) -> QueryResult<Self> {
+    pub fn create(db: &mut ConnectionType, item: &CreateFangTasks) -> diesel::QueryResult<Self> {
         use crate::schema::fang_tasks::dsl::*;
 
         diesel::insert_into(fang_tasks).values(item).get_result::<Self>(db)
     }
 
     /// Get a row from `fang_tasks`, identified by the primary key
-    pub fn read(db: &mut ConnectionType, param_id: uuid::Uuid) -> QueryResult<Self> {
+    pub fn read(db: &mut ConnectionType, param_id: uuid::Uuid) -> diesel::QueryResult<Self> {
         use crate::schema::fang_tasks::dsl::*;
 
         fang_tasks.filter(id.eq(param_id)).first::<Self>(db)
     }
 
     /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
-    pub fn paginate(db: &mut ConnectionType, page: i64, page_size: i64) -> QueryResult<PaginationResult<Self>> {
+    pub fn paginate(db: &mut ConnectionType, page: i64, page_size: i64) -> diesel::QueryResult<PaginationResult<Self>> {
         use crate::schema::fang_tasks::dsl::*;
 
         let page_size = if page_size < 1 { 1 } else { page_size };
@@ -131,14 +130,14 @@ impl FangTasks {
     }
 
     /// Update a row in `fang_tasks`, identified by the primary key with [`UpdateFangTasks`]
-    pub fn update(db: &mut ConnectionType, param_id: uuid::Uuid, item: &UpdateFangTasks) -> QueryResult<Self> {
+    pub fn update(db: &mut ConnectionType, param_id: uuid::Uuid, item: &UpdateFangTasks) -> diesel::QueryResult<Self> {
         use crate::schema::fang_tasks::dsl::*;
 
         diesel::update(fang_tasks.filter(id.eq(param_id))).set(item).get_result(db)
     }
 
     /// Delete a row in `fang_tasks`, identified by the primary key
-    pub fn delete(db: &mut ConnectionType, param_id: uuid::Uuid) -> QueryResult<usize> {
+    pub fn delete(db: &mut ConnectionType, param_id: uuid::Uuid) -> diesel::QueryResult<usize> {
         use crate::schema::fang_tasks::dsl::*;
 
         diesel::delete(fang_tasks.filter(id.eq(param_id))).execute(db)
