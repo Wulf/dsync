@@ -42,7 +42,7 @@ impl TableA {
     pub fn create(db: &mut ConnectionType, item: &CreateTableA) -> QueryResult<Self> {
         use crate::schema::tableA::dsl::*;
 
-        insert_into(tableA).values(item).get_result::<Self>(db)
+        diesel::insert_into(tableA).values(item).get_result::<Self>(db)
     }
 
     /// Get a row from `tableA`, identified by the primary key

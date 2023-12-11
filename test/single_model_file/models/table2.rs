@@ -34,7 +34,7 @@ impl Table2 {
     pub fn create(db: &mut ConnectionType) -> QueryResult<Self> {
         use crate::schema::table2::dsl::*;
 
-        insert_into(table2).default_values().get_result::<Self>(db)
+        diesel::insert_into(table2).default_values().get_result::<Self>(db)
     }
 
     /// Get a row from `table2`, identified by the primary key

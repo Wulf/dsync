@@ -485,7 +485,7 @@ fn build_table_fns(
     pub{async_keyword} fn create(db: &mut ConnectionType, item: &{create_struct_identifier}) -> QueryResult<Self> {{
         use {schema_path}{table_name}::dsl::*;
 
-        insert_into({table_name}).values(item).get_result::<Self>(db){await_keyword}
+        diesel::insert_into({table_name}).values(item).get_result::<Self>(db){await_keyword}
     }}
 "##
         ));
@@ -496,7 +496,7 @@ fn build_table_fns(
     pub{async_keyword} fn create(db: &mut ConnectionType) -> QueryResult<Self> {{
         use {schema_path}{table_name}::dsl::*;
 
-        insert_into({table_name}).default_values().get_result::<Self>(db){await_keyword}
+        diesel::insert_into({table_name}).default_values().get_result::<Self>(db){await_keyword}
     }}
 "##
             ));

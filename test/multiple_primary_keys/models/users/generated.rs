@@ -58,7 +58,7 @@ impl Users {
     pub fn create(db: &mut ConnectionType, item: &CreateUsers) -> QueryResult<Self> {
         use crate::schema::users::dsl::*;
 
-        insert_into(users).values(item).get_result::<Self>(db)
+        diesel::insert_into(users).values(item).get_result::<Self>(db)
     }
 
     /// Get a row from `users`, identified by the primary keys

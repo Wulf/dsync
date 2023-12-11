@@ -52,7 +52,7 @@ impl Normal {
     pub fn create(db: &mut ConnectionType, item: &CreateNormal) -> QueryResult<Self> {
         use crate::schema::normal::dsl::*;
 
-        insert_into(normal).values(item).get_result::<Self>(db)
+        diesel::insert_into(normal).values(item).get_result::<Self>(db)
     }
 
     /// Get a row from `normal`, identified by the primary key

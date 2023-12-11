@@ -102,7 +102,7 @@ impl FangTasks {
     pub fn create(db: &mut ConnectionType, item: &CreateFangTasks) -> QueryResult<Self> {
         use crate::schema::fang_tasks::dsl::*;
 
-        insert_into(fang_tasks).values(item).get_result::<Self>(db)
+        diesel::insert_into(fang_tasks).values(item).get_result::<Self>(db)
     }
 
     /// Get a row from `fang_tasks`, identified by the primary key

@@ -66,7 +66,7 @@ impl Todos {
     pub fn create(db: &mut ConnectionType, item: &CreateTodos) -> QueryResult<Self> {
         use crate::schema::todos::dsl::*;
 
-        insert_into(todos).values(item).get_result::<Self>(db)
+        diesel::insert_into(todos).values(item).get_result::<Self>(db)
     }
 
     /// Get a row from `todos`, identified by the primary key
