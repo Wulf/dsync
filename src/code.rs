@@ -398,6 +398,21 @@ impl<'a> Struct<'a> {
     }
 }
 
+/// Helper function to simple get the async functions if enabled
+///
+/// Returns (async_keyword, await_keyword)
+#[inline(always)]
+#[allow(unused_variables)] // only used if feature "async" is active
+fn get_async(table_options: &TableOptions<'_>) -> (&'static str, &'static str) {
+    #[cfg(feature = "async")]
+    if table_options.get_async() {
+        // early return because the block cannot be combined without being affected by the "cfg"
+        return (" async", ".await");
+    }
+
+    ("", "")
+}
+
 /// Generate all functions (insides of the `impl StuctName { here }`)
 fn build_table_fns(
     table: &ParsedTableMacro,
@@ -445,15 +460,7 @@ fn build_table_fns(
 
     // template variables
     let table_name = table.name.to_string();
-    #[allow(unused_labels)] // label is only used if feature is enabled
-    let (async_keyword, await_keyword) = 'async_block: {
-        #[cfg(feature = "async")]
-        if table_options.get_async() {
-            break 'async_block (" async", ".await");
-        }
-
-        ("", "")
-    };
+    let (async_keyword, await_keyword) = get_async(&table_options);
 
     let struct_name = &table.struct_name;
     let schema_path = &config.schema_path;
