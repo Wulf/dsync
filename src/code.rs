@@ -291,12 +291,22 @@ impl<'a> Struct<'a> {
         }
 
         let lifetimes = {
-            let lifetimes = match self.ty {
+            let s_lifetimes = match self.ty {
                 StructType::Read => "",
                 StructType::Update => self.opts.get_update_str_type().get_lifetime(),
                 StructType::Create => self.opts.get_create_str_type().get_lifetime(),
             };
+            let b_lifetimes = match self.ty {
+                StructType::Read => "",
+                StructType::Update => self.opts.get_update_bytes_type().get_lifetime(),
+                StructType::Create => self.opts.get_create_bytes_type().get_lifetime(),
+            };
 
+            let lifetimes = [s_lifetimes, b_lifetimes]
+                .iter()
+                .copied()
+                .max_by_key(|l| l.len())
+                .unwrap_or("");
             if lifetimes.is_empty() {
                 String::new()
             } else {
@@ -313,6 +323,12 @@ impl<'a> Struct<'a> {
                     StructType::Read => f.base_type,
                     StructType::Update => self.opts.get_update_str_type().as_str().to_string(),
                     StructType::Create => self.opts.get_create_str_type().as_str().to_string(),
+                }
+            } else if f.base_type == "Vec<u8>" {
+                f.base_type = match self.ty {
+                    StructType::Read => f.base_type,
+                    StructType::Update => self.opts.get_update_bytes_type().as_str().to_string(),
+                    StructType::Create => self.opts.get_create_bytes_type().as_str().to_string(),
                 }
             }
 
