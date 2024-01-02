@@ -48,5 +48,3 @@ pub struct UpdateTodos {
     /// Field representing column `updated_at`
     pub updated_at: Option<chrono::DateTime<chrono::Utc>>,
 }
-
-

@@ -573,7 +573,7 @@ fn build_table_fns(
         ));
     }
 
-    buffer.push('}');
+    buffer.push_str("}\n");
 
     buffer
 }
@@ -661,29 +661,37 @@ fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String 
 
 /// Generate a full file for a given diesel table
 pub fn generate_for_table(table: &ParsedTableMacro, config: &GenerationConfig) -> String {
+    // early to ensure the table options are set for the current table
     let table_options = config.table(&table.name.to_string());
-    // first, we generate struct code
-    let read_struct = Struct::new(StructType::Read, table, config);
-    let update_struct = Struct::new(StructType::Update, table, config);
+
+    let mut ret_buffer = format!("{FILE_SIGNATURE}\n\n");
+
+    // first push imports
+    ret_buffer.push_str(build_imports(table, config).as_str());
+
+    // second push structs
+    ret_buffer.push_str("\n\n");
+    ret_buffer.push_str(Struct::new(StructType::Read, table, config).code());
+
     let create_struct = Struct::new(StructType::Create, table, config);
 
-    let mut structs = String::from(read_struct.code());
     if create_struct.has_code() {
-        structs.push('\n');
-        structs.push_str(create_struct.code());
+        ret_buffer.push('\n');
+        ret_buffer.push_str(create_struct.code());
     }
+
+    let update_struct = Struct::new(StructType::Update, table, config);
 
     if update_struct.has_code() {
-        structs.push('\n');
-        structs.push_str(update_struct.code());
+        ret_buffer.push('\n');
+        ret_buffer.push_str(update_struct.code());
     }
 
-    let functions = if table_options.get_fns() {
-        build_table_fns(table, config, create_struct, update_struct)
-    } else {
-        "".to_string()
-    };
-    let imports = build_imports(table, config);
+    // third and lastly, push functions - if enabled
+    if table_options.get_fns() {
+        ret_buffer.push('\n');
+        ret_buffer.push_str(build_table_fns(table, config, create_struct, update_struct).as_str());
+    }
 
-    format!("{FILE_SIGNATURE}\n\n{imports}\n\n{structs}\n{functions}\n")
+    ret_buffer
 }
