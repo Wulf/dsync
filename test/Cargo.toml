@@ -8,3 +8,7 @@ members = [
     "single_model_file",
 ]
 resolver = "2"
+
+[workspace.dependencies]
+chrono = { version = "*", features = ["serde"] }
+serde = { version = "*", features = ["derive"] }

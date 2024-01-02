@@ -13,6 +13,5 @@ diesel = { version = "*", default-features = false, features = [
     "chrono",
 ] }
 r2d2 = "*"
-dsync = { path = "../../" }
-chrono = { version = "*", features = ["serde"] }
-serde = { version = "*", features = ["derive"] }
+chrono.workspace = true
+serde.workspace = true

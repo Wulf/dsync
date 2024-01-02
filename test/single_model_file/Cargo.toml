@@ -11,6 +11,5 @@ diesel = { version = "*", default-features = false, features = [
     "postgres",
     "chrono",
 ] }
-dsync = { path = "../../" }
-chrono = { version = "*", features = ["serde"] }
-serde = { version = "*", features = ["derive"] }
+chrono.workspace = true
+serde.workspace = true
