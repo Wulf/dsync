@@ -1,0 +1,10 @@
+[workspace]
+# only some tests are currently compile-able
+members = [
+    "simple_table_pg",
+    "simple_table_mysql",
+    "simple_table_sqlite",
+    "custom_model_and_schema_path",
+    "single_model_file",
+]
+resolver = "2"

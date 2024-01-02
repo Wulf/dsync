@@ -47,14 +47,3 @@ path = "src/lib.rs"
 name = "dsync"
 test = false
 path = "src/bin/main.rs"
-
-[workspace]
-# only some tests are currently compile-able
-members = [
-    "test/simple_table_pg",
-    "test/simple_table_mysql",
-    "test/simple_table_sqlite",
-    "test/custom_model_and_schema_path",
-    "test/single_model_file",
-]
-resolver = "2"

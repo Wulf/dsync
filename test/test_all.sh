@@ -7,8 +7,9 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 cd $SCRIPT_DIR
 
-for D in *; do 
-    if [ -d "${D}" ]; then
+for D in *; do
+    # ignore the test's "target" directory
+    if [ -d "${D}" ] && [ "${D}" != "target" ]; then
         echo "Testing $D"
         ${D}/test.sh
         # output separator
