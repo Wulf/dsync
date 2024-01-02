@@ -12,7 +12,7 @@ fn main() {
         models_dir.as_path(),
         GenerationConfig {
             connection_type: "diesel::pg::PgConnection".into(),
-            default_table_options: TableOptions::default().disable_serde(),
+            default_table_options: TableOptions::default().disable_serde().single_model_file(),
             model_path: "crate::models::".into(),
             schema_path: "crate::schema::".into(),
             once_common_structs: true,
