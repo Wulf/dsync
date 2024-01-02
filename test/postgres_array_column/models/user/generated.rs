@@ -2,13 +2,11 @@
 
 use crate::diesel::*;
 use crate::schema::*;
-use serde::{Deserialize, Serialize};
-use diesel::QueryResult;
 
-type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
+pub type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
 
 /// Struct representing a row in table `user`
-#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable, QueryableByName)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, diesel::Queryable, diesel::Selectable, diesel::QueryableByName)]
 #[diesel(table_name=user, primary_key(id))]
 pub struct User {
     /// Field representing column `id`
@@ -20,7 +18,7 @@ pub struct User {
 }
 
 /// Create Struct for a row in table `user` for [`User`]
-#[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, diesel::Insertable)]
 #[diesel(table_name=user)]
 pub struct CreateUser {
     /// Field representing column `phone_numbers`
@@ -30,7 +28,7 @@ pub struct CreateUser {
 }
 
 /// Update Struct for a row in table `user` for [`User`]
-#[derive(Debug, Clone, Serialize, Deserialize, AsChangeset, Default)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, diesel::AsChangeset, PartialEq, Default)]
 #[diesel(table_name=user)]
 pub struct UpdateUser {
     /// Field representing column `phone_numbers`
@@ -56,21 +54,21 @@ pub struct PaginationResult<T> {
 
 impl User {
     /// Insert a new row into `user` with a given [`CreateUser`]
-    pub fn create(db: &mut ConnectionType, item: &CreateUser) -> QueryResult<Self> {
+    pub fn create(db: &mut ConnectionType, item: &CreateUser) -> diesel::QueryResult<Self> {
         use crate::schema::user::dsl::*;
 
-        insert_into(user).values(item).get_result::<Self>(db)
+        diesel::insert_into(user).values(item).get_result::<Self>(db)
     }
 
     /// Get a row from `user`, identified by the primary key
-    pub fn read(db: &mut ConnectionType, param_id: i32) -> QueryResult<Self> {
+    pub fn read(db: &mut ConnectionType, param_id: i32) -> diesel::QueryResult<Self> {
         use crate::schema::user::dsl::*;
 
         user.filter(id.eq(param_id)).first::<Self>(db)
     }
 
     /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
-    pub fn paginate(db: &mut ConnectionType, page: i64, page_size: i64) -> QueryResult<PaginationResult<Self>> {
+    pub fn paginate(db: &mut ConnectionType, page: i64, page_size: i64) -> diesel::QueryResult<PaginationResult<Self>> {
         use crate::schema::user::dsl::*;
 
         let page_size = if page_size < 1 { 1 } else { page_size };
@@ -88,14 +86,14 @@ impl User {
     }
 
     /// Update a row in `user`, identified by the primary key with [`UpdateUser`]
-    pub fn update(db: &mut ConnectionType, param_id: i32, item: &UpdateUser) -> QueryResult<Self> {
+    pub fn update(db: &mut ConnectionType, param_id: i32, item: &UpdateUser) -> diesel::QueryResult<Self> {
         use crate::schema::user::dsl::*;
 
         diesel::update(user.filter(id.eq(param_id))).set(item).get_result(db)
     }
 
     /// Delete a row in `user`, identified by the primary key
-    pub fn delete(db: &mut ConnectionType, param_id: i32) -> QueryResult<usize> {
+    pub fn delete(db: &mut ConnectionType, param_id: i32) -> diesel::QueryResult<usize> {
         use crate::schema::user::dsl::*;
 
         diesel::delete(user.filter(id.eq(param_id))).execute(db)
