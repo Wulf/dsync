@@ -3,7 +3,7 @@
 use crate::diesel::*;
 use crate::schema::*;
 
-pub type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::prelude::SqliteConnection>>;
+pub type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::sqlite::SqliteConnection>>;
 
 /// Struct representing a row in table `todos`
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, diesel::Queryable, diesel::Selectable, diesel::QueryableByName)]
