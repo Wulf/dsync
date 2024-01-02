@@ -84,16 +84,16 @@ For a complete example, see [`test/simple_table/schema.rs`](test/simple_table/sc
 
 4. Execute!
 
-  ```sh
-  cargo run --bin dsync
-  ```
+   ```sh
+   cargo run --bin dsync
+   ```
 
-  **Protip**: to use `cargo dsync`, create an alias in `.cargo/config`:
-  
-  ```toml
-  [alias]
-  dsync="run --bin dsync"
-  ```
+**Protip**: to use `cargo dsync`, create an alias in `.cargo/config`:
+
+```toml
+[alias]
+dsync="run --bin dsync"
+```
 
 ### Pre-built binary
 
