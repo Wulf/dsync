@@ -12,3 +12,4 @@ resolver = "2"
 [workspace.dependencies]
 chrono = { version = "*", features = ["serde"] }
 serde = { version = "*", features = ["derive"] }
+r2d2 = "*"

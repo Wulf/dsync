@@ -13,6 +13,6 @@ diesel = { version = "*", default-features = false, features = [
     "chrono",
     "returning_clauses_for_sqlite_3_35",
 ] }
-r2d2 = "*"
+r2d2.workspace = true
 chrono.workspace = true
 serde.workspace = true

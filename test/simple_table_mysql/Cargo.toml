@@ -12,6 +12,6 @@ diesel = { version = "*", default-features = false, features = [
     "r2d2",
     "chrono",
 ] }
-r2d2 = "*"
+r2d2.workspace = true
 chrono.workspace = true
 serde.workspace = true
