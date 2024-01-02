@@ -108,6 +108,7 @@ impl StructField {
 impl From<&ParsedColumnMacro> for StructField {
     fn from(value: &ParsedColumnMacro) -> Self {
         let name = value.name.to_string();
+
         // convert integers to proper rust integers
         let base_type = if value.is_unsigned {
             value.ty.replace('i', "u")

@@ -3,7 +3,7 @@
 use crate::diesel::*;
 use crate::schema::*;
 
-pub type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::PgConnection>>;
+pub type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::pg::PgConnection>>;
 
 /// Struct representing a row in table `user`
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, diesel::Queryable, diesel::Selectable, diesel::QueryableByName)]
@@ -12,7 +12,7 @@ pub struct User {
     /// Field representing column `id`
     pub id: i32,
     /// Field representing column `phone_numbers`
-    pub phone_numbers: Option<Vec<Option<String>>>,
+    pub phone_numbers: Vec<Option<String>>,
     /// Field representing column `optional_array_column`
     pub optional_array_column: Option<Vec<Option<String>>>,
 }
@@ -22,7 +22,7 @@ pub struct User {
 #[diesel(table_name=user)]
 pub struct CreateUser {
     /// Field representing column `phone_numbers`
-    pub phone_numbers: Option<Vec<Option<String>>>,
+    pub phone_numbers: Vec<Option<String>>,
     /// Field representing column `optional_array_column`
     pub optional_array_column: Option<Vec<Option<String>>>,
 }
@@ -32,7 +32,7 @@ pub struct CreateUser {
 #[diesel(table_name=user)]
 pub struct UpdateUser {
     /// Field representing column `phone_numbers`
-    pub phone_numbers: Option<Option<Vec<Option<String>>>>,
+    pub phone_numbers: Option<Vec<Option<String>>>,
     /// Field representing column `optional_array_column`
     pub optional_array_column: Option<Option<Vec<Option<String>>>>,
 }
