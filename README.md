@@ -36,14 +36,14 @@ async fn demo(db: Connection) {
   let created_todo = todos::create(&mut db, todos::CreateTodo {
     text: "Create a demo",
     completed: false,
-  }).await?;
+  })?;
   
-  let todos_list = todos::paginate(&mut db, 1, 10).await?;
+  let todos_list = todos::paginate(&mut db, 1, 10)?;
   
   let updated_todo = todos::update(&mut db, created_todo.id, UpdateTodo {
     text: created_todo.text,
     completed: true,
-  }).await?;
+  })?;
 }
 ```
 
@@ -84,16 +84,16 @@ For a complete example, see [`test/simple_table/schema.rs`](test/simple_table/sc
 
 4. Execute!
 
-  ```sh
-  cargo run --bin dsync
-  ```
+   ```sh
+   cargo run --bin dsync
+   ```
 
-  **Protip**: to use `cargo dsync`, create an alias in `.cargo/config`:
-  
-  ```toml
-  [alias]
-  dsync="run --bin dsync"
-  ```
+**Protip**: to use `cargo dsync`, create an alias in `.cargo/config`:
+
+```toml
+[alias]
+dsync="run --bin dsync"
+```
 
 ### Pre-built binary
 
