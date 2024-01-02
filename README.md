@@ -36,14 +36,14 @@ async fn demo(db: Connection) {
   let created_todo = todos::create(&mut db, todos::CreateTodo {
     text: "Create a demo",
     completed: false,
-  }).await?;
+  })?;
   
-  let todos_list = todos::paginate(&mut db, 1, 10).await?;
+  let todos_list = todos::paginate(&mut db, 1, 10)?;
   
   let updated_todo = todos::update(&mut db, created_todo.id, UpdateTodo {
     text: created_todo.text,
     completed: true,
-  }).await?;
+  })?;
 }
 ```
 
