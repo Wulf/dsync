@@ -20,6 +20,7 @@ pub struct ParsedColumnMacro {
     pub column_name: String,
     pub is_nullable: bool,
     pub is_unsigned: bool,
+    pub is_array: bool,
 }
 
 /// Struct to hold all information needed from a parsed `diesel::table!` macro
@@ -232,6 +233,7 @@ fn handle_table_macro(
                     let mut column_type: Option<Ident> = None;
                     let mut column_nullable: bool = false;
                     let mut column_unsigned: bool = false;
+                    let mut column_array: bool = false;
                     // track if the last loop was a "#" (start of a attribute)
                     let mut had_hashtag = false;
 
@@ -260,6 +262,8 @@ fn handle_table_macro(
                                     column_nullable = true;
                                 } else if ident.to_string().eq_ignore_ascii_case("Unsigned") {
                                     column_unsigned = true;
+                                } else if ident.to_string().eq_ignore_ascii_case("Array") {
+                                    column_array = true;
                                 } else {
                                     column_type = Some(ident);
                                 }
@@ -300,6 +304,7 @@ fn handle_table_macro(
                                         )?,
                                         is_nullable: column_nullable,
                                         is_unsigned: column_unsigned,
+                                        is_array: column_array,
                                         column_name,
                                     });
 
@@ -309,6 +314,7 @@ fn handle_table_macro(
                                     column_type = None;
                                     column_unsigned = false;
                                     column_nullable = false;
+                                    column_array = false;
                                 }
                             }
                             _ => {

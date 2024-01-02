@@ -80,16 +80,28 @@ pub struct StructField {
     pub base_type: String,
     /// Indicate that this field is optional
     pub is_optional: bool,
+    /// Indicate that this field is a vec
+    pub is_vec: bool,
 }
 
 impl StructField {
     /// Assemble the current options into a rust type, like `base_type: String, is_optional: true` to `Option<String>`
     pub fn to_rust_type(&self) -> Cow<str> {
-        if self.is_optional {
-            return format!("Option<{}>", self.base_type).into();
+        let mut rust_type = self.base_type.clone();
+
+        // order matters!
+
+        if self.is_vec {
+            // note: we wrap the inner-type with Option<> because postgres arrays can have null values
+            // see: https://www.reddit.com/r/rust/comments/13s7t4w/comment/jlr606o/
+            rust_type = format!("Vec<Option<{}>>", rust_type).into();
         }
 
-        return self.base_type.as_str().into();
+        if self.is_optional {
+            rust_type = format!("Option<{}>", rust_type).into();
+        }
+
+        rust_type.into()
     }
 }
 
@@ -107,6 +119,7 @@ impl From<&ParsedColumnMacro> for StructField {
             name,
             base_type,
             is_optional: value.is_nullable,
+            is_vec: value.is_array,
             column_name: value.column_name.clone(),
         }
     }
