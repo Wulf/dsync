@@ -1,0 +1,21 @@
+[[bin]]
+name = "dsync"
+path = "src/dsync.rs"
+
+[[bin]]
+name = "example"
+path = "src/example.rs"
+
+[package]
+name = "todo"
+version = "0.1.0"
+edition = "2021"
+default-run = "example"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+diesel = {version="*", default-features = false, features=["postgres", "r2d2", "chrono"]}
+r2d2 = "*"
+dsync = {path = "../../"}
+chrono = "*"
