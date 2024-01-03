@@ -20,6 +20,7 @@ pub struct ParsedColumnMacro {
     pub column_name: String,
     pub is_nullable: bool,
     pub is_unsigned: bool,
+    pub is_array: bool,
 }
 
 /// Struct to hold all information needed from a parsed `diesel::table!` macro
@@ -232,6 +233,7 @@ fn handle_table_macro(
                     let mut column_type: Option<Ident> = None;
                     let mut column_nullable: bool = false;
                     let mut column_unsigned: bool = false;
+                    let mut column_array: bool = false;
                     // track if the last loop was a "#" (start of a attribute)
                     let mut had_hashtag = false;
 
@@ -257,9 +259,40 @@ fn handle_table_macro(
                                 if rust_column_name.is_none() {
                                     rust_column_name = Some(ident);
                                 } else if ident.to_string().eq_ignore_ascii_case("Nullable") {
-                                    column_nullable = true;
+                                    if column_array {
+                                        /*
+                                           If we've already identified this column as an array,
+                                           then we know for sure that the field inside is marked as nullable
+                                           (but this isn't the same as `NOT NULL`, rather, it is an implementation detail of postgres arrays).
+
+                                           Therefore, we can safely ignore this case of "Nullable".
+
+                                           For example:
+
+                                           ```rs
+                                           #[sql_name = "phone_numbers"]
+                                           phone_numbers -> Array<Nullable<Text>>,
+                                           ```
+
+                                           becomes:
+
+                                           ```rs
+                                           phone_numbers: Vec<Option<String>>,
+                                           ```
+
+                                           instead of the incorrect (which would be generated if we didn't have this column_array check):
+
+                                           ```rs
+                                           phone_numbers: Option<Vec<Option<String>>>,
+                                           ```
+                                        */
+                                    } else {
+                                        column_nullable = true;
+                                    }
                                 } else if ident.to_string().eq_ignore_ascii_case("Unsigned") {
                                     column_unsigned = true;
+                                } else if ident.to_string().eq_ignore_ascii_case("Array") {
+                                    column_array = true;
                                 } else {
                                     column_type = Some(ident);
                                 }
@@ -300,6 +333,7 @@ fn handle_table_macro(
                                         )?,
                                         is_nullable: column_nullable,
                                         is_unsigned: column_unsigned,
+                                        is_array: column_array,
                                         column_name,
                                     });
 
@@ -309,6 +343,7 @@ fn handle_table_macro(
                                     column_type = None;
                                     column_unsigned = false;
                                     column_nullable = false;
+                                    column_array = false;
                                 }
                             }
                             _ => {
