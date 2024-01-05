@@ -28,6 +28,8 @@ async = []
 backtrace = []
 # enable derive "QueryableByName"
 derive-queryablebyname = []
+# enable *experimental* queries
+advanced-queries = []
 
 [dependencies]
 clap = { version = "4.4", features = ["derive", "wrap_help"] }

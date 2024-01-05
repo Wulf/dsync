@@ -25,6 +25,8 @@ use std::collections::HashMap;
 use std::fmt::Display;
 use std::path::{Path, PathBuf};
 
+use crate::error::ErrorEnum;
+
 /// Available options for string types
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub enum StringType {
@@ -306,9 +308,9 @@ impl<'a> Default for TableOptions<'a> {
 /// Global config, not table specific
 #[derive(Debug, Clone)]
 pub struct GenerationConfig<'a> {
-    /// Specific Table options for a given table
+    /// Specific code generation options for a particular table
     pub table_options: HashMap<&'a str, TableOptions<'a>>,
-    /// Default table options, used when not in `table_options`
+    /// Default table options, can be overriden by `table_options`
     pub default_table_options: TableOptions<'a>,
     /// Connection type to insert
     ///
@@ -335,6 +337,16 @@ pub struct GenerationConfig<'a> {
     pub readonly_prefixes: Vec<String>,
     /// Suffixes to treat tables as readonly
     pub readonly_suffixes: Vec<String>,
+
+    #[cfg(feature = "advanced-queries")]
+    /// Diesel backend
+    ///
+    /// For example:
+    /// - `diesel::pg::Pg` (default)
+    /// - `diesel::sqlite::Sqlite`
+    /// - `diesel::mysql::Mysql`
+    /// - or, your custom diesel backend type (struct which implements `diesel::backend::Backend`)
+    pub diesel_backend: String,
 }
 
 impl GenerationConfig<'_> {
@@ -354,6 +366,25 @@ impl GenerationConfig<'_> {
 
         table
     }
+}
+
+#[cfg(feature = "advanced-queries")]
+pub fn validate_config(config: &GenerationConfig) -> Result<()> {
+    const VALID_BACKENDS: [&str; 3] = [
+        "diesel::pg::Pg",
+        "diesel::sqlite::Sqlite",
+        "diesel::mysql::Mysql",
+    ];
+
+    if config.diesel_backend.is_empty() {
+        return Err(Error::new(ErrorEnum::InvalidGenerationConfig(format!(
+            "Invalid diesel_backend '{}', please use one of the following: {:?}; or, a custom diesel backend type (a struct which implements `diesel::backend::Backend`).",
+            &config.diesel_backend,
+            VALID_BACKENDS.join(", ")
+        ))));
+    }
+
+    Ok(())
 }
 
 /// Generate a model for the given schema contents
@@ -436,6 +467,9 @@ pub fn generate_files(
     output_models_dir: &Path,
     config: GenerationConfig,
 ) -> Result<Vec<FileChange>> {
+    #[cfg(feature = "advanced-queries")]
+    validate_config(&config)?;
+
     let generated = generate_code(
         &std::fs::read_to_string(input_diesel_schema_file)
             .attach_path_err(input_diesel_schema_file)?,
