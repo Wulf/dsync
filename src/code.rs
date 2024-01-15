@@ -94,11 +94,11 @@ impl StructField {
         if self.is_vec {
             // note: we wrap the inner-type with Option<> because postgres arrays can have null values
             // see: https://www.reddit.com/r/rust/comments/13s7t4w/comment/jlr606o/
-            rust_type = format!("Vec<Option<{}>>", rust_type).into();
+            rust_type = format!("Vec<Option<{}>>", rust_type);
         }
 
         if self.is_optional {
-            rust_type = format!("Option<{}>", rust_type).into();
+            rust_type = format!("Option<{}>", rust_type);
         }
 
         rust_type.into()
