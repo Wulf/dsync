@@ -51,24 +51,6 @@ impl TableA {
         tableA.filter(_id.eq(param__id)).first::<Self>(db)
     }
 
-    /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
-    pub fn paginate(db: &mut ConnectionType, page: i64, page_size: i64) -> diesel::QueryResult<PaginationResult<Self>> {
-        use crate::schema::tableA::dsl::*;
-
-        let page_size = if page_size < 1 { 1 } else { page_size };
-        let total_items = tableA.count().get_result(db)?;
-        let items = tableA.limit(page_size).offset(page * page_size).load::<Self>(db)?;
-
-        Ok(PaginationResult {
-            items,
-            total_items,
-            page,
-            page_size,
-            /* ceiling division of integers */
-            num_pages: total_items / page_size + i64::from(total_items % page_size != 0)
-        })
-    }
-
     /// Delete a row in `tableA`, identified by the primary key
     pub fn delete(db: &mut ConnectionType, param__id: i32) -> diesel::QueryResult<usize> {
         use crate::schema::tableA::dsl::*;

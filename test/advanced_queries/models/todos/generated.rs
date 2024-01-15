@@ -131,30 +131,34 @@ impl Todos {
     ) -> crate::schema::todos::BoxedQuery<'a, diesel::pg::Pg> {
         let mut query = crate::schema::todos::table.into_boxed();
         
-        if let Some(filter_id) = filter.id.clone() {
-            query = query.filter(crate::schema::todos::id.eq(filter_id));
-        }
-        if let Some(filter_unsigned) = filter.unsigned.clone() {
-            query = query.filter(crate::schema::todos::unsigned.eq(filter_unsigned));
-        }
-        if let Some(filter_unsigned_nullable) = filter.unsigned_nullable.clone() {
-            query = query.filter(crate::schema::todos::unsigned_nullable.eq(filter_unsigned_nullable));
-        }
-        if let Some(filter_text) = filter.text.clone() {
-            query = query.filter(crate::schema::todos::text.eq(filter_text));
-        }
-        if let Some(filter_completed) = filter.completed.clone() {
-            query = query.filter(crate::schema::todos::completed.eq(filter_completed));
-        }
-        if let Some(filter_type_) = filter.type_.clone() {
-            query = query.filter(crate::schema::todos::type_.eq(filter_type_));
-        }
-        if let Some(filter_created_at) = filter.created_at.clone() {
-            query = query.filter(crate::schema::todos::created_at.eq(filter_created_at));
-        }
-        if let Some(filter_updated_at) = filter.updated_at.clone() {
-            query = query.filter(crate::schema::todos::updated_at.eq(filter_updated_at));
-        }
+            if let Some(filter_id) = filter.id.clone() {
+                query = query.filter(crate::schema::todos::id.eq(filter_id));
+            }
+            if let Some(filter_unsigned) = filter.unsigned.clone() {
+                query = query.filter(crate::schema::todos::unsigned.eq(filter_unsigned));
+            }
+            if let Some(filter_unsigned_nullable) = filter.unsigned_nullable.clone() {
+                query = if filter_unsigned_nullable.is_some() { 
+                    query.filter(crate::schema::todos::unsigned_nullable.eq(filter_unsigned_nullable))
+                } else {
+                    query.filter(crate::schema::todos::unsigned_nullable.is_null())
+                };
+            }
+            if let Some(filter_text) = filter.text.clone() {
+                query = query.filter(crate::schema::todos::text.eq(filter_text));
+            }
+            if let Some(filter_completed) = filter.completed.clone() {
+                query = query.filter(crate::schema::todos::completed.eq(filter_completed));
+            }
+            if let Some(filter_type_) = filter.type_.clone() {
+                query = query.filter(crate::schema::todos::type_.eq(filter_type_));
+            }
+            if let Some(filter_created_at) = filter.created_at.clone() {
+                query = query.filter(crate::schema::todos::created_at.eq(filter_created_at));
+            }
+            if let Some(filter_updated_at) = filter.updated_at.clone() {
+                query = query.filter(crate::schema::todos::updated_at.eq(filter_updated_at));
+            }
         
         query
     }
@@ -173,10 +177,9 @@ impl Todos {
         diesel::delete(todos.filter(id.eq(param_id))).execute(db)
     }
 }
-
-    #[derive(Debug, Default, Clone)]
-    pub struct TodosFilter {
-        pub id: Option<i32>,
+#[derive(Debug, Default, Clone)]
+pub struct TodosFilter {
+    pub id: Option<i32>,
     pub unsigned: Option<u32>,
     pub unsigned_nullable: Option<Option<u32>>,
     pub text: Option<String>,
@@ -184,5 +187,4 @@ impl Todos {
     pub type_: Option<String>,
     pub created_at: Option<chrono::DateTime<chrono::Utc>>,
     pub updated_at: Option<chrono::DateTime<chrono::Utc>>,
-    }
-    
+}

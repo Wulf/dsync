@@ -29,24 +29,6 @@ impl Table1 {
         table1.filter(id.eq(param_id)).first::<Self>(db)
     }
 
-    /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
-    pub fn paginate(db: &mut ConnectionType, page: i64, page_size: i64) -> diesel::QueryResult<PaginationResult<Self>> {
-        use crate::schema::table1::dsl::*;
-
-        let page_size = if page_size < 1 { 1 } else { page_size };
-        let total_items = table1.count().get_result(db)?;
-        let items = table1.limit(page_size).offset(page * page_size).load::<Self>(db)?;
-
-        Ok(PaginationResult {
-            items,
-            total_items,
-            page,
-            page_size,
-            /* ceiling division of integers */
-            num_pages: total_items / page_size + i64::from(total_items % page_size != 0)
-        })
-    }
-
     /// Delete a row in `table1`, identified by the primary key
     pub fn delete(db: &mut ConnectionType, param_id: i32) -> diesel::QueryResult<usize> {
         use crate::schema::table1::dsl::*;
