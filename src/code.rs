@@ -566,12 +566,26 @@ fn build_table_fns(
             .iter()
             .map(|column| {
                 let column_name = column.name.to_string();
-                format!(
-                    r##"
-        if let Some(filter_{column_name}) = filter.{column_name}.clone() {{
-            query = query.filter({schema_path}{table_name}::{column_name}.eq(filter_{column_name}));
-        }}"##
-                )
+
+                if column.is_nullable {
+                    format!(
+                        r##"
+            if let Some(filter_{column_name}) = filter.{column_name}.clone() {{
+                query = if filter_{column_name}.is_some() {{ 
+                    query.filter({schema_path}{table_name}::{column_name}.eq(filter_{column_name}))
+                }} else {{
+                    query.filter({schema_path}{table_name}::{column_name}.is_null())
+                }};
+            }}"##
+                    )
+                } else {
+                    format!(
+                        r##"
+            if let Some(filter_{column_name}) = filter.{column_name}.clone() {{
+                query = query.filter({schema_path}{table_name}::{column_name}.eq(filter_{column_name}));
+            }}"##
+                    )
+                }
             })
             .collect::<Vec<_>>()
             .join("");
