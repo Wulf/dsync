@@ -568,6 +568,7 @@ fn build_table_fns(
                 let column_name = column.name.to_string();
 
                 if column.is_nullable {
+                    // "Option::None" will never match anything, and "is_null" is required to be used, see https://docs.diesel.rs/master/diesel/expression_methods/trait.ExpressionMethods.html#method.eq
                     format!(
                         r##"
             if let Some(filter_{column_name}) = filter.{column_name}.clone() {{
