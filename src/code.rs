@@ -669,7 +669,7 @@ fn build_table_fns(
             .collect::<Vec<_>>()
             .join("\n    ");
 
-        buffer.push_str(&format!(
+        buffer.push_str(&formatdoc!(
             r##"
     #[derive(Debug, Default, Clone)]
     pub struct {struct_name}Filter {{
