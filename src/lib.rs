@@ -16,7 +16,10 @@ mod file;
 mod global;
 mod parser;
 
-pub use global::{BytesType, GenerationConfig, StringType, TableOptions};
+pub use global::{
+    BytesType, GenerationConfig, GenerationConfigOpts, StringType, TableOptions,
+    DEFAULT_MODEL_PATH, DEFAULT_SCHEMA_PATH,
+};
 
 use error::IOErrorToError;
 pub use error::{Error, Result};
@@ -131,17 +134,17 @@ pub fn generate_files(
     // check that the mod.rs file exists
     let mut mod_rs = MarkedFile::new(output_models_dir.join("mod.rs"))?;
 
-    if config.once_common_structs || config.once_connection_type {
+    if config.any_once_option() {
         let mut common_file = MarkedFile::new(output_models_dir.join("common.rs"))?;
         common_file.ensure_file_signature()?;
         common_file.change_file_contents({
             let mut tmp = format!("{FILE_SIGNATURE}\n");
-            if config.once_common_structs {
+            if config.get_once_common_structs() {
                 tmp.push_str(&code::generate_common_structs(
-                    &config.default_table_options,
+                    config.get_default_table_options(),
                 ));
             }
-            if config.once_connection_type {
+            if config.get_once_connection_type() {
                 tmp.push('\n');
                 tmp.push_str(&code::generate_connection_type(&config));
 
@@ -160,7 +163,7 @@ pub fn generate_files(
 
     // pass 1: add code for new tables
     for table in generated.iter() {
-        if config.once_common_structs && table.name == "common" {
+        if config.get_once_common_structs() && table.name == "common" {
             return Err(Error::other("Cannot have a table named \"common\" while having option \"once_common_structs\" enabled"));
         }
         let table_name = table.name.to_string();

@@ -29,6 +29,7 @@
 - add derive `PartialEq` to update-structs
 - add new experimental filters (behind the `advanced-queries` feature flag)
 - move function `paginate` behind `advanced-queries` feature flag
+- split `GenerationConfig` into required and optional parts (`GenerationConfigOpts`) (fixes #92)
 
 ## 0.0.17 (yanked)
 

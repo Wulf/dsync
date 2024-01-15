@@ -1,7 +1,7 @@
 use clap::{CommandFactory, Parser, Subcommand, ValueEnum};
 use clap_complete::{generate, Shell};
 use dsync::{error::IOErrorToError, GenerationConfig, TableOptions};
-use dsync::{BytesType, FileChangeStatus, StringType};
+use dsync::{BytesType, FileChangeStatus, GenerationConfigOpts, StringType};
 use std::collections::HashMap;
 use std::io::{BufWriter, Write};
 use std::path::PathBuf;
@@ -79,11 +79,11 @@ pub struct MainOptions {
     pub no_serde: bool,
 
     /// Set custom schema use path
-    #[arg(long = "schema-path", default_value = "crate::schema::")]
+    #[arg(long = "schema-path", default_value = dsync::DEFAULT_SCHEMA_PATH)]
     pub schema_path: String,
 
     /// Set custom model use path
-    #[arg(long = "model-path", default_value = "crate::models::")]
+    #[arg(long = "model-path", default_value = dsync::DEFAULT_MODEL_PATH)]
     pub model_path: String,
 
     /// Do not generate the CRUD (impl) functions for generated models
@@ -253,17 +253,19 @@ fn actual_main() -> dsync::Result<()> {
         &args.input,
         &args.output,
         GenerationConfig {
-            default_table_options,
-            table_options: HashMap::from([]),
             connection_type: args.connection_type,
-            schema_path: args.schema_path,
-            model_path: args.model_path,
-            once_common_structs: args.once_common_structs,
-            once_connection_type: args.once_connection_type,
-            readonly_prefixes: args.readonly_prefixes,
-            readonly_suffixes: args.readonly_suffixes,
             #[cfg(feature = "advanced-queries")]
             diesel_backend: args.diesel_backend,
+            options: GenerationConfigOpts {
+                default_table_options,
+                table_options: HashMap::from([]),
+                schema_path: args.schema_path,
+                model_path: args.model_path,
+                once_common_structs: args.once_common_structs,
+                once_connection_type: args.once_connection_type,
+                readonly_prefixes: args.readonly_prefixes,
+                readonly_suffixes: args.readonly_suffixes,
+            },
         },
     )?;
 

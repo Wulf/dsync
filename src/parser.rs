@@ -523,7 +523,7 @@ fn schema_type_to_rust_type(schema_type: String, config: &GenerationConfig) -> R
             _ => panic!("Unknown type found '{schema_type}', please report this!")
          */
         _ => {
-            let schema_path = &config.schema_path;
+            let schema_path = config.get_schema_path();
             // return the schema type if no type is found (this means generation is broken for this particular schema)
             let _type = format!("{schema_path}sql_types::{schema_type}");
             return Ok(_type);

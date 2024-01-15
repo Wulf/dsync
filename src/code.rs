@@ -475,14 +475,14 @@ fn build_table_fns(
     let (async_keyword, await_keyword) = get_async(&table_options);
 
     let struct_name = &table.struct_name;
-    let schema_path = &config.schema_path;
+    let schema_path = config.get_schema_path();
     let create_struct_identifier = &create_struct.identifier;
     let update_struct_identifier = &update_struct.identifier;
     let is_readonly = table_options.get_readonly();
 
     let mut buffer = String::new();
 
-    if !config.once_common_structs {
+    if !config.get_once_common_structs() {
         buffer.push_str(&generate_common_structs(&table_options));
         buffer.push('\n');
     }
@@ -737,7 +737,7 @@ fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String 
             "use {model_path}{foreign_table_name_model}::{singular_struct_name};",
             foreign_table_name_model = get_table_module_name(&fk.0.to_string()),
             singular_struct_name = fk.0.to_string().to_pascal_case(),
-            model_path = config.model_path
+            model_path = config.get_model_path()
         )
     }));
     #[cfg(feature = "async")]
@@ -746,14 +746,14 @@ fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String 
     }
 
     // no "::" because that is already included in the schema_path
-    imports_vec.push(format!("use {}*;", config.schema_path));
+    imports_vec.push(format!("use {}*;", config.get_schema_path()));
 
-    if config.once_common_structs || config.once_connection_type {
-        imports_vec.push(format!("use {}common::*;", config.model_path));
+    if config.any_once_option() {
+        imports_vec.push(format!("use {}common::*;", config.get_model_path()));
     };
 
     // this needs to be last, because it not really is a import, so it would split the import sections
-    if table_options.get_fns() && !config.once_connection_type {
+    if table_options.get_fns() && !config.get_once_connection_type() {
         imports_vec.push(String::new());
         imports_vec.push(generate_connection_type(config));
     };

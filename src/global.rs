@@ -306,22 +306,12 @@ impl<'a> Default for TableOptions<'a> {
     }
 }
 
-/// Global config, not table specific
 #[derive(Debug, Clone)]
-pub struct GenerationConfig<'a> {
+pub struct GenerationConfigOpts<'a> {
     /// Specific Table options for a given table
     pub table_options: HashMap<&'a str, TableOptions<'a>>,
     /// Default table options, used when not in `table_options`
     pub default_table_options: TableOptions<'a>,
-    /// Connection type to insert
-    ///
-    /// For example:
-    /// - `diesel::pg::PgConnection`
-    /// - `diesel::sqlite::SqliteConnection`
-    /// - `diesel::mysql::MysqlConnection`
-    /// - `diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::pg::PgConnection>>`
-    /// - or, your custom diesel connection type (struct which implements `diesel::connection::Connection`)
-    pub connection_type: String,
     /// Diesel schema import path
     ///
     /// by default `crate::schema::`
@@ -338,19 +328,9 @@ pub struct GenerationConfig<'a> {
     pub readonly_prefixes: Vec<String>,
     /// Suffixes to treat tables as readonly
     pub readonly_suffixes: Vec<String>,
-
-    #[cfg(feature = "advanced-queries")]
-    /// Diesel backend
-    ///
-    /// For example:
-    /// - `diesel::pg::Pg` (default)
-    /// - `diesel::sqlite::Sqlite`
-    /// - `diesel::mysql::Mysql`
-    /// - or, your custom diesel backend type (struct which implements `diesel::backend::Backend`)
-    pub diesel_backend: String,
 }
 
-impl GenerationConfig<'_> {
+impl GenerationConfigOpts<'_> {
     pub fn table(&self, name: &str) -> TableOptions<'_> {
         let table = self
             .table_options
@@ -366,6 +346,139 @@ impl GenerationConfig<'_> {
         }
 
         table
+    }
+}
+
+pub const DEFAULT_SCHEMA_PATH: &str = "crate::schema::";
+pub const DEFAULT_MODEL_PATH: &str = "crate::models::";
+
+impl Default for GenerationConfigOpts<'_> {
+    fn default() -> Self {
+        Self {
+            table_options: HashMap::default(),
+            default_table_options: Default::default(),
+            schema_path: String::from(DEFAULT_SCHEMA_PATH),
+            model_path: String::from(DEFAULT_MODEL_PATH),
+            once_common_structs: false,
+            once_connection_type: false,
+            readonly_prefixes: Vec::default(),
+            readonly_suffixes: Vec::default(),
+        }
+    }
+}
+
+/// Global config, not table specific
+#[derive(Debug, Clone)]
+pub struct GenerationConfig<'a> {
+    /// Connection type to insert
+    ///
+    /// For example:
+    /// - `diesel::pg::PgConnection`
+    /// - `diesel::sqlite::SqliteConnection`
+    /// - `diesel::mysql::MysqlConnection`
+    /// - `diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::pg::PgConnection>>`
+    /// - or, your custom diesel connection type (struct which implements `diesel::connection::Connection`)
+    pub connection_type: String,
+
+    #[cfg(feature = "advanced-queries")]
+    /// Diesel backend
+    ///
+    /// For example:
+    /// - `diesel::pg::Pg` (default)
+    /// - `diesel::sqlite::Sqlite`
+    /// - `diesel::mysql::Mysql`
+    /// - or, your custom diesel backend type (struct which implements `diesel::backend::Backend`)
+    pub diesel_backend: String,
+
+    /// Optional Options
+    /// ```
+    /// # use dsync::{GenerationConfig,GenerationConfigOpts};
+    /// GenerationConfig {
+    ///  // ... all required options
+    ///  # connection_type: String::default(),
+    ///  options: Default::default(),
+    /// };
+    /// // or
+    /// GenerationConfig {
+    ///  // ... all required options
+    ///  # connection_type: String::default(),
+    ///  options: GenerationConfigOpts {
+    ///    ..Default::default()
+    ///  },
+    /// };
+    /// ```
+    pub options: GenerationConfigOpts<'a>,
+}
+
+impl<'a> GenerationConfig<'a> {
+    #[cfg(not(feature = "advanced-queries"))]
+    /// Create a new Instance with default [GenerationConfigOpts]
+    ///
+    /// Builder
+    pub fn new<C: Into<String>>(connection_type: C) -> Self {
+        Self {
+            connection_type: connection_type.into(),
+            options: GenerationConfigOpts::default(),
+        }
+    }
+
+    #[cfg(feature = "advanced-queries")]
+    /// Create a new Instance with default [GenerationConfigOpts]
+    ///
+    /// Builder
+    pub fn new<C: Into<String>, B: Into<String>>(connection_type: C, diesel_backend: B) -> Self {
+        Self {
+            connection_type: connection_type.into(),
+            diesel_backend: diesel_backend.into(),
+            options: GenerationConfigOpts::default(),
+        }
+    }
+
+    /// Replace the options with the new options
+    ///
+    /// Builder
+    #[inline]
+    pub fn with_options(mut self, options: GenerationConfigOpts<'a>) -> Self {
+        self.options = options;
+
+        self
+    }
+
+    // Wrapper for [GenerationConfigOpts::table()]
+    #[inline]
+    pub fn table(&self, name: &str) -> TableOptions<'_> {
+        self.options.table(name)
+    }
+
+    #[inline]
+    pub fn get_schema_path(&self) -> &str {
+        &self.options.schema_path
+    }
+
+    #[inline]
+    pub fn get_model_path(&self) -> &str {
+        &self.options.model_path
+    }
+
+    #[inline]
+    pub fn get_once_common_structs(&self) -> bool {
+        self.options.once_common_structs
+    }
+
+    #[inline]
+    pub fn get_once_connection_type(&self) -> bool {
+        self.options.once_connection_type
+    }
+
+    #[inline]
+    pub fn get_default_table_options(&self) -> &TableOptions<'_> {
+        &self.options.default_table_options
+    }
+
+    /// Get if any of the "once-*" options is active / if the common-file is active
+    #[inline]
+    pub fn any_once_option(&self) -> bool {
+        self.get_once_common_structs() || self.get_once_connection_type()
     }
 }
 
