@@ -535,14 +535,16 @@ fn build_table_fns(
 "##
     ));
 
+    #[cfg(feature = "advanced-queries")]
     buffer.push_str(&format!(r##"
     /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
-    pub{async_keyword} fn paginate(db: &mut ConnectionType, page: i64, page_size: i64) -> diesel::QueryResult<PaginationResult<Self>> {{
+    pub{async_keyword} fn paginate(db: &mut ConnectionType, page: i64, page_size: i64, filter: {struct_name}Filter) -> diesel::QueryResult<PaginationResult<Self>> {{
         use {schema_path}{table_name}::dsl::*;
 
-        let page_size = if page_size < 1 {{ 1 }} else {{ page_size }};
-        let total_items = {table_name}.count().get_result(db){await_keyword}?;
-        let items = {table_name}.limit(page_size).offset(page * page_size).load::<Self>(db){await_keyword}?;
+        let page = page.max(0);
+        let page_size = page_size.max(1);
+        let total_items = Self::filter(filter.clone()).count().get_result(db)?;
+        let items = Self::filter(filter).limit(page_size).offset(page * page_size).load::<Self>(db){await_keyword}?;
 
         Ok(PaginationResult {{
             items,
@@ -554,6 +556,67 @@ fn build_table_fns(
         }})
     }}
 "##));
+
+    #[cfg(feature = "advanced-queries")]
+    // Table::filter() helper fn
+    {
+        let diesel_backend = &config.diesel_backend;
+        let filters = table
+            .columns
+            .iter()
+            .map(|column| {
+                let column_name = column.name.to_string();
+
+                if column.is_nullable {
+                    // "Option::None" will never match anything, and "is_null" is required to be used, see https://docs.diesel.rs/master/diesel/expression_methods/trait.ExpressionMethods.html#method.eq
+                    format!(
+                        r##"
+            if let Some(filter_{column_name}) = filter.{column_name}.clone() {{
+                query = if filter_{column_name}.is_some() {{ 
+                    query.filter({schema_path}{table_name}::{column_name}.eq(filter_{column_name}))
+                }} else {{
+                    query.filter({schema_path}{table_name}::{column_name}.is_null())
+                }};
+            }}"##
+                    )
+                } else {
+                    format!(
+                        r##"
+            if let Some(filter_{column_name}) = filter.{column_name}.clone() {{
+                query = query.filter({schema_path}{table_name}::{column_name}.eq(filter_{column_name}));
+            }}"##
+                    )
+                }
+            })
+            .collect::<Vec<_>>()
+            .join("");
+        buffer.push_str(&format!(
+            r##"
+    /// A utility function to help build custom search queries
+    /// 
+    /// Example:
+    /// 
+    /// ```
+    /// // create a filter for completed todos
+    /// let query = Todo::filter(TodoFilter {{
+    ///     completed: Some(true),
+    ///     ..Default::default()
+    /// }});
+    /// 
+    /// // delete completed todos
+    /// diesel::delete(query).execute(db)?;
+    /// ```
+    pub fn filter<'a>(
+        filter: {struct_name}Filter,
+    ) -> {schema_path}{table_name}::BoxedQuery<'a, {diesel_backend}> {{
+        let mut query = {schema_path}{table_name}::table.into_boxed();
+        {filters}
+        
+        query
+    }}
+"##
+        ));
+    }
 
     // TODO: If primary key columns are attached to the form struct (not optionally)
     // then don't require item_id_params (otherwise it'll be duplicated)
@@ -588,6 +651,33 @@ fn build_table_fns(
     }
 
     buffer.push_str("}\n");
+
+    #[cfg(feature = "advanced-queries")]
+    // generate filter struct for filter() helper function
+    {
+        let filter_fields = table
+            .columns
+            .iter()
+            .map(|column| {
+                let struct_field = StructField::from(column);
+                format!(
+                    "pub {column_name}: Option<{column_type}>,",
+                    column_name = struct_field.name,
+                    column_type = struct_field.to_rust_type()
+                )
+            })
+            .collect::<Vec<_>>()
+            .join("\n    ");
+
+        buffer.push_str(&formatdoc!(
+            r##"
+    #[derive(Debug, Default, Clone)]
+    pub struct {struct_name}Filter {{
+        {filter_fields}
+    }}
+    "##
+        ));
+    }
 
     buffer
 }

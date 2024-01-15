@@ -61,24 +61,6 @@ impl Normal {
         normal.filter(id.eq(param_id)).first::<Self>(db)
     }
 
-    /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
-    pub fn paginate(db: &mut ConnectionType, page: i64, page_size: i64) -> diesel::QueryResult<PaginationResult<Self>> {
-        use crate::schema::normal::dsl::*;
-
-        let page_size = if page_size < 1 { 1 } else { page_size };
-        let total_items = normal.count().get_result(db)?;
-        let items = normal.limit(page_size).offset(page * page_size).load::<Self>(db)?;
-
-        Ok(PaginationResult {
-            items,
-            total_items,
-            page,
-            page_size,
-            /* ceiling division of integers */
-            num_pages: total_items / page_size + i64::from(total_items % page_size != 0)
-        })
-    }
-
     /// Update a row in `normal`, identified by the primary key with [`UpdateNormal`]
     pub fn update(db: &mut ConnectionType, param_id: i32, item: &UpdateNormal) -> diesel::QueryResult<Self> {
         use crate::schema::normal::dsl::*;

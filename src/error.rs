@@ -122,6 +122,10 @@ pub enum ErrorEnum {
     #[error("NoFileSignature: {0}")]
     NoFileSignature(String),
 
+    /// Invalid generation config
+    #[error("InvalidGenerationConfig: {0}")]
+    InvalidGenerationConfig(String),
+
     /// Variant for Other messages
     #[error("Other: {0}")]
     Other(String),

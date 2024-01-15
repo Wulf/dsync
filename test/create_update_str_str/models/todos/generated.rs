@@ -75,24 +75,6 @@ impl Todos {
         todos.filter(text.eq(param_text)).first::<Self>(db)
     }
 
-    /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
-    pub fn paginate(db: &mut ConnectionType, page: i64, page_size: i64) -> diesel::QueryResult<PaginationResult<Self>> {
-        use crate::schema::todos::dsl::*;
-
-        let page_size = if page_size < 1 { 1 } else { page_size };
-        let total_items = todos.count().get_result(db)?;
-        let items = todos.limit(page_size).offset(page * page_size).load::<Self>(db)?;
-
-        Ok(PaginationResult {
-            items,
-            total_items,
-            page,
-            page_size,
-            /* ceiling division of integers */
-            num_pages: total_items / page_size + i64::from(total_items % page_size != 0)
-        })
-    }
-
     /// Update a row in `todos`, identified by the primary key with [`UpdateTodos`]
     pub fn update(db: &mut ConnectionType, param_text: String, item: &UpdateTodos) -> diesel::QueryResult<Self> {
         use crate::schema::todos::dsl::*;

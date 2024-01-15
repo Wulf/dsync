@@ -37,9 +37,7 @@ async fn demo(db: Connection) {
     text: "Create a demo",
     completed: false,
   })?;
-  
-  let todos_list = todos::paginate(&mut db, 1, 10)?;
-  
+    
   let updated_todo = todos::update(&mut db, created_todo.id, UpdateTodo {
     text: created_todo.text,
     completed: true,
@@ -120,6 +118,7 @@ cargo install dsync
 * `--single-model-file`: (optional) Generate only a single model file, instead of a directory with `mod.rs` and `generated.rs`
 * `--readonly-prefix`: (optional, repeatable) A prefix to treat a table matching this as readonly *2
 * `--readonly-suffix`: (optional, repeatable) A suffix to treat a table matching this as readonly *2
+* `--diesel-backend`: (when the "advanced-queries" feature is enabled) The diesel backend in use (possible values include `diesel::pg::Pg`, `diesel::sqlite::Sqlite`, `diesel::mysql::Mysql`, or your custom backend type)
 * note: the CLI has fail-safes to prevent accidental file overwriting
 
 ```sh
@@ -130,6 +129,14 @@ Notes:
 
 - *2: "readonly" tables dont have `Update*` & `Create*` structs, only `*`(no suffix / prefix) structs.
   For example this is useful for Sqlite views, which are read-only (cannot be written to, but can be read)
+
+## Experimental API
+
+We're currently experimenting with advanced query generation. This includes pagination, filtering/searching, and the like. Enable the `advanced-queries` feature flag to see some of it in action.
+
+Alternatively, you can see what gets generated in the advanced queries test here: [`test/advanced_queries/models`](test/advanced_queries/models)
+
+Feel free to open an issue to discuss these API and provide your feeedback.
 
 ## Docs
 

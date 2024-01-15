@@ -125,6 +125,17 @@ pub struct MainOptions {
     /// A Suffix to treat a table matching this as readonly (only generate the Read struct)
     #[arg(long = "readonly-suffix")]
     pub readonly_suffixes: Vec<String>,
+
+    #[cfg(feature = "advanced-queries")]
+    /// Set which diesel backend to use (something which implements `diesel::backend::Backend`)
+    /// Diesel provides the following backends:
+    /// - `diesel::pg::Pg`
+    /// - `diesel::sqlite::Sqlite`
+    /// - `diesel::mysql::Mysql`
+    ///
+    /// See `crate::GenerationConfig::diesel_backend` for more details.
+    #[arg(short = 'b', long = "diesel-backend")]
+    pub diesel_backend: String,
 }
 
 #[derive(Debug, ValueEnum, Clone, PartialEq, Default)]
@@ -251,6 +262,8 @@ fn actual_main() -> dsync::Result<()> {
             once_connection_type: args.once_connection_type,
             readonly_prefixes: args.readonly_prefixes,
             readonly_suffixes: args.readonly_suffixes,
+            #[cfg(feature = "advanced-queries")]
+            diesel_backend: args.diesel_backend,
         },
     )?;
 
