@@ -25,8 +25,6 @@ use std::collections::HashMap;
 use std::fmt::Display;
 use std::path::{Path, PathBuf};
 
-use crate::error::ErrorEnum;
-
 /// Available options for string types
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub enum StringType {
@@ -370,6 +368,8 @@ impl GenerationConfig<'_> {
 
 #[cfg(feature = "advanced-queries")]
 pub fn validate_config(config: &GenerationConfig) -> Result<()> {
+    use crate::error::ErrorEnum;
+
     const VALID_BACKENDS: [&str; 3] = [
         "diesel::pg::Pg",
         "diesel::sqlite::Sqlite",
