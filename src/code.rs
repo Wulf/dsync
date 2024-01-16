@@ -569,7 +569,7 @@ fn build_table_fns(
                     // "Option::None" will never match anything, and "is_null" is required to be used, see https://docs.diesel.rs/master/diesel/expression_methods/trait.ExpressionMethods.html#method.eq
                     format!(
                         r##"
-        if let Some(filter_{column_name}) = filter.{column_name}.clone() {{
+        if let Some(filter_{column_name}) = filter.{column_name} {{
             query = if filter_{column_name}.is_some() {{ 
                 query.filter({schema_path}{table_name}::{column_name}.eq(filter_{column_name}))
             }} else {{
@@ -580,7 +580,7 @@ fn build_table_fns(
                 } else {
                     format!(
                         r##"
-        if let Some(filter_{column_name}) = filter.{column_name}.clone() {{
+        if let Some(filter_{column_name}) = filter.{column_name} {{
             query = query.filter({schema_path}{table_name}::{column_name}.eq(filter_{column_name}));
         }}"##
                     )

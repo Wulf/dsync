@@ -131,28 +131,28 @@ impl Todos {
     ) -> crate::schema::todos::BoxedQuery<'a, diesel::pg::Pg> {
         let mut query = crate::schema::todos::table.into_boxed();
         
-        if let Some(filter_id) = filter.id.clone() {
+        if let Some(filter_id) = filter.id {
             query = query.filter(crate::schema::todos::id.eq(filter_id));
         }
-        if let Some(filter_text) = filter.text.clone() {
+        if let Some(filter_text) = filter.text {
             query = query.filter(crate::schema::todos::text.eq(filter_text));
         }
-        if let Some(filter_completed) = filter.completed.clone() {
+        if let Some(filter_completed) = filter.completed {
             query = query.filter(crate::schema::todos::completed.eq(filter_completed));
         }
-        if let Some(filter_type_) = filter.type_.clone() {
+        if let Some(filter_type_) = filter.type_ {
             query = query.filter(crate::schema::todos::type_.eq(filter_type_));
         }
-        if let Some(filter_smallint) = filter.smallint.clone() {
+        if let Some(filter_smallint) = filter.smallint {
             query = query.filter(crate::schema::todos::smallint.eq(filter_smallint));
         }
-        if let Some(filter_bigint) = filter.bigint.clone() {
+        if let Some(filter_bigint) = filter.bigint {
             query = query.filter(crate::schema::todos::bigint.eq(filter_bigint));
         }
-        if let Some(filter_created_at) = filter.created_at.clone() {
+        if let Some(filter_created_at) = filter.created_at {
             query = query.filter(crate::schema::todos::created_at.eq(filter_created_at));
         }
-        if let Some(filter_updated_at) = filter.updated_at.clone() {
+        if let Some(filter_updated_at) = filter.updated_at {
             query = query.filter(crate::schema::todos::updated_at.eq(filter_updated_at));
         }
         
