@@ -27,6 +27,8 @@
 - generate doc-comments for generated structs, fields and functions
 - add derive `QueryableByName` to read-structs
 - add derive `PartialEq` to update-structs
+- add new experimental filters (behind the `advanced-queries` feature flag)
+- move function `paginate` behind `advanced-queries` feature flag
 
 ## 0.0.17 (yanked)
 
