@@ -11,56 +11,56 @@ pub type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::Connectio
 pub struct Todos {
     /// Field representing column `id`
     pub id: i32,
-    /// Field representing column `unsigned`
-    pub unsigned: u32,
-    /// Field representing column `unsigned_nullable`
-    pub unsigned_nullable: Option<u32>,
     /// Field representing column `text`
     pub text: String,
     /// Field representing column `completed`
     pub completed: bool,
     /// Field representing column `type`
     pub type_: String,
+    /// Field representing column `smallint`
+    pub smallint: i16,
+    /// Field representing column `bigint`
+    pub bigint: i64,
     /// Field representing column `created_at`
     pub created_at: chrono::DateTime<chrono::Utc>,
     /// Field representing column `updated_at`
-    pub updated_at: chrono::DateTime<chrono::Utc>,
+    pub updated_at: chrono::NaiveDateTime,
 }
 
 /// Create Struct for a row in table `todos` for [`Todos`]
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, diesel::Insertable)]
 #[diesel(table_name=todos)]
 pub struct CreateTodos {
-    /// Field representing column `unsigned`
-    pub unsigned: u32,
-    /// Field representing column `unsigned_nullable`
-    pub unsigned_nullable: Option<u32>,
     /// Field representing column `text`
     pub text: String,
     /// Field representing column `completed`
     pub completed: bool,
     /// Field representing column `type`
     pub type_: String,
+    /// Field representing column `smallint`
+    pub smallint: i16,
+    /// Field representing column `bigint`
+    pub bigint: i64,
 }
 
 /// Update Struct for a row in table `todos` for [`Todos`]
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, diesel::AsChangeset, PartialEq, Default)]
 #[diesel(table_name=todos)]
 pub struct UpdateTodos {
-    /// Field representing column `unsigned`
-    pub unsigned: Option<u32>,
-    /// Field representing column `unsigned_nullable`
-    pub unsigned_nullable: Option<Option<u32>>,
     /// Field representing column `text`
     pub text: Option<String>,
     /// Field representing column `completed`
     pub completed: Option<bool>,
     /// Field representing column `type`
     pub type_: Option<String>,
+    /// Field representing column `smallint`
+    pub smallint: Option<i16>,
+    /// Field representing column `bigint`
+    pub bigint: Option<i64>,
     /// Field representing column `created_at`
     pub created_at: Option<chrono::DateTime<chrono::Utc>>,
     /// Field representing column `updated_at`
-    pub updated_at: Option<chrono::DateTime<chrono::Utc>>,
+    pub updated_at: Option<chrono::NaiveDateTime>,
 }
 
 /// Result of a `.paginate` function
@@ -134,16 +134,6 @@ impl Todos {
         if let Some(filter_id) = filter.id.clone() {
             query = query.filter(crate::schema::todos::id.eq(filter_id));
         }
-        if let Some(filter_unsigned) = filter.unsigned.clone() {
-            query = query.filter(crate::schema::todos::unsigned.eq(filter_unsigned));
-        }
-        if let Some(filter_unsigned_nullable) = filter.unsigned_nullable.clone() {
-            query = if filter_unsigned_nullable.is_some() { 
-                query.filter(crate::schema::todos::unsigned_nullable.eq(filter_unsigned_nullable))
-            } else {
-                query.filter(crate::schema::todos::unsigned_nullable.is_null())
-            };
-        }
         if let Some(filter_text) = filter.text.clone() {
             query = query.filter(crate::schema::todos::text.eq(filter_text));
         }
@@ -152,6 +142,12 @@ impl Todos {
         }
         if let Some(filter_type_) = filter.type_.clone() {
             query = query.filter(crate::schema::todos::type_.eq(filter_type_));
+        }
+        if let Some(filter_smallint) = filter.smallint.clone() {
+            query = query.filter(crate::schema::todos::smallint.eq(filter_smallint));
+        }
+        if let Some(filter_bigint) = filter.bigint.clone() {
+            query = query.filter(crate::schema::todos::bigint.eq(filter_bigint));
         }
         if let Some(filter_created_at) = filter.created_at.clone() {
             query = query.filter(crate::schema::todos::created_at.eq(filter_created_at));
@@ -180,11 +176,11 @@ impl Todos {
 #[derive(Debug, Default, Clone)]
 pub struct TodosFilter {
     pub id: Option<i32>,
-    pub unsigned: Option<u32>,
-    pub unsigned_nullable: Option<Option<u32>>,
     pub text: Option<String>,
     pub completed: Option<bool>,
     pub type_: Option<String>,
+    pub smallint: Option<i16>,
+    pub bigint: Option<i64>,
     pub created_at: Option<chrono::DateTime<chrono::Utc>>,
-    pub updated_at: Option<chrono::DateTime<chrono::Utc>>,
+    pub updated_at: Option<chrono::NaiveDateTime>,
 }

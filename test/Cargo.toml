@@ -6,6 +6,7 @@ members = [
     "simple_table_sqlite",
     "custom_model_and_schema_path",
     "single_model_file",
+    "advanced_queries",
 ]
 resolver = "2"
 

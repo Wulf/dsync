@@ -1,0 +1,17 @@
+[lib]
+path = "lib.rs"
+
+[package]
+name = "advanced_queries"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+diesel = { version = "*", default-features = false, features = [
+    "postgres",
+    "r2d2",
+    "chrono",
+] }
+r2d2.workspace = true
+chrono.workspace = true
+serde.workspace = true
