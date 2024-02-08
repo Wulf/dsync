@@ -428,19 +428,6 @@ fn get_async(table_options: &TableOptions<'_>) -> (&'static str, &'static str) {
     ("", "")
 }
 
-/// Debug function to indent [prettyplease] output again to match surrounding code
-/// always adds a newline at the end of each line
-// DEBUG: this function is only for transitional from string to tokenstream
-fn indent(str: &str, by: usize) -> String {
-    let mut string = String::with_capacity(str.len() + by);
-
-    for line in str.lines() {
-        string.push_str(&format!("{:by$}{line}\n", ""))
-    }
-
-    string
-}
-
 /// Common error text for `syn::parse2().expect()`
 /// NOTE: This should be removed again and is only temporary for transition
 const SYN_PARSE_ERR: &str = "Expected syn to parse static input";
@@ -496,19 +483,21 @@ fn build_table_fns(
     let (async_keyword, await_keyword) = get_async(&table_options);
 
     let struct_name = &table.struct_name;
+    let struct_name_syn: proc_macro2::Ident = syn::parse_str(struct_name).expect(SYN_PARSE_ERR);
     let schema_path = config.get_schema_path();
     let create_struct_identifier = &create_struct.identifier;
     let update_struct_identifier = &update_struct.identifier;
     let is_readonly = table_options.get_readonly();
 
-    let mut buffer = String::new();
+    let mut buffer_main = TokenStream::new();
+    let mut buffer_impl = TokenStream::new();
 
     if !config.get_once_common_structs() {
-        buffer.push_str(&generate_common_structs(&table_options));
-        buffer.push('\n');
+        buffer_main.extend(
+            syn::parse_str::<proc_macro2::TokenStream>(&generate_common_structs(&table_options))
+                .expect(SYN_PARSE_ERR),
+        );
     }
-
-    buffer.push_str(&format!("impl {struct_name} {{"));
 
     // the following section is for quote variables
     let import_path_syn: syn::Path =
@@ -519,8 +508,6 @@ fn build_table_fns(
 
     if !is_readonly {
         if create_struct.has_fields() {
-            // DEBUG: debug newline, previous code had newlines, will stay until buffer is converted to stream
-            buffer.push('\n');
             let doc = format!(
                 " Insert a new row into `{table_name}` with a given [`{create_struct_identifier}`]"
             );
@@ -535,13 +522,8 @@ fn build_table_fns(
                     diesel::insert_into(#table_name_syn).values(item).get_result::<Self>(db)#await_keyword_syn
                 }
             };
-            buffer.push_str(&indent(
-                &prettyplease::unparse(&syn::parse2(code).expect(SYN_PARSE_ERR)),
-                4,
-            ));
+            buffer_impl.extend(code);
         } else {
-            // DEBUG: debug newline, previous code had newlines, will stay until buffer is converted to stream
-            buffer.push('\n');
             let doc = format!(" Insert a new row into `{table_name}` with all default values");
 
             let code = quote! {
@@ -552,10 +534,7 @@ fn build_table_fns(
                     diesel::insert_into(#table_name_syn).default_values().get_result::<Self>(db)#await_keyword_syn
                 }
             };
-            buffer.push_str(&indent(
-                &prettyplease::unparse(&syn::parse2(code).expect(SYN_PARSE_ERR)),
-                4,
-            ));
+            buffer_impl.extend(code);
         }
     }
 
@@ -567,8 +546,6 @@ fn build_table_fns(
     };
 
     {
-        // DEBUG: debug newline, previous code had newlines, will stay until buffer is converted to stream
-        buffer.push('\n');
         let doc = format!(
             " Get a row from `{table_name}`, identified by the primary {key_maybe_multiple}"
         );
@@ -581,16 +558,11 @@ fn build_table_fns(
                 #table_name_syn.#(#item_id_filters_syn).*.first::<Self>(db)#await_keyword_syn
             }
         };
-        buffer.push_str(&indent(
-            &prettyplease::unparse(&syn::parse2(code).expect(SYN_PARSE_ERR)),
-            4,
-        ));
+        buffer_impl.extend(code);
     }
 
     #[cfg(feature = "advanced-queries")]
     {
-        // DEBUG: debug newline, previous code had newlines, will stay until buffer is converted to stream
-        buffer.push('\n');
         let doc = " Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)";
         let filter_struct = format_ident!("{struct_name}Filter");
 
@@ -614,10 +586,7 @@ fn build_table_fns(
                 })
             }
         };
-        buffer.push_str(&indent(
-            &prettyplease::unparse(&syn::parse2(code).expect(SYN_PARSE_ERR)),
-            4,
-        ));
+        buffer_impl.extend(code);
     }
 
     #[cfg(feature = "advanced-queries")]
@@ -653,8 +622,6 @@ fn build_table_fns(
             })
             .collect::<TokenStream>();
 
-        // DEBUG: debug newline, previous code had newlines, will stay until buffer is converted to stream
-        buffer.push('\n');
         let doc = formatdoc!(
             r#" A utility function to help build custom search queries
              
@@ -684,10 +651,7 @@ fn build_table_fns(
                 query
             }
         };
-        buffer.push_str(&indent(
-            &prettyplease::unparse(&syn::parse2(code).expect(SYN_PARSE_ERR)),
-            4,
-        ));
+        buffer_impl.extend(code);
     }
 
     // TODO: If primary key columns are attached to the form struct (not optionally)
@@ -699,8 +663,6 @@ fn build_table_fns(
         // In this scenario, we also have to check whether there are any updatable columns for which
         // we should generate an update() method.
 
-        // DEBUG: debug newline, previous code had newlines, will stay until buffer is converted to stream
-        buffer.push('\n');
         let doc = format!(
             " Update a row in `{table_name}`, identified by the primary {key_maybe_multiple} with [`{update_struct_identifier}`]"
         );
@@ -715,15 +677,10 @@ fn build_table_fns(
                 diesel::update(#table_name_syn.#(#item_id_filters_syn).*).set(item).get_result(db)#await_keyword_syn
             }
         };
-        buffer.push_str(&indent(
-            &prettyplease::unparse(&syn::parse2(code).expect(SYN_PARSE_ERR)),
-            4,
-        ));
+        buffer_impl.extend(code);
     }
 
     if !is_readonly {
-        // DEBUG: debug newline, previous code had newlines, will stay until buffer is converted to stream
-        buffer.push('\n');
         let doc = format!(
             " Delete a row in `{table_name}`, identified by the primary {key_maybe_multiple}"
         );
@@ -736,13 +693,14 @@ fn build_table_fns(
                 diesel::delete(#table_name_syn.#(#item_id_filters_syn).*).execute(db)#await_keyword_syn
             }
         };
-        buffer.push_str(&indent(
-            &prettyplease::unparse(&syn::parse2(code).expect(SYN_PARSE_ERR)),
-            4,
-        ));
+        buffer_impl.extend(code);
     }
 
-    buffer.push_str("}\n");
+    buffer_main.extend(quote! {
+        impl #struct_name_syn {
+            #buffer_impl
+        }
+    });
 
     #[cfg(feature = "advanced-queries")]
     // generate filter struct for filter() helper function
@@ -762,8 +720,6 @@ fn build_table_fns(
             })
             .collect::<Vec<_>>();
 
-        // DEBUG: debug newline, previous code had newlines, will stay until buffer is converted to stream
-        buffer.push('\n');
         let filter_struct = format_ident!("{struct_name}Filter");
 
         let code = quote! {
@@ -772,13 +728,10 @@ fn build_table_fns(
                 #(#filter_fields),*
             }
         };
-        buffer.push_str(&indent(
-            &prettyplease::unparse(&syn::parse2(code).expect(SYN_PARSE_ERR)),
-            0,
-        ));
+        buffer_main.extend(code);
     }
 
-    buffer
+    prettyplease::unparse(&syn::parse2(buffer_main).expect(SYN_PARSE_ERR))
 }
 
 /// Generate common structs

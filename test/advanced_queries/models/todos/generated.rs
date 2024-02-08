@@ -77,20 +77,20 @@ pub struct PaginationResult<T> {
     /// Number of total possible pages, given the `page_size` and `total_items`
     pub num_pages: i64,
 }
-
 impl Todos {
     /// Insert a new row into `todos` with a given [`CreateTodos`]
-    pub fn create(db: &mut ConnectionType, item: &CreateTodos) -> diesel::QueryResult<Self> {
+    pub fn create(
+        db: &mut ConnectionType,
+        item: &CreateTodos,
+    ) -> diesel::QueryResult<Self> {
         use crate::schema::todos::dsl::*;
         diesel::insert_into(todos).values(item).get_result::<Self>(db)
     }
-
     /// Get a row from `todos`, identified by the primary key
     pub fn read(db: &mut ConnectionType, param_id: i32) -> diesel::QueryResult<Self> {
         use crate::schema::todos::dsl::*;
         todos.filter(id.eq(param_id)).first::<Self>(db)
     }
-
     /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
     pub fn paginate(
         db: &mut ConnectionType,
@@ -114,21 +114,20 @@ impl Todos {
             num_pages: total_items / page_size + i64::from(total_items % page_size != 0),
         })
     }
-
     /** A utility function to help build custom search queries
-    
-    Example:
-    
-    ```
-    // create a filter for completed todos
-    let query = Todo::filter(TodoFilter {
-        completed: Some(true),
-        ..Default::default()
-    });
-    
-    // delete completed todos
-    diesel::delete(query).execute(db)?;
-    ```*/
+
+Example:
+
+```
+// create a filter for completed todos
+let query = Todo::filter(TodoFilter {
+    completed: Some(true),
+    ..Default::default()
+});
+
+// delete completed todos
+diesel::delete(query).execute(db)?;
+```*/
     pub fn filter<'a>(
         filter: TodosFilter,
     ) -> crate::schema::todos::BoxedQuery<'a, diesel::pg::Pg> {
@@ -159,7 +158,6 @@ impl Todos {
         }
         query
     }
-
     /// Update a row in `todos`, identified by the primary key with [`UpdateTodos`]
     pub fn update(
         db: &mut ConnectionType,
@@ -169,14 +167,12 @@ impl Todos {
         use crate::schema::todos::dsl::*;
         diesel::update(todos.filter(id.eq(param_id))).set(item).get_result(db)
     }
-
     /// Delete a row in `todos`, identified by the primary key
     pub fn delete(db: &mut ConnectionType, param_id: i32) -> diesel::QueryResult<usize> {
         use crate::schema::todos::dsl::*;
         diesel::delete(todos.filter(id.eq(param_id))).execute(db)
     }
 }
-
 #[derive(Debug, Default, Clone)]
 pub struct TodosFilter {
     pub id: Option<i32>,
