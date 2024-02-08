@@ -112,7 +112,6 @@ pub fn generate_files(
     output_models_dir: &Path,
     config: GenerationConfig,
 ) -> Result<Vec<FileChange>> {
-    #[cfg(feature = "advanced-queries")]
     global::validate_config(&config)?;
 
     let generated = generate_code(
