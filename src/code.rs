@@ -1,8 +1,9 @@
 use heck::ToPascalCase;
 use indoc::formatdoc;
-use proc_macro2::Ident;
-use quote::{quote, ToTokens};
+use proc_macro2::{Ident, TokenStream};
+use quote::{format_ident, quote, ToTokens};
 use std::borrow::Cow;
+use syn::parse::Parser;
 
 use crate::parser::{ParsedColumnMacro, ParsedTableMacro, FILE_SIGNATURE};
 use crate::{get_table_module_name, GenerationConfig, TableOptions};
@@ -587,85 +588,105 @@ fn build_table_fns(
     }
 
     #[cfg(feature = "advanced-queries")]
-    buffer.push_str(&format!(r##"
-    /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
-    pub{async_keyword} fn paginate(db: &mut ConnectionType, page: i64, page_size: i64, filter: {struct_name}Filter) -> diesel::QueryResult<PaginationResult<Self>> {{
-        use {schema_path}{table_name}::dsl::*;
+    {
+        // DEBUG: debug newline, previous code had newlines, will stay until buffer is converted to stream
+        buffer.push('\n');
+        let doc = " Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)";
+        let filter_struct = format_ident!("{struct_name}Filter");
 
-        let page = page.max(0);
-        let page_size = page_size.max(1);
-        let total_items = Self::filter(filter.clone()).count().get_result(db)?;
-        let items = Self::filter(filter).limit(page_size).offset(page * page_size).load::<Self>(db){await_keyword}?;
+        let code = quote! {
+            #[doc = #doc]
+            pub #async_keyword_syn fn paginate(db: &mut ConnectionType, page: i64, page_size: i64, filter: #filter_struct) -> diesel::QueryResult<PaginationResult<Self>> {
+                use #import_path_syn::dsl::*;
 
-        Ok(PaginationResult {{
-            items,
-            total_items,
-            page,
-            page_size,
-            /* ceiling division of integers */
-            num_pages: total_items / page_size + i64::from(total_items % page_size != 0)
-        }})
-    }}
-"##));
+                let page = page.max(0);
+                let page_size = page_size.max(1);
+                let total_items = Self::filter(filter.clone()).count().get_result(db)?;
+                let items = Self::filter(filter).limit(page_size).offset(page * page_size).load::<Self>(db)#await_keyword_syn?;
+
+                Ok(PaginationResult {
+                    items,
+                    total_items,
+                    page,
+                    page_size,
+                    /* ceiling division of integers */
+                    num_pages: total_items / page_size + i64::from(total_items % page_size != 0)
+                })
+            }
+        };
+        buffer.push_str(&indent(
+            &prettyplease::unparse(&syn::parse2(code).expect(SYN_PARSE_ERR)),
+            4,
+        ));
+    }
 
     #[cfg(feature = "advanced-queries")]
     // Table::filter() helper fn
     {
-        let diesel_backend = &config.diesel_backend;
+        let diesel_backend: syn::Path =
+            syn::parse_str(&config.diesel_backend).expect(SYN_PARSE_ERR);
         let filters = table
             .columns
             .iter()
             .map(|column| {
-                let column_name = column.name.to_string();
+                let column_name = column.name.clone();
+                let filter_ident = format_ident!("filter_{column_name}");
 
                 if column.is_nullable {
                     // "Option::None" will never match anything, and "is_null" is required to be used, see https://docs.diesel.rs/master/diesel/expression_methods/trait.ExpressionMethods.html#method.eq
-                    format!(
-                        r##"
-        if let Some(filter_{column_name}) = filter.{column_name} {{
-            query = if filter_{column_name}.is_some() {{ 
-                query.filter({schema_path}{table_name}::{column_name}.eq(filter_{column_name}))
-            }} else {{
-                query.filter({schema_path}{table_name}::{column_name}.is_null())
-            }};
-        }}"##
-                    )
+                    quote! {
+                        if let Some(#filter_ident) = filter.#column_name {
+                            query = if #filter_ident.is_some() {
+                                query.filter(#import_path_syn::#column_name.eq(#filter_ident))
+                            } else {
+                                query.filter(#import_path_syn::#column_name.is_null())
+                            };
+                        }
+                    }
                 } else {
-                    format!(
-                        r##"
-        if let Some(filter_{column_name}) = filter.{column_name} {{
-            query = query.filter({schema_path}{table_name}::{column_name}.eq(filter_{column_name}));
-        }}"##
-                    )
+                    quote! {
+                        if let Some(#filter_ident) = filter.#column_name {
+                            query = query.filter(#import_path_syn::#column_name.eq(#filter_ident));
+                        }
+                    }
                 }
             })
-            .collect::<Vec<_>>()
-            .join("");
-        buffer.push_str(&format!(
-            r##"
-    /// A utility function to help build custom search queries
-    /// 
-    /// Example:
-    /// 
-    /// ```
-    /// // create a filter for completed todos
-    /// let query = Todo::filter(TodoFilter {{
-    ///     completed: Some(true),
-    ///     ..Default::default()
-    /// }});
-    /// 
-    /// // delete completed todos
-    /// diesel::delete(query).execute(db)?;
-    /// ```
-    pub fn filter<'a>(
-        filter: {struct_name}Filter,
-    ) -> {schema_path}{table_name}::BoxedQuery<'a, {diesel_backend}> {{
-        let mut query = {schema_path}{table_name}::table.into_boxed();
-        {filters}
-        
-        query
-    }}
-"##
+            .collect::<TokenStream>();
+
+        // DEBUG: debug newline, previous code had newlines, will stay until buffer is converted to stream
+        buffer.push('\n');
+        let doc = formatdoc!(
+            r#" A utility function to help build custom search queries
+             
+            Example:
+            
+            ```
+            // create a filter for completed todos
+            let query = Todo::filter(TodoFilter {{
+                completed: Some(true),
+                ..Default::default()
+            }});
+            
+            // delete completed todos
+            diesel::delete(query).execute(db)?;
+            ```"#
+        );
+        let filter_struct = format_ident!("{struct_name}Filter");
+
+        let code = quote! {
+            #[doc = #doc]
+            pub fn filter<'a>(
+                filter: #filter_struct,
+            ) -> #import_path_syn::BoxedQuery<'a, #diesel_backend> {
+                let mut query = #import_path_syn::table.into_boxed();
+                #filters
+
+                query
+            }
+        };
+        buffer.push_str(&indent(
+            &prettyplease::unparse(&syn::parse2(code).expect(SYN_PARSE_ERR)),
+            4,
         ));
     }
 
@@ -684,13 +705,13 @@ fn build_table_fns(
             " Update a row in `{table_name}`, identified by the primary {key_maybe_multiple} with [`{update_struct_identifier}`]"
         );
         let update_struct_identifier: Ident =
-                syn::parse_str(&update_struct_identifier).expect(SYN_PARSE_ERR);
+            syn::parse_str(update_struct_identifier).expect(SYN_PARSE_ERR);
 
         let code = quote! {
             #[doc = #doc]
             pub #async_keyword_syn fn update(db: &mut ConnectionType, #(#item_id_params_syn), *, item: &#update_struct_identifier) -> diesel::QueryResult<Self> {
                 use #import_path_syn::dsl::*;
-        
+
                 diesel::update(#table_name_syn.#(#item_id_filters_syn).*).set(item).get_result(db)#await_keyword_syn
             }
         };
@@ -711,7 +732,7 @@ fn build_table_fns(
             #[doc = #doc]
             pub #async_keyword_syn fn delete(db: &mut ConnectionType, #(#item_id_params_syn), *) -> diesel::QueryResult<usize> {
                 use #import_path_syn::dsl::*;
-        
+
                 diesel::delete(#table_name_syn.#(#item_id_filters_syn).*).execute(db)#await_keyword_syn
             }
         };
@@ -731,22 +752,29 @@ fn build_table_fns(
             .iter()
             .map(|column| {
                 let struct_field = StructField::from(column);
-                format!(
-                    "pub {column_name}: Option<{column_type}>,",
-                    column_name = struct_field.name,
-                    column_type = struct_field.to_rust_type()
-                )
+                syn::Field::parse_named
+                    .parse_str(&format!(
+                        "pub {column_name}: Option<{column_type}>",
+                        column_name = struct_field.name,
+                        column_type = struct_field.to_rust_type()
+                    ))
+                    .expect(SYN_PARSE_ERR)
             })
-            .collect::<Vec<_>>()
-            .join("\n    ");
+            .collect::<Vec<_>>();
 
-        buffer.push_str(&formatdoc!(
-            r##"
-    #[derive(Debug, Default, Clone)]
-    pub struct {struct_name}Filter {{
-        {filter_fields}
-    }}
-    "##
+        // DEBUG: debug newline, previous code had newlines, will stay until buffer is converted to stream
+        buffer.push('\n');
+        let filter_struct = format_ident!("{struct_name}Filter");
+
+        let code = quote! {
+            #[derive(Debug, Default, Clone)]
+            pub struct #filter_struct {
+                #(#filter_fields),*
+            }
+        };
+        buffer.push_str(&indent(
+            &prettyplease::unparse(&syn::parse2(code).expect(SYN_PARSE_ERR)),
+            0,
         ));
     }
 
