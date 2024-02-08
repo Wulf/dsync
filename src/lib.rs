@@ -7,8 +7,10 @@
 //! - `async`: enable support for [diesel_async](https://github.com/weiznich/diesel_async)
 //! - `tsync`: enable support for [tsync](https://github.com/Wulf/tsync)
 //! - `backtrace`: enable attaching backtraces to dsync errors
+//! - `derive-queryablebyname`: enable `diesel::QueryableByName` derives on READ structs
+//! - `advanced-queries`: enable experimental pagination and filter functions ([examples](https://github.com/Wulf/dsync/tree/a44afdd08f4447e367aa47ecb91fae88b57f8944/test/advanced_queries))
 //!
-//! default features: `tsync`, `backtrace`
+//! default features: `tsync`, `backtrace`, `derive-queryablebyname`
 
 mod code;
 pub mod error;
@@ -110,7 +112,6 @@ pub fn generate_files(
     output_models_dir: &Path,
     config: GenerationConfig,
 ) -> Result<Vec<FileChange>> {
-    #[cfg(feature = "advanced-queries")]
     global::validate_config(&config)?;
 
     let generated = generate_code(
