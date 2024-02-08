@@ -30,6 +30,7 @@
 - add new experimental filters (behind the `advanced-queries` feature flag)
 - move function `paginate` behind `advanced-queries` feature flag
 - split `GenerationConfig` into required and optional parts (`GenerationConfigOpts`) (fixes #92)
+- added compile tests to actually verify all options compiling
 
 ## 0.0.17 (yanked)
 
