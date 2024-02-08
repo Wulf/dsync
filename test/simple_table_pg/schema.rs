@@ -12,7 +12,6 @@ diesel::table! {
         updated_at -> Timestamp,
     }
 }
-
 diesel::table! {
     todos2 (id) {
         id -> Int4,

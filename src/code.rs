@@ -1,5 +1,7 @@
 use heck::ToPascalCase;
 use indoc::formatdoc;
+use proc_macro2::Ident;
+use quote::{quote, ToTokens};
 use std::borrow::Cow;
 
 use crate::parser::{ParsedColumnMacro, ParsedTableMacro, FILE_SIGNATURE};
@@ -425,6 +427,23 @@ fn get_async(table_options: &TableOptions<'_>) -> (&'static str, &'static str) {
     ("", "")
 }
 
+/// Debug function to indent [prettyplease] output again to match surrounding code
+/// always adds a newline at the end of each line
+// DEBUG: this function is only for transitional from string to tokenstream
+fn indent(str: &str, by: usize) -> String {
+    let mut string = String::with_capacity(str.len() + by);
+
+    for line in str.lines() {
+        string.push_str(&format!("{:by$}{line}\n", ""))
+    }
+
+    string
+}
+
+/// Common error text for `syn::parse2().expect()`
+/// NOTE: This should be removed again and is only temporary for transition
+const SYN_PARSE_ERR: &str = "Expected syn to parse static input";
+
 /// Generate all functions (insides of the `impl StuctName { here }`)
 fn build_table_fns(
     table: &ParsedTableMacro,
@@ -489,28 +508,51 @@ fn build_table_fns(
 
     buffer.push_str(&format!("impl {struct_name} {{"));
 
+    // the following section is for quote variables
+    let import_path_syn: syn::Path =
+        syn::parse_str(&format!("{schema_path}{table_name}")).expect(SYN_PARSE_ERR);
+    let await_keyword_syn: Option<Ident> = syn::parse2(await_keyword.to_token_stream()).ok();
+    let async_keyword_syn: Option<Ident> = syn::parse2(async_keyword.to_token_stream()).ok();
+    let table_name_syn: Ident = syn::parse_str(&table_name).expect(SYN_PARSE_ERR);
+
     if !is_readonly {
         if create_struct.has_fields() {
-            buffer.push_str(&format!(
-            r##"
-    /// Insert a new row into `{table_name}` with a given [`{create_struct_identifier}`]
-    pub{async_keyword} fn create(db: &mut ConnectionType, item: &{create_struct_identifier}) -> diesel::QueryResult<Self> {{
-        use {schema_path}{table_name}::dsl::*;
+            // DEBUG: debug newline, previous code had newlines, will stay until buffer is converted to stream
+            buffer.push('\n');
+            let doc = format!(
+                " Insert a new row into `{table_name}` with a given [`{create_struct_identifier}`]"
+            );
+            let create_struct_identifier: Ident =
+                syn::parse_str(create_struct_identifier).expect(SYN_PARSE_ERR);
 
-        diesel::insert_into({table_name}).values(item).get_result::<Self>(db){await_keyword}
-    }}
-"##
-        ));
+            let code = quote! {
+                #[doc = #doc]
+                pub #async_keyword_syn fn create(db: &mut ConnectionType, item: &#create_struct_identifier) -> diesel::QueryResult<Self> {
+                    use #import_path_syn::dsl::*;
+
+                    diesel::insert_into(#table_name_syn).values(item).get_result::<Self>(db)#await_keyword_syn
+                }
+            };
+            buffer.push_str(&indent(
+                &prettyplease::unparse(&syn::parse2(code).expect(SYN_PARSE_ERR)),
+                4,
+            ));
         } else {
-            buffer.push_str(&format!(
-                r##"
-    /// Insert a new row into `{table_name}` with all default values
-    pub{async_keyword} fn create(db: &mut ConnectionType) -> diesel::QueryResult<Self> {{
-        use {schema_path}{table_name}::dsl::*;
+            // DEBUG: debug newline, previous code had newlines, will stay until buffer is converted to stream
+            buffer.push('\n');
+            let doc = format!(" Insert a new row into `{table_name}` with all default values");
 
-        diesel::insert_into({table_name}).default_values().get_result::<Self>(db){await_keyword}
-    }}
-"##
+            let code = quote! {
+                #[doc = #doc]
+                pub #async_keyword_syn fn create(db: &mut ConnectionType) -> diesel::QueryResult<Self> {
+                    use #import_path_syn::dsl::*;
+
+                    diesel::insert_into(#table_name_syn).default_values().get_result::<Self>(db)#await_keyword_syn
+                }
+            };
+            buffer.push_str(&indent(
+                &prettyplease::unparse(&syn::parse2(code).expect(SYN_PARSE_ERR)),
+                4,
             ));
         }
     }

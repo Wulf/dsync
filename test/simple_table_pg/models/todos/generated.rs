@@ -82,7 +82,6 @@ impl Todos {
     /// Insert a new row into `todos` with a given [`CreateTodos`]
     pub fn create(db: &mut ConnectionType, item: &CreateTodos) -> diesel::QueryResult<Self> {
         use crate::schema::todos::dsl::*;
-
         diesel::insert_into(todos).values(item).get_result::<Self>(db)
     }
 

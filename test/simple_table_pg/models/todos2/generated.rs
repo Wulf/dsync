@@ -32,7 +32,6 @@ impl Todos2 {
     /// Insert a new row into `todos2` with all default values
     pub fn create(db: &mut ConnectionType) -> diesel::QueryResult<Self> {
         use crate::schema::todos2::dsl::*;
-
         diesel::insert_into(todos2).default_values().get_result::<Self>(db)
     }
 
