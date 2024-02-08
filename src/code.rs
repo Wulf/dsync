@@ -467,27 +467,40 @@ fn build_table_fns(
         })
         .collect();
 
-    let item_id_params = primary_column_name_and_type
+    let item_id_params_syn = primary_column_name_and_type
         .iter()
         .map(|name_and_type| {
-            format!(
+            syn::parse_str(&format!(
                 "param_{name}: {ty}",
                 name = name_and_type.0,
                 ty = name_and_type.1
-            )
+            ))
+            .expect(SYN_PARSE_ERR)
         })
-        .collect::<Vec<String>>()
-        .join(", ");
-    let item_id_filters = primary_column_name_and_type
+        .collect::<Vec<syn::FnArg>>();
+
+    let item_id_params: String = item_id_params_syn
+        .iter()
+        .map(|v| v.into_token_stream().to_string())
+        .reduce(|a, b| a + &b + ", ")
+        .expect(SYN_PARSE_ERR);
+
+    let item_id_filters_syn = primary_column_name_and_type
         .iter()
         .map(|name_and_type| {
-            format!(
+            syn::parse_str(&format!(
                 "filter({name}.eq(param_{name}))",
                 name = name_and_type.0.to_string()
-            )
+            ))
+            .expect(SYN_PARSE_ERR)
         })
-        .collect::<Vec<String>>()
-        .join(".");
+        .collect::<Vec<syn::ExprCall>>();
+
+    let item_id_filters: String = item_id_filters_syn
+        .iter()
+        .map(|v| v.into_token_stream().to_string())
+        .reduce(|a, b| a + &b + ".")
+        .expect(SYN_PARSE_ERR);
 
     // template variables
     let table_name = table.name.to_string();
@@ -564,16 +577,26 @@ fn build_table_fns(
         "keys"
     };
 
-    buffer.push_str(&format!(
-        r##"
-    /// Get a row from `{table_name}`, identified by the primary {key_maybe_multiple}
-    pub{async_keyword} fn read(db: &mut ConnectionType, {item_id_params}) -> diesel::QueryResult<Self> {{
-        use {schema_path}{table_name}::dsl::*;
+    {
+        // DEBUG: debug newline, previous code had newlines, will stay until buffer is converted to stream
+        buffer.push('\n');
+        let doc = format!(
+            " Get a row from `{table_name}`, identified by the primary {key_maybe_multiple}"
+        );
 
-        {table_name}.{item_id_filters}.first::<Self>(db){await_keyword}
-    }}
-"##
-    ));
+        let code = quote! {
+            #[doc = #doc]
+            pub #async_keyword_syn fn read(db: &mut ConnectionType, #(#item_id_params_syn), *) -> diesel::QueryResult<Self> {
+                use #import_path_syn::dsl::*;
+
+                #table_name_syn.#(#item_id_filters_syn).*.first::<Self>(db)#await_keyword_syn
+            }
+        };
+        buffer.push_str(&indent(
+            &prettyplease::unparse(&syn::parse2(code).expect(SYN_PARSE_ERR)),
+            4,
+        ));
+    }
 
     #[cfg(feature = "advanced-queries")]
     buffer.push_str(&format!(r##"

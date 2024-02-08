@@ -38,14 +38,13 @@ impl Todos2 {
     /// Get a row from `todos2`, identified by the primary key
     pub fn read(db: &mut ConnectionType, param_id: i32) -> diesel::QueryResult<Self> {
         use crate::schema::todos2::dsl::*;
-
         todos2.filter(id.eq(param_id)).first::<Self>(db)
     }
 
     /// Delete a row in `todos2`, identified by the primary key
-    pub fn delete(db: &mut ConnectionType, param_id: i32) -> diesel::QueryResult<usize> {
+    pub fn delete(db: &mut ConnectionType, param_id : i32) -> diesel::QueryResult<usize> {
         use crate::schema::todos2::dsl::*;
 
-        diesel::delete(todos2.filter(id.eq(param_id))).execute(db)
+        diesel::delete(todos2.filter (id . eq (param_id))).execute(db)
     }
 }
