@@ -213,6 +213,8 @@ impl<'a> Struct<'a> {
 
                 if !self.table.foreign_keys.is_empty() {
                     derives_vec.extend_from_slice(&[derives::ASSOCIATIONS, derives::IDENTIFIABLE]);
+                } else if !self.table.primary_key_columns.is_empty() {
+                    derives_vec.push(derives::IDENTIFIABLE);
                 }
             }
             StructType::Update => {

@@ -5,7 +5,7 @@ use crate::diesel::*;
 use crate::schema::*;
 
 /// Struct representing a row in table `todos`
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, diesel::Queryable, diesel::Selectable, diesel::QueryableByName)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, diesel::Queryable, diesel::Selectable, diesel::QueryableByName, diesel::Identifiable)]
 #[diesel(table_name=todos, primary_key(id))]
 pub struct Todos {
     /// Field representing column `id`

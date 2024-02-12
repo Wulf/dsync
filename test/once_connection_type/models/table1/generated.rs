@@ -6,7 +6,7 @@ use crate::schema::*;
 use crate::models::common::*;
 
 /// Struct representing a row in table `table1`
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, diesel::Queryable, diesel::Selectable, diesel::QueryableByName)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, diesel::Queryable, diesel::Selectable, diesel::QueryableByName, diesel::Identifiable)]
 #[diesel(table_name=table1, primary_key(id))]
 pub struct Table1 {
     /// Field representing column `id`

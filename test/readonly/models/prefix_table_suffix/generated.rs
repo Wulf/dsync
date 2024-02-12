@@ -7,7 +7,7 @@ use crate::schema::*;
 pub type ConnectionType = diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<diesel::pg::PgConnection>>;
 
 /// Struct representing a row in table `prefixTableSuffix`
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, diesel::Queryable, diesel::Selectable, diesel::QueryableByName)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, diesel::Queryable, diesel::Selectable, diesel::QueryableByName, diesel::Identifiable)]
 #[diesel(table_name=prefixTableSuffix, primary_key(id))]
 pub struct PrefixTableSuffix {
     /// Field representing column `id`
