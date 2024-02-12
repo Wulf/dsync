@@ -96,8 +96,6 @@ impl Todos {
 
     /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
     pub fn paginate(db: &mut ConnectionType, page: i64, page_size: i64, filter: TodosFilter) -> diesel::QueryResult<PaginationResult<Self>> {
-        use crate::schema::todos::dsl::*;
-
         let page = page.max(0);
         let page_size = page_size.max(1);
         let total_items = Self::filter(filter.clone()).count().get_result(db)?;
