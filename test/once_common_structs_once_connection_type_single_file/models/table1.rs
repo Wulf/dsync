@@ -1,5 +1,6 @@
 /* @generated and managed by dsync */
 
+#[allow(unused)]
 use crate::diesel::*;
 use crate::schema::*;
 use crate::models::common::*;

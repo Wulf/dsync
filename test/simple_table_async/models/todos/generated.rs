@@ -1,5 +1,6 @@
 /* @generated and managed by dsync */
 
+#[allow(unused)]
 use crate::diesel::*;
 use diesel_async::RunQueryDsl;
 use crate::schema::*;
