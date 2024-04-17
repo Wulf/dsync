@@ -506,7 +506,7 @@ fn schema_type_to_rust_type(schema_type: String, config: &GenerationConfig) -> R
         "tstzrange" => "(std::collections::Bound<chrono::DateTime<chrono::Utc>>, std::collections::Bound<chrono::DateTime<chrono::Utc>>)",
 
         // json
-        "json" => "serde::Value",
+        "json" => "serde_json::Value",
         "jsonb" => "serde_json::Value",
 
         // misc
