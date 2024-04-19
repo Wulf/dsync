@@ -541,7 +541,7 @@ fn build_table_fns(
 
         let page = page.max(0);
         let page_size = page_size.max(1);
-        let total_items = Self::filter(filter.clone()).count().get_result(db)?;
+        let total_items = Self::filter(filter.clone()).count().get_result(db){await_keyword}?;
         let items = Self::filter(filter).limit(page_size).offset(page * page_size).load::<Self>(db){await_keyword}?;
 
         Ok(PaginationResult {{
