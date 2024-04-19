@@ -482,21 +482,39 @@ impl<'a> GenerationConfig<'a> {
     }
 }
 
-#[cfg(feature = "advanced-queries")]
 pub fn validate_config(config: &GenerationConfig) -> crate::Result<()> {
     use crate::error::{Error, ErrorEnum};
 
-    const VALID_BACKENDS: [&str; 3] = [
-        "diesel::pg::Pg",
-        "diesel::sqlite::Sqlite",
-        "diesel::mysql::Mysql",
+    // NOTE: the following arrays should likely be joined at compile-time instead of at runtime, but rust does not provide such a thing in std
+
+    #[cfg(feature = "advanced-queries")]
+    {
+        const VALID_BACKENDS: [&str; 3] = [
+            "diesel::pg::Pg",
+            "diesel::sqlite::Sqlite",
+            "diesel::mysql::Mysql",
+        ];
+
+        if config.diesel_backend.is_empty() {
+            return Err(Error::new(ErrorEnum::InvalidGenerationConfig(format!(
+                "Invalid diesel_backend '{}', please use one of the following: {:?}; or, a custom diesel backend type (a struct which implements `diesel::backend::Backend`).",
+                &config.diesel_backend,
+                VALID_BACKENDS.join(", ")
+            ))));
+        }
+    }
+
+    const KNOWN_CONNECTIONS: [&str; 4] = [
+        "diesel::pg::PgConnection",
+        "diesel::sqlite::SqliteConnection",
+        "diesel::mysql::MysqlConnection",
+        "diesel::r2d2::PooledConnection<diesel::r2d2::ConnectionManager<_>>",
     ];
 
-    if config.diesel_backend.is_empty() {
+    if config.connection_type.is_empty() {
         return Err(Error::new(ErrorEnum::InvalidGenerationConfig(format!(
-            "Invalid diesel_backend '{}', please use one of the following: {:?}; or, a custom diesel backend type (a struct which implements `diesel::backend::Backend`).",
-            &config.diesel_backend,
-            VALID_BACKENDS.join(", ")
+            "option \"connection_type\" cannot be empty. Known Connections types are:\n[{}]",
+            KNOWN_CONNECTIONS.join(", ")
         ))));
     }
 
