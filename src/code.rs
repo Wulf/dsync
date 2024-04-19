@@ -537,6 +537,8 @@ fn build_table_fns(
     buffer.push_str(&format!(r##"
     /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
     pub{async_keyword} fn paginate(db: &mut ConnectionType, page: i64, page_size: i64, filter: {struct_name}Filter) -> diesel::QueryResult<PaginationResult<Self>> {{
+        use {schema_path}{table_name}::dsl::*;
+
         let page = page.max(0);
         let page_size = page_size.max(1);
         let total_items = Self::filter(filter.clone()).count().get_result(db){await_keyword}?;
