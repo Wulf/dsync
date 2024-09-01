@@ -1,6 +1,6 @@
 # Changelog
 
-## next
+## 0.1.0
 
 - replace `structopt` with `clap`
 - replace dependency `Inflector` with `heck`

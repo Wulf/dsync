@@ -114,7 +114,7 @@ checksum = "acbf1af155f9b9ef647e42cdc158db4b64a1b61f743629225fde6f3e0be2a7c7"
 
 [[package]]
 name = "dsync"
-version = "0.0.17-beta"
+version = "0.1.0"
 dependencies = [
  "clap",
  "clap_complete",
