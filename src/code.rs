@@ -1,9 +1,10 @@
+use crate::parser::{ParsedColumnMacro, ParsedTableMacro, FILE_SIGNATURE};
+use crate::{get_table_module_name, GenerationConfig, TableOptions};
 use heck::ToPascalCase;
 use indoc::formatdoc;
 use std::borrow::Cow;
-
-use crate::parser::{ParsedColumnMacro, ParsedTableMacro, FILE_SIGNATURE};
-use crate::{get_table_module_name, GenerationConfig, TableOptions};
+use std::iter::Map;
+use std::slice::Iter;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum StructType {
@@ -761,6 +762,51 @@ fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String 
     imports_vec.join("\n")
 }
 
+/// Get default for type
+fn default_for_type(typ: String) -> &'static str {
+    match typ.as_str() {
+        "i8" | "u8" | "i16" | "u16" | "i32" | "u32" | "i64" | "u64" | "i128" | "u128" | "isize"
+        | "usize" => "0",
+        "f32" | "f64" => "0.0",
+        // https://doc.rust-lang.org/std/primitive.bool.html#method.default
+        "bool" => "false",
+        "String" => "String::new()",
+        "&str" | "&'static str" => "\"\"",
+        _ => "Default::default()",
+    }
+}
+
+/// Generate default (insides of the `impl Default for StructName { fn default() -> Self {} }`)
+fn build_default_impl_fn(table: &ParsedTableMacro) -> String {
+    let mut buffer = String::with_capacity(table.struct_name.len() + table.columns.len() * 4);
+    buffer.push_str(&format!(
+        "impl Default for {struct_name} {{\n    fn default() -> Self {{\n",
+        struct_name = table.struct_name.as_str()
+    ));
+    let column_name_and_type: Map<
+        Iter<ParsedColumnMacro>,
+        fn(&ParsedColumnMacro) -> (String, String),
+    > = table
+        .columns
+        .iter()
+        .map(|col| (col.name.to_string(), col.ty.to_string()));
+
+    buffer.push_str("        Self {\n");
+    let item_id_params = column_name_and_type
+        .map(|(name, typ)| {
+            format!(
+                "            param_{name}: {typ_default}",
+                name = name,
+                typ_default = default_for_type(typ)
+            )
+        })
+        .collect::<Vec<String>>()
+        .join(",\n");
+    buffer.push_str(item_id_params.as_str());
+    buffer.push_str("\n        }\n    }\n}");
+    buffer
+}
+
 /// Generate a full file for a given diesel table
 pub fn generate_for_table(table: &ParsedTableMacro, config: &GenerationConfig) -> String {
     // early to ensure the table options are set for the current table
@@ -789,10 +835,16 @@ pub fn generate_for_table(table: &ParsedTableMacro, config: &GenerationConfig) -
         ret_buffer.push_str(update_struct.code());
     }
 
-    // third and lastly, push functions - if enabled
+    // third, push functions - if enabled
     if table_options.get_fns() {
         ret_buffer.push('\n');
         ret_buffer.push_str(build_table_fns(table, config, create_struct, update_struct).as_str());
+    }
+
+    if config.options.default_impl {
+        ret_buffer.push('\n');
+        ret_buffer.push_str(build_default_impl_fn(table).as_str());
+        ret_buffer.push('\n');
     }
 
     ret_buffer
