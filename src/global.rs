@@ -101,7 +101,7 @@ pub struct TableOptions<'a> {
     /// Only Generate a single model file instead of a directory with "mod.rs" and "generated.rs"
     single_model_file: bool,
 
-    /// Indiciates this table is meant to be read-only (dont generate Update & Create structs)
+    /// Indicates this table is meant to be read-only (don't generate Update & Create structs)
     read_only: bool,
 }
 
