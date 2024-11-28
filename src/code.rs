@@ -427,7 +427,7 @@ fn get_async(table_options: &TableOptions<'_>) -> (&'static str, &'static str) {
     ("", "")
 }
 
-/// Generate all functions (insides of the `impl StuctName { here }`)
+/// Generate all functions (insides of the `impl StructName { here }`)
 fn build_table_fns(
     table: &ParsedTableMacro,
     config: &GenerationConfig,

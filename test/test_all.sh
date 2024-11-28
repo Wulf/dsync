@@ -15,5 +15,5 @@ echo "Testing Generation"
 # extra separator
 echo ""
 
-echo "Testing Compiliation"
+echo "Testing Compilation"
 ./test_compile.sh
