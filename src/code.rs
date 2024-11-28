@@ -764,8 +764,8 @@ fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String 
 }
 
 /// Get default for type
-fn default_for_type(typ: String) -> &'static str {
-    match typ.as_str() {
+fn default_for_type(typ: &str) -> &'static str {
+    match typ {
         "i8" | "u8" | "i16" | "u16" | "i32" | "u32" | "i64" | "u64" | "i128" | "u128" | "isize"
         | "usize" => "0",
         "f32" | "f64" => "0.0",
@@ -779,19 +779,12 @@ fn default_for_type(typ: String) -> &'static str {
 
 /// Generate default (insides of the `impl Default for StructName { fn default() -> Self {} }`)
 fn build_default_impl_fn(struct_name: &str, columns: &Vec<ParsedColumnMacro>) -> String {
-    let mut buffer = String::with_capacity(struct_name.len() + columns.len() * 4);
-    buffer.push_str(&format!(
-        "impl Default for {struct_name} {{\n    fn default() -> Self {{\n",
-        struct_name = struct_name
-    ));
     let column_name_type_nullable: Map<
         Iter<ParsedColumnMacro>,
-        fn(&ParsedColumnMacro) -> (String, String, bool),
+        fn(&ParsedColumnMacro) -> (String, &str, bool),
     > = columns
         .iter()
-        .map(|col| (col.name.to_string(), col.ty.to_string(), col.is_nullable));
-
-    buffer.push_str("        Self {\n");
+        .map(|col| (col.name.to_string(), col.ty.as_str(), col.is_nullable));
     let fields_to_defaults = column_name_type_nullable
         .map(|(name, typ, nullable)| {
             format!(
@@ -806,9 +799,10 @@ fn build_default_impl_fn(struct_name: &str, columns: &Vec<ParsedColumnMacro>) ->
         })
         .collect::<Vec<String>>()
         .join(",\n");
-    buffer.push_str(fields_to_defaults.as_str());
-    buffer.push_str("\n        }\n    }\n}");
-    buffer
+    format!(
+        "impl Default for {struct_name} {{\n    fn default() -> Self {{\n        Self {{\n{f2d}\n        }}\n    }}\n}}",
+        struct_name = struct_name, f2d=fields_to_defaults.as_str()
+    )
 }
 
 /// Generate a full file for a given diesel table
@@ -835,7 +829,7 @@ pub fn generate_for_table(table: &ParsedTableMacro, config: &GenerationConfig) -
             ret_buffer.push('\n');
             ret_buffer.push_str(
                 build_default_impl_fn(
-                    &format!("Create{struct_name}"),
+                    &StructType::format(&StructType::Create, &struct_name),
                     &create_struct.table.columns,
                 )
                 .as_str(),
@@ -849,17 +843,6 @@ pub fn generate_for_table(table: &ParsedTableMacro, config: &GenerationConfig) -
     if update_struct.has_code() {
         ret_buffer.push('\n');
         ret_buffer.push_str(update_struct.code());
-        if config.options.default_impl {
-            ret_buffer.push('\n');
-            ret_buffer.push_str(
-                build_default_impl_fn(
-                    &format!("Update{struct_name}"),
-                    &update_struct.table.columns,
-                )
-                .as_str(),
-            );
-        }
-        ret_buffer.push('\n');
     }
 
     // third, push functions - if enabled
