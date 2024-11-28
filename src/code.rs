@@ -210,6 +210,7 @@ impl<'a> Struct<'a> {
                     derives::SELECTABLE,
                     #[cfg(feature = "derive-queryablebyname")]
                     derives::QUERYABLEBYNAME,
+                    derives::PARTIALEQ,
                 ]);
 
                 if !self.table.foreign_keys.is_empty() {
@@ -783,26 +784,30 @@ fn build_default_impl_fn(table: &ParsedTableMacro) -> String {
         "impl Default for {struct_name} {{\n    fn default() -> Self {{\n",
         struct_name = table.struct_name.as_str()
     ));
-    let column_name_and_type: Map<
+    let column_name_type_nullable: Map<
         Iter<ParsedColumnMacro>,
-        fn(&ParsedColumnMacro) -> (String, String),
+        fn(&ParsedColumnMacro) -> (String, String, bool),
     > = table
         .columns
         .iter()
-        .map(|col| (col.name.to_string(), col.ty.to_string()));
+        .map(|col| (col.name.to_string(), col.ty.to_string(), col.is_nullable));
 
     buffer.push_str("        Self {\n");
-    let item_id_params = column_name_and_type
-        .map(|(name, typ)| {
+    let fields_to_defaults = column_name_type_nullable
+        .map(|(name, typ, nullable)| {
             format!(
                 "            param_{name}: {typ_default}",
                 name = name,
-                typ_default = default_for_type(typ)
+                typ_default = if nullable {
+                    "None"
+                } else {
+                    default_for_type(typ)
+                }
             )
         })
         .collect::<Vec<String>>()
         .join(",\n");
-    buffer.push_str(item_id_params.as_str());
+    buffer.push_str(fields_to_defaults.as_str());
     buffer.push_str("\n        }\n    }\n}");
     buffer
 }
