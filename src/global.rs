@@ -328,6 +328,8 @@ pub struct GenerationConfigOpts<'a> {
     pub readonly_prefixes: Vec<String>,
     /// Suffixes to treat tables as readonly
     pub readonly_suffixes: Vec<String>,
+    /// Generate the "default" function in an `impl Default`
+    pub default_impl: bool,
 }
 
 impl GenerationConfigOpts<'_> {
@@ -363,6 +365,7 @@ impl Default for GenerationConfigOpts<'_> {
             once_connection_type: false,
             readonly_prefixes: Vec::default(),
             readonly_suffixes: Vec::default(),
+            default_impl: false,
         }
     }
 }
