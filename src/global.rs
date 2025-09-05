@@ -330,7 +330,7 @@ pub struct GenerationConfigOpts<'a> {
     pub readonly_suffixes: Vec<String>,
 
     /// Add these additional derives to each generated `struct`
-    pub additional_derives: Option<Vec<String>>,
+    pub additional_derives: Vec<String>,
 }
 
 impl GenerationConfigOpts<'_> {
@@ -366,7 +366,7 @@ impl Default for GenerationConfigOpts<'_> {
             once_connection_type: false,
             readonly_prefixes: Vec::default(),
             readonly_suffixes: Vec::default(),
-            additional_derives: None,
+            additional_derives: Vec::default(),
         }
     }
 }
