@@ -86,7 +86,7 @@ pub struct StructField {
 
 impl StructField {
     /// Assemble the current options into a rust type, like `base_type: String, is_optional: true` to `Option<String>`
-    pub fn to_rust_type(&self) -> Cow<str> {
+    pub fn to_rust_type(&self) -> Cow<'_, str> {
         let mut rust_type = self.base_type.clone();
 
         // order matters!
@@ -193,7 +193,15 @@ impl<'a> Struct<'a> {
 
     /// Assemble the `derive` attribute for the struct
     fn attr_derive(&self) -> String {
-        let mut derives_vec = Vec::with_capacity(10);
+        let mut derives_vec = match &self.config.options.additional_derives {
+            Some(v) => {
+                let mut _derives_vec = Vec::<&str>::with_capacity(10 + v.len());
+                // _derives_vec.extend(v.iter().map(AsRef::as_ref).iter())
+                _derives_vec.extend(v.iter().map(|s| -> &str { s.as_ref() }));
+                _derives_vec
+            },
+            None => Vec::with_capacity(10)
+        };
         // Default derives that exist on every struct
         derives_vec.extend_from_slice(&[derives::DEBUG, derives::CLONE]);
 

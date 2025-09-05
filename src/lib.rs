@@ -1,3 +1,4 @@
+#![feature(iter_collect_into)]
 //! dsync library
 //!
 //! The dsync library allows creating a custom binary for dsync

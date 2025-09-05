@@ -136,6 +136,10 @@ pub struct MainOptions {
     /// See `crate::GenerationConfig::diesel_backend` for more details.
     #[arg(short = 'b', long = "diesel-backend")]
     pub diesel_backend: String,
+
+    /// Add these additional derives to each generated `struct`
+    #[arg(short = 'd', long = "derive")]
+    pub additional_derives: Option<Vec<String>>,
 }
 
 #[derive(Debug, ValueEnum, Clone, PartialEq, Default)]
@@ -265,6 +269,7 @@ fn actual_main() -> dsync::Result<()> {
                 once_connection_type: args.once_connection_type,
                 readonly_prefixes: args.readonly_prefixes,
                 readonly_suffixes: args.readonly_suffixes,
+                additional_derives: args.additional_derives
             },
         },
     )?;
