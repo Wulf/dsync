@@ -269,7 +269,7 @@ fn actual_main() -> dsync::Result<()> {
                 once_connection_type: args.once_connection_type,
                 readonly_prefixes: args.readonly_prefixes,
                 readonly_suffixes: args.readonly_suffixes,
-                additional_derives: args.additional_derives
+                additional_derives: args.additional_derives,
             },
         },
     )?;

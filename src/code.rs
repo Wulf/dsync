@@ -198,8 +198,8 @@ impl<'a> Struct<'a> {
                 let mut _derives_vec = Vec::<&str>::with_capacity(10 + v.len());
                 _derives_vec.extend(v.iter().map(|s| -> &str { s.as_ref() }));
                 _derives_vec
-            },
-            None => Vec::with_capacity(10)
+            }
+            None => Vec::with_capacity(10),
         };
         // Default derives that exist on every struct
         derives_vec.extend_from_slice(&[derives::DEBUG, derives::CLONE]);
