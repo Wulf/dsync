@@ -196,7 +196,6 @@ impl<'a> Struct<'a> {
         let mut derives_vec = match &self.config.options.additional_derives {
             Some(v) => {
                 let mut _derives_vec = Vec::<&str>::with_capacity(10 + v.len());
-                // _derives_vec.extend(v.iter().map(AsRef::as_ref).iter())
                 _derives_vec.extend(v.iter().map(|s| -> &str { s.as_ref() }));
                 _derives_vec
             },
