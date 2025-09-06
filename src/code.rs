@@ -86,7 +86,7 @@ pub struct StructField {
 
 impl StructField {
     /// Assemble the current options into a rust type, like `base_type: String, is_optional: true` to `Option<String>`
-    pub fn to_rust_type(&self) -> Cow<str> {
+    pub fn to_rust_type(&self) -> Cow<'_, str> {
         let mut rust_type = self.base_type.clone();
 
         // order matters!
