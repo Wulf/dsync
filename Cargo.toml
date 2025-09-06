@@ -17,6 +17,7 @@ authors = [
     "hasezoey <hasezoey@gmail.com>",
 ]
 edition = "2021"
+rust-version = "1.70"
 
 [features]
 default = ["tsync", "backtrace", "derive-queryablebyname"]
