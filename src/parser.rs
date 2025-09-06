@@ -238,7 +238,7 @@ fn handle_table_macro(
                     let mut had_hashtag = false;
 
                     for column_tokens in group.stream().into_iter() {
-                        // reset "had_hastag" but still make it available for checking
+                        // reset "had_hashtag" but still make it available for checking
                         let had_hashtag_last = had_hashtag;
                         had_hashtag = false;
                         match column_tokens {
