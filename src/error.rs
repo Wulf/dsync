@@ -61,10 +61,10 @@ impl Error {
         M: Into<String>,
         P: AsRef<Path>,
     {
-        return Self::new(ErrorEnum::IoError(
+        Self::new(ErrorEnum::IoError(
             ioError::new(kind, msg.into()),
             format_path(path.as_ref().to_string_lossy().to_string()),
-        ));
+        ))
     }
 
     pub fn not_a_directory<M, P>(msg: M, path: P) -> Self
@@ -72,10 +72,10 @@ impl Error {
         M: Into<String>,
         P: AsRef<Path>,
     {
-        return Self::new(ErrorEnum::NotADirectory(
+        Self::new(ErrorEnum::NotADirectory(
             msg.into(),
             path.as_ref().to_string_lossy().to_string(),
-        ));
+        ))
     }
 }
 
@@ -87,7 +87,7 @@ impl std::fmt::Display for Error {
 
 impl std::error::Error for Error {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        return self.source.source();
+        self.source.source()
     }
 }
 
@@ -148,13 +148,13 @@ pub trait IOErrorToError<T> {
 
 impl<T> IOErrorToError<T> for std::result::Result<T, std::io::Error> {
     fn attach_path_err<P: AsRef<Path>>(self, path: P) -> Result<T> {
-        return match self {
+        match self {
             Ok(v) => Ok(v),
             Err(e) => Err(crate::Error::new(ErrorEnum::IoError(
                 e,
                 format_path(path.as_ref().to_string_lossy().to_string()),
             ))),
-        };
+        }
     }
 
     fn attach_path_msg<P: AsRef<Path>, M: AsRef<str>>(self, path: P, msg: M) -> Result<T> {
