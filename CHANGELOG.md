@@ -1,5 +1,9 @@
 # Changelog
 
+## next
+
+- set MSRV to `1.70`
+
 ## 0.1.0
 
 - replace `structopt` with `clap`
