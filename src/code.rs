@@ -85,7 +85,7 @@ pub struct StructField {
 
 impl StructField {
     /// Assemble the current options into a rust type, like `base_type: String, is_optional: true` to `Option<String>`
-    pub fn to_rust_type(&self) -> std::borrow::Cow<str> {
+    pub fn to_rust_type(&self) -> std::borrow::Cow<'_, str> {
         let mut rust_type = self.base_type.clone();
 
         // order matters!
@@ -804,8 +804,13 @@ fn build_default_impl_fn<'a>(
         .collect::<Vec<String>>()
         .join(",\n");
     format!(
-        "impl Default for {struct_name} {{\n    fn default() -> Self {{\n        Self {{\n{f2d}\n        }}\n    }}\n}}",
-        struct_name = struct_name, f2d=fields_to_defaults.as_str()
+        r#"impl Default for {struct_name} {{
+  fn default() -> Self {{
+    Self {{
+      {fields_to_defaults}
+    }}
+  }}
+}}"#
     )
 }
 
