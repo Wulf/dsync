@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   build:
-    name: cargo build
+    name: cargo build & test
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -29,6 +29,7 @@ jobs:
         with:
           shared-key: "build"
       - run: cargo build --all-targets
+      - run: cargo test
 
   clippy:
     name: cargo clippy
@@ -58,17 +59,6 @@ jobs:
       - run: bash test/test_all.sh
       - run: git diff --exit-code --stat || exit 1
 
-  # things that use the cargo-test cache
-  test:
-    name: cargo test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: rui314/setup-mold@v1
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - run: cargo test
-
   # Things that don't need a cache
   fmt:
     name: cargo fmt
@@ -84,7 +74,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     name: release
-    needs: [build, clippy, test, test-script, fmt]
+    needs: [build, clippy, test-script, fmt]
     if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     permissions:
       contents: write  # for actions/checkout to fetch code and for semantic-release to push commits, release releases and tags
