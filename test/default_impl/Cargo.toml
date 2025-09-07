@@ -1,0 +1,18 @@
+[lib]
+path = "lib.rs"
+
+[package]
+name = "default_impl"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+diesel = { version = "*", default-features = false, features = [
+    "sqlite",
+    "r2d2",
+    "chrono",
+    "returning_clauses_for_sqlite_3_35",
+] }
+r2d2.workspace = true
+chrono.workspace = true
+serde.workspace = true
