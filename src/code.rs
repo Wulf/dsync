@@ -228,7 +228,7 @@ impl<'a> Struct<'a> {
                     derives_vec.push(derives::PARTIALEQ);
                 }
 
-                if !self.config.options.default_impl {
+                /*if !self.config.options.default_impl*/ {
                     derives_vec.push(derives::DEFAULT);
                 }
             }
@@ -870,7 +870,7 @@ pub fn generate_for_table(table: &ParsedTableMacro, config: &GenerationConfig) -
     if update_struct.has_code() {
         ret_buffer.push('\n');
         ret_buffer.push_str(update_struct.code());
-        if config.options.default_impl {
+        /*if config.options.default_impl {
             ret_buffer.push('\n');
             ret_buffer.push_str(
                 build_default_impl_fn(
@@ -888,7 +888,7 @@ pub fn generate_for_table(table: &ParsedTableMacro, config: &GenerationConfig) -
                 )
                 .as_str(),
             );
-        }
+        }*/
     }
 
     // third, push functions - if enabled
