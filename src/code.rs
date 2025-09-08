@@ -412,6 +412,7 @@ impl<'a> Struct<'a> {
         if self.config.options.default_impl {
             struct_code.push('\n');
             struct_code.push_str(&build_default_impl_fn(
+                self.ty,
                 &ty.format(&table.struct_name),
                 &fields,
             ));
@@ -793,14 +794,19 @@ fn default_for_type(typ: &str) -> &'static str {
 }
 
 /// Generate default (insides of the `impl Default for StructName { fn default() -> Self {} }`)
-fn build_default_impl_fn<'a>(struct_name: &str, fields: &[StructField]) -> String {
+fn build_default_impl_fn<'a>(
+    struct_type: StructType,
+    struct_name: &str,
+    fields: &[StructField],
+) -> String {
     let fields: Vec<String> = fields
         .iter()
         .map(|name_typ_nullable| {
             format!(
                 "{name}: {typ_default},",
                 name = name_typ_nullable.name,
-                typ_default = if name_typ_nullable.is_optional {
+                typ_default = if name_typ_nullable.is_optional || struct_type == StructType::Update
+                {
                     "None"
                 } else {
                     default_for_type(&name_typ_nullable.base_type)
