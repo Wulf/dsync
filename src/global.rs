@@ -394,14 +394,16 @@ pub struct GenerationConfig<'a> {
     /// ```
     /// # use dsync::{GenerationConfig,GenerationConfigOpts};
     /// GenerationConfig {
-    ///  // ... all required options
-    ///  # connection_type: String::default(),
+    ///  // ... all required options, for example:
+    ///  connection_type: String::from("diesel::sqlite::SqliteConnection"),
+    ///  diesel_backend: String::from("diesel::sqlite::Sqlite"),
     ///  options: Default::default(),
     /// };
     /// // or
     /// GenerationConfig {
-    ///  // ... all required options
-    ///  # connection_type: String::default(),
+    ///  // ... all required options, for example:
+    ///  connection_type: String::from("diesel::sqlite::SqliteConnection"),
+    ///  diesel_backend: String::from("diesel::sqlite::Sqlite"),
     ///  options: GenerationConfigOpts {
     ///    ..Default::default()
     ///  },
