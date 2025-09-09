@@ -1,6 +1,5 @@
 use heck::ToPascalCase;
 use indoc::formatdoc;
-use std::borrow::Cow;
 
 use crate::parser::{ParsedColumnMacro, ParsedTableMacro, FILE_SIGNATURE};
 use crate::{get_table_module_name, GenerationConfig, TableOptions};
@@ -86,7 +85,7 @@ pub struct StructField {
 
 impl StructField {
     /// Assemble the current options into a rust type, like `base_type: String, is_optional: true` to `Option<String>`
-    pub fn to_rust_type(&self) -> Cow<'_, str> {
+    pub fn to_rust_type(&self) -> std::borrow::Cow<'_, str> {
         let mut rust_type = self.base_type.clone();
 
         // order matters!
@@ -209,6 +208,7 @@ impl<'a> Struct<'a> {
                     derives::SELECTABLE,
                     #[cfg(feature = "derive-queryablebyname")]
                     derives::QUERYABLEBYNAME,
+                    derives::PARTIALEQ,
                 ]);
 
                 if !self.table.foreign_keys.is_empty() {
@@ -228,7 +228,9 @@ impl<'a> Struct<'a> {
                     derives_vec.push(derives::PARTIALEQ);
                 }
 
-                derives_vec.push(derives::DEFAULT);
+                if !self.config.options.default_impl {
+                    derives_vec.push(derives::DEFAULT);
+                }
             }
             StructType::Create => derives_vec.extend_from_slice(&[derives::INSERTABLE]),
         }
@@ -297,7 +299,7 @@ impl<'a> Struct<'a> {
             .collect::<Vec<String>>()
             .join(" ");
 
-        let fields = self.fields();
+        let mut fields = self.fields();
 
         if fields.is_empty() {
             self.has_fields = Some(false);
@@ -330,18 +332,18 @@ impl<'a> Struct<'a> {
         };
 
         let mut lines = Vec::with_capacity(fields.len());
-        for mut f in fields.into_iter() {
+        for f in fields.iter_mut() {
             let field_name = &f.name;
 
             if f.base_type == "String" {
                 f.base_type = match self.ty {
-                    StructType::Read => f.base_type,
+                    StructType::Read => f.base_type.clone(),
                     StructType::Update => self.opts.get_update_str_type().as_str().to_string(),
                     StructType::Create => self.opts.get_create_str_type().as_str().to_string(),
                 }
             } else if f.base_type == "Vec<u8>" {
                 f.base_type = match self.ty {
-                    StructType::Read => f.base_type,
+                    StructType::Read => f.base_type.clone(),
                     StructType::Update => self.opts.get_update_bytes_type().as_str().to_string(),
                     StructType::Create => self.opts.get_create_bytes_type().as_str().to_string(),
                 }
@@ -380,7 +382,7 @@ impl<'a> Struct<'a> {
             ),
         };
 
-        let struct_code = formatdoc!(
+        let mut struct_code = formatdoc!(
             r#"
             {doccomment}
             {tsync_attr}{derive_attr}
@@ -406,6 +408,15 @@ impl<'a> Struct<'a> {
             },
             lines = lines.join("\n"),
         );
+
+        if self.config.options.default_impl {
+            struct_code.push('\n');
+            struct_code.push_str(&build_default_impl_fn(
+                self.ty,
+                &ty.format(&table.struct_name),
+                &fields,
+            ));
+        }
 
         self.has_fields = Some(true);
         self.rendered_code = Some(struct_code);
@@ -761,10 +772,108 @@ fn build_imports(table: &ParsedTableMacro, config: &GenerationConfig) -> String 
     imports_vec.join("\n")
 }
 
+/// Get default for type
+fn default_for_type(typ: &str) -> &'static str {
+    match typ {
+        "i8" | "u8" | "i16" | "u16" | "i32" | "u32" | "i64" | "u64" | "i128" | "u128" | "isize"
+        | "usize" => "0",
+        "f32" | "f64" => "0.0",
+        // https://doc.rust-lang.org/std/primitive.bool.html#method.default
+        "bool" => "false",
+        "String" => "String::new()",
+        "&str" | "&'static str" => "\"\"",
+        "Cow<str>" => "Cow::Owned(String::new())",
+        _ => {
+            if typ.starts_with("Option<") {
+                "None"
+            } else {
+                "Default::default()"
+            }
+        }
+    }
+}
+
+/// Generate default (insides of the `impl Default for StructName { fn default() -> Self {} }`)
+fn build_default_impl_fn<'a>(
+    struct_type: StructType,
+    struct_name: &str,
+    fields: &[StructField],
+) -> String {
+    let fields: Vec<String> = fields
+        .iter()
+        .map(|name_typ_nullable| {
+            format!(
+                "{name}: {typ_default},",
+                name = name_typ_nullable.name,
+                typ_default = if name_typ_nullable.is_optional || struct_type == StructType::Update
+                {
+                    "None"
+                } else {
+                    default_for_type(&name_typ_nullable.base_type)
+                }
+            )
+        })
+        .collect();
+    formatdoc!(
+        r#"
+        impl Default for {struct_name} {{
+            fn default() -> Self {{
+                Self {{
+                    {fields}
+                }}
+            }}
+        }}
+        "#,
+        fields = fields.join("\n            ")
+    )
+}
+
+#[test]
+fn test_build_default_impl_fn() {
+    let fields = vec![
+        StructField {
+            name: String::from("id"),
+            column_name: String::from("id"),
+            base_type: String::from("i32"),
+            is_optional: false,
+            is_vec: false,
+        },
+        StructField {
+            name: String::from("title"),
+            column_name: String::from("title"),
+            base_type: String::from("String"),
+            is_optional: false,
+            is_vec: false,
+        },
+        StructField {
+            name: String::from("maybe_value"),
+            column_name: String::from("maybe_value"),
+            base_type: String::from("i64"),
+            is_optional: true,
+            is_vec: false,
+        },
+    ];
+
+    let generated_code = build_default_impl_fn(StructType::Create, "CreateFake", &fields);
+
+    let expected = r#"impl Default for CreateFake {
+    fn default() -> Self {
+        Self {
+            id: 0,
+            title: String::new(),
+            maybe_value: None,
+        }
+    }
+}
+"#;
+
+    assert_eq!(&generated_code, &expected);
+}
+
 /// Generate a full file for a given diesel table
 pub fn generate_for_table(table: &ParsedTableMacro, config: &GenerationConfig) -> String {
     // early to ensure the table options are set for the current table
-    let table_options = config.table(&table.name.to_string());
+    let table_options = config.table(table.name.to_string().as_str());
 
     let mut ret_buffer = format!("{FILE_SIGNATURE}\n\n");
 
@@ -789,7 +898,7 @@ pub fn generate_for_table(table: &ParsedTableMacro, config: &GenerationConfig) -
         ret_buffer.push_str(update_struct.code());
     }
 
-    // third and lastly, push functions - if enabled
+    // third, push functions - if enabled
     if table_options.get_fns() {
         ret_buffer.push('\n');
         ret_buffer.push_str(build_table_fns(table, config, create_struct, update_struct).as_str());
