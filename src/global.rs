@@ -384,7 +384,7 @@ pub struct GenerationConfig<'a> {
     /// Diesel backend
     ///
     /// For example:
-    /// - `diesel::pg::Pg` (default)
+    /// - `diesel::pg::Pg`
     /// - `diesel::sqlite::Sqlite`
     /// - `diesel::mysql::Mysql`
     /// - or, your custom diesel backend type (struct which implements `diesel::backend::Backend`)
@@ -396,12 +396,16 @@ pub struct GenerationConfig<'a> {
     /// GenerationConfig {
     ///  // ... all required options
     ///  # connection_type: String::default(),
+    ///  # #[cfg(feature = "advanced-queries")]
+    ///  # diesel_backend: "diesel::sqlite::Sqlite".to_string(),
     ///  options: Default::default(),
     /// };
     /// // or
     /// GenerationConfig {
     ///  // ... all required options
     ///  # connection_type: String::default(),
+    ///  # #[cfg(feature = "advanced-queries")]
+    ///  # diesel_backend: "diesel::sqlite::Sqlite".to_string(),
     ///  options: GenerationConfigOpts {
     ///    ..Default::default()
     ///  },
