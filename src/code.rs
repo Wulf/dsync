@@ -828,10 +828,52 @@ fn build_default_impl_fn<'a>(
     )
 }
 
+#[test]
+fn test_build_default_impl_fn() {
+    let fields = vec![
+        StructField {
+            name: String::from("id"),
+            column_name: String::from("id"),
+            base_type: String::from("i32"),
+            is_optional: false,
+            is_vec: false,
+        },
+        StructField {
+            name: String::from("title"),
+            column_name: String::from("title"),
+            base_type: String::from("String"),
+            is_optional: false,
+            is_vec: false,
+        },
+        StructField {
+            name: String::from("maybe_value"),
+            column_name: String::from("maybe_value"),
+            base_type: String::from("i64"),
+            is_optional: true,
+            is_vec: false,
+        },
+    ];
+
+    let generated_code = build_default_impl_fn(StructType::Create, "CreateFake", &fields);
+
+    let expected = r#"impl Default for CreateFake {
+    fn default() -> Self {
+        Self {
+            id: 0,
+            title: String::new(),
+            maybe_value: None,
+        }
+    }
+}
+"#;
+
+    assert_eq!(&generated_code, &expected);
+}
+
 /// Generate a full file for a given diesel table
 pub fn generate_for_table(table: &ParsedTableMacro, config: &GenerationConfig) -> String {
     // early to ensure the table options are set for the current table
-    let table_options = config.table(&table.name.to_string());
+    let table_options = config.table(table.name.to_string().as_str());
 
     let mut ret_buffer = format!("{FILE_SIGNATURE}\n\n");
 
